@@ -365,6 +365,7 @@
       const [isOrdersOpen, setIsOrdersOpen] = useState(false);
       
       const [dragStart, setDragStart] = useState(null);
+      const [artDragStart, setArtDragStart] = useState(null); // Added state for art panning/zooming
 
       const [savedBackgrounds, setSavedBackgrounds] = useState([]);
       const [selectedBgs, setSelectedBgs] = useState([]); 
@@ -1509,10 +1510,6 @@
                 alert("Please select a Main Artwork Image and at least ONE Custom Background to generate a preview.");
                 return;
             }
-            if (selectedBgs.length > 4) {
-                alert("⚠️ Please select a maximum of 3 or 4 backgrounds per artwork to ensure the gallery loads instantly for your customers.");
-                return;
-            }
 
             setIsGeneratingPreview(true);
             let generated = [];
@@ -1534,11 +1531,6 @@
 
           if (selectedBgs.length === 0 && (!uploadData.customMockups || uploadData.customMockups.length === 0)) {
               alert("❌ A background must be selected to publish this artwork.");
-              return;
-          }
-
-          if (selectedBgs.length > 4) {
-              alert("⚠️ Please select a maximum of 3 or 4 backgrounds per artwork to ensure the gallery loads instantly for your customers.");
               return;
           }
 
@@ -1570,7 +1562,9 @@
               ...uploadData, 
               priceOriginal: finalPriceCurrent, 
               priceOriginalOld: finalPriceOld,
-              customMockups: generatedMockups.length > 0 ? generatedMockups : (uploadData.customMockups || [])
+              customMockups: generatedMockups.length > 0 ? generatedMockups : (uploadData.customMockups || []),
+              savedBgsList: selectedBgs.length > 0 ? selectedBgs : (uploadData.savedBgsList || []),
+              savedBgAdjustments: Object.keys(bgAdjustments).length > 0 ? bgAdjustments : (uploadData.savedBgAdjustments || {})
           };
 
           if(editArtId) {
@@ -1578,7 +1572,7 @@
                .then(() => { 
                    alert("Artwork Updated Successfully!"); 
                    setEditArtId(null); 
-                   setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [] }); 
+                   setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
                    setSelectedBgs([]);
                    setBgAdjustments({});
                    setPreviewMockups([]);
@@ -1588,7 +1582,7 @@
              db.collection('RajaStudio').add({ ...dataToSave, createdAt: Date.now() })
                .then(() => { 
                    alert("Artwork Uploaded Globally!"); 
-                   setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [] }); 
+                   setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
                    setSelectedBgs([]);
                    setBgAdjustments({});
                    setPreviewMockups([]);
@@ -1613,10 +1607,12 @@
               priceOriginal: showCurrent, 
               priceOriginalOld: showOld, 
               priceA3: art.priceA3, priceA4: art.priceA4, priceA5: art.priceA5, isSold: art.isSold || false,
-              customMockups: art.customMockups || []
+              customMockups: art.customMockups || [],
+              savedBgsList: art.savedBgsList || [],
+              savedBgAdjustments: art.savedBgAdjustments || {}
           });
-          setSelectedBgs([]); 
-          setBgAdjustments({});
+          setSelectedBgs(art.savedBgsList || []); 
+          setBgAdjustments(art.savedBgAdjustments || {});
           setPreviewMockups([]);
           window.scrollTo(0, 0);
         };
@@ -1660,11 +1656,40 @@
                 setBgCropAdj(prev => ({...prev, x: Math.min(100, Math.max(0, newX)), y: Math.min(100, Math.max(0, newY))}));
             } else if (dragStart.type === 'zoom' && e.touches.length === 2) {
                 const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                const scaleDiff = (dist - dragStart.dist) * 0.5;
-                setBgCropAdj(prev => ({...prev, scale: Math.min(250, Math.max(100, dragStart.origScale + scaleDiff))}));
+                // Better pinch zoom calculation for backgrounds
+                const newScale = dragStart.origScale * (dist / dragStart.dist);
+                setBgCropAdj(prev => ({...prev, scale: Math.min(300, Math.max(100, newScale))}));
             }
         };
         const handleTouchEnd = () => setDragStart(null);
+
+        // Art panning/zooming touch handlers for phone users
+        const handleArtTouchStart = (e, bgId, adj) => {
+            if (adj.locked) return;
+            if (e.touches.length === 1) {
+                setArtDragStart({ type: 'pan', id: bgId, x: e.touches[0].clientX, y: e.touches[0].clientY, origX: adj.x, origY: adj.y });
+            } else if (e.touches.length === 2) {
+                const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                setArtDragStart({ type: 'zoom', id: bgId, dist, origScale: adj.scale });
+            }
+        };
+
+        const handleArtTouchMove = (e, bgId, setAdj) => {
+            if (!artDragStart || artDragStart.id !== bgId) return;
+            if (e.cancelable) e.preventDefault();
+            if (artDragStart.type === 'pan' && e.touches.length === 1) {
+                const dx = e.touches[0].clientX - artDragStart.x;
+                const dy = e.touches[0].clientY - artDragStart.y;
+                const newX = artDragStart.origX + (dx / 2); 
+                const newY = artDragStart.origY + (dy / 2);
+                setAdj({ x: Math.min(100, Math.max(0, newX)), y: Math.min(100, Math.max(0, newY)) });
+            } else if (artDragStart.type === 'zoom' && e.touches.length === 2) {
+                const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                const newScale = artDragStart.origScale * (dist / artDragStart.dist);
+                setAdj({ scale: Math.min(150, Math.max(10, newScale)) });
+            }
+        };
+        const handleArtTouchEnd = () => setArtDragStart(null);
 
         return (
           <div className="p-6 max-w-7xl mx-auto space-y-10 min-h-screen">
@@ -1785,7 +1810,7 @@
                             <label className="block flex gap-3 items-center">
                                 <span className="w-16">Zoom In</span> 
                                 <span className="w-16 text-emerald-700 font-black text-right">{Math.round(bgCropAdj.scale)}% Size</span>
-                                <input type="range" min="100" max="250" value={bgCropAdj.scale} onChange={e=>setBgCropAdj({...bgCropAdj, scale:Number(e.target.value)})} className="flex-1 accent-emerald-600" />
+                                <input type="range" min="100" max="300" value={bgCropAdj.scale} onChange={e=>setBgCropAdj({...bgCropAdj, scale:Number(e.target.value)})} className="flex-1 accent-emerald-600" />
                             </label>
                         </div>
                         
@@ -1822,7 +1847,7 @@
                 <div className="glass-panel p-8 rounded-3xl shadow-xl border-t-4 border-t-purple-500">
                   <h3 className="text-2xl font-black mb-6 text-gray-900 flex justify-between items-center">
                     {editArtId ? "✏️ Edit Artwork" : "Upload Artwork"}
-                    {editArtId ? <button type="button" onClick={() => { setEditArtId(null); setUploadData({title:'',desc:'',image:'',priceOriginal:'',priceOriginalOld:'',priceA3:'',priceA4:'',priceA5:'', isSold: false, customMockups: []}); setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); }} className="text-xs text-red-500 underline font-bold cursor-pointer">Cancel Edit</button> : null}
+                    {editArtId ? <button type="button" onClick={() => { setEditArtId(null); setUploadData({title:'',desc:'',image:'',priceOriginal:'',priceOriginalOld:'',priceA3:'',priceA4:'',priceA5:'', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); }} className="text-xs text-red-500 underline font-bold cursor-pointer">Cancel Edit</button> : null}
                   </h3>
                   <form onSubmit={saveArtwork} className="space-y-4">
                     <input required placeholder="Artwork Title" className="w-full border-2 p-4 rounded-xl bg-white font-bold" value={uploadData.title} onChange={e => setUploadData({...uploadData, title: e.target.value})} />
@@ -1838,26 +1863,40 @@
 
                     {uploadData.image && savedBackgrounds.length > 0 && (
                       <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl mt-4">
-                         <p className="font-black text-gray-800 text-sm mb-2">Select Backgrounds (Choose 3 for best results):</p>
+                         <p className="font-black text-gray-800 text-sm mb-2">Select Backgrounds (Choose up to 3 for best results):</p>
                          
-                         {editArtId && uploadData.customMockups?.length > 0 && (
+                         {editArtId && uploadData.customMockups?.length > 0 && selectedBgs.length === 0 && (
                              <p className="text-xs text-green-600 font-bold mb-3 p-2 bg-green-50 rounded-lg border border-green-200">
-                                 ✅ Previous backgrounds saved. Select new ones below ONLY if you want to replace them.
+                                 ✅ Previous backgrounds loaded. You can adjust them or select new ones.
                              </p>
                          )}
 
-                         <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
-                           {savedBackgrounds.map(bg => (
-                               <label key={bg.id} className={`cursor-pointer flex flex-col items-center p-1 rounded-lg border-2 ${selectedBgs.includes(bg.id) ? 'border-purple-500 bg-purple-100' : 'border-transparent'}`}>
-                                  <input type="checkbox" className="hidden" checked={selectedBgs.includes(bg.id)} 
+                         <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar px-1">
+                           {savedBackgrounds.map(bg => {
+                               const isSelected = selectedBgs.includes(bg.id);
+                               return (
+                               <label key={bg.id} className={`relative cursor-pointer flex-none w-24 h-32 p-1 rounded-xl border-[3px] transition-all ${isSelected ? 'border-purple-600 shadow-md scale-105 bg-purple-100' : 'border-gray-200 hover:border-purple-300 bg-white'}`}>
+                                  <input type="checkbox" className="hidden" checked={isSelected} 
                                          onChange={(e) => {
-                                             if(e.target.checked) setSelectedBgs([...selectedBgs, bg.id]);
-                                             else setSelectedBgs(selectedBgs.filter(id => id !== bg.id));
+                                             if(e.target.checked) {
+                                                 if(selectedBgs.length >= 3) {
+                                                     alert("⚠️ Maximum 3 backgrounds can be selected per artwork.");
+                                                     return;
+                                                 }
+                                                 setSelectedBgs([...selectedBgs, bg.id]);
+                                             } else {
+                                                 setSelectedBgs(selectedBgs.filter(id => id !== bg.id));
+                                             }
                                              setPreviewMockups([]); 
                                          }} />
-                                  <img src={bg.image} className="w-16 h-20 object-cover rounded shadow-sm" />
+                                  <img src={bg.image} className="w-full h-full object-cover rounded-lg" />
+                                  {isSelected && (
+                                     <div className="absolute -top-2 -right-2 bg-purple-600 text-white rounded-full p-1 shadow-lg border-2 border-white">
+                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                     </div>
+                                  )}
                                </label>
-                           ))}
+                           )})}
                          </div>
                          
                          {selectedBgs.length > 0 && (
@@ -1871,11 +1910,14 @@
                                     return (
                                        <div key={bgId} className={`border ${adj.locked ? 'border-red-300 bg-red-50' : 'border-purple-200 bg-white'} p-4 rounded-xl shadow-sm transition-colors`}>
                                           <p className={`text-xs font-black uppercase mb-3 ${adj.locked ? 'text-red-700' : 'text-purple-700'}`}>
-                                              {adj.locked ? '🔒 Position Locked' : 'Adjust Art Placement'}
+                                              {adj.locked ? '🔒 Position Locked' : 'Adjust Art Placement (Touch & Pinch)'}
                                           </p>
                                           
-                                          <div style={{ position: 'relative', width: '100%', maxWidth: '250px', aspectRatio: '4/5', overflow: 'hidden', margin: '0 auto', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
-                                             <img src={bg.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                          <div style={{ position: 'relative', width: '100%', maxWidth: '250px', aspectRatio: '4/5', overflow: 'hidden', margin: '0 auto', borderRadius: '0.5rem', border: '1px solid #e5e7eb', touchAction: 'none' }}
+                                               onTouchStart={(e) => handleArtTouchStart(e, bgId, adj)}
+                                               onTouchMove={(e) => handleArtTouchMove(e, bgId, setAdj)}
+                                               onTouchEnd={handleArtTouchEnd}>
+                                             <img src={bg.image} style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
                                              <img src={uploadData.image} style={{
                                                  position: 'absolute',
                                                  top: `${adj.y}%`,
@@ -1883,7 +1925,8 @@
                                                  width: `${adj.scale}%`,
                                                  height: 'auto',
                                                  transform: `translate(-50%, -50%) rotate(${adj.rotate}deg)`,
-                                                 boxShadow: adj.shadow ? '8px 12px 15px rgba(0,0,0,0.6)' : 'none'
+                                                 boxShadow: adj.shadow ? '8px 12px 15px rgba(0,0,0,0.6)' : 'none',
+                                                 pointerEvents: 'none'
                                              }} />
                                           </div>
                                           
@@ -1891,17 +1934,17 @@
                                              <div className={`space-y-3 ${adj.locked ? 'opacity-40 pointer-events-none grayscale' : ''}`}>
                                                  <label className="block flex gap-3 items-center">
                                                     <span className="w-16">Left/Right</span> 
-                                                    <span className="w-10 text-purple-700 font-black text-right">{adj.x > 50 ? '+' : ''}{adj.x - 50}%</span>
+                                                    <span className="w-10 text-purple-700 font-black text-right">{adj.x > 50 ? '+' : ''}{Math.round(adj.x - 50)}%</span>
                                                     <input type="range" min="0" max="100" value={adj.x} onChange={e=>setAdj({x:Number(e.target.value)})} className="flex-1 accent-purple-600" />
                                                  </label>
                                                  <label className="block flex gap-3 items-center">
                                                     <span className="w-16">Top/Bottom</span> 
-                                                    <span className="w-10 text-purple-700 font-black text-right">{adj.y > 50 ? '+' : ''}{adj.y - 50}%</span>
+                                                    <span className="w-10 text-purple-700 font-black text-right">{adj.y > 50 ? '+' : ''}{Math.round(adj.y - 50)}%</span>
                                                     <input type="range" min="0" max="100" value={adj.y} onChange={e=>setAdj({y:Number(e.target.value)})} className="flex-1 accent-purple-600" />
                                                  </label>
                                                  <label className="block flex gap-3 items-center">
                                                     <span className="w-16">Size</span> 
-                                                    <span className="w-16 text-purple-700 font-black text-right">{adj.scale}% Size</span>
+                                                    <span className="w-16 text-purple-700 font-black text-right">{Math.round(adj.scale)}% Size</span>
                                                     <input type="range" min="10" max="150" value={adj.scale} onChange={e=>setAdj({scale:Number(e.target.value)})} className="flex-1 accent-purple-600" />
                                                  </label>
                                                  <label className="block flex gap-3 items-center">
@@ -2277,7 +2320,7 @@
                 
                 <button onClick={() => nav('commission')} className={`text-left p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'commission' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Commission</button>
                 
-                <button onClick={() => nav('my_orders')} className={`text-left p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'my_orders' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>My Order History</button>
+                <button onClick={() => nav('my_orders')} className={`text-left p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'my_orders' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Order History</button>
 
                 <button onClick={() => nav('admin')} className={`text-left p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'admin' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}>Admin Panel</button>
                 
@@ -2387,7 +2430,7 @@
                   <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
                 </a>
                 <a href="https://www.instagram.com/itzz_rx" target="_blank" rel="noopener noreferrer" className="p-4 bg-white text-pink-500 rounded-full hover:bg-pink-500 hover:text-white transition-all shadow-md hover:shadow-xl transform hover:-translate-y-1 block cursor-pointer">
-                  <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm3.975-9.658a1.424 1.424 0 100-2.849 1.424 1.424 0 000 2.849z"/></svg>
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                 </a>
               </div>
 
