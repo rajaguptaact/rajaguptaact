@@ -725,6 +725,12 @@
                alert(`❌ STOCK ALERT: The following Original Artwork(s) have just been SOLD OUT to another buyer:\n\n- ${soldItems.join('\n- ')}\n\nPlease remove them from your cart to proceed.`);
                return; 
            }
+
+           const hasDeletedItems = items.some(item => !artworks.find(a => a.id === item.id));
+           if (hasDeletedItems) {
+               alert("❌ Action Required: Some items in your cart have been removed by the artist and are no longer available. Please click 'Remove' on the deleted items to proceed with your purchase.");
+               return;
+           }
         }
 
         let total = items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
@@ -765,7 +771,15 @@
       );
 
       const CartView = () => {
-        const total = cart.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        // Calculate total ONLY for items that are valid (not deleted)
+        const validItems = cart.filter(item => artworks.some(a => a.id === item.id));
+        const total = validItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+
+        const hasDeletedItems = cart.some(item => {
+           const liveArt = artworks.find(a => a.id === item.id);
+           return !isLoadingGallery && !liveArt;
+        });
+
         return (
           <div className="p-6 max-w-3xl mx-auto min-h-screen">
             <button onClick={() => nav('gallery')} className="mb-6 text-purple-600 font-bold flex items-center gap-2 hover:text-purple-800 transition">
@@ -775,36 +789,56 @@
             {cart.length === 0 ? <p className="text-gray-500 font-bold glass-panel p-8 rounded-2xl text-center">Your cart is completely empty.</p> : (
               <div className="space-y-4">
                 {cart.map((item, i) => {
-                  const isItemSoldOut = item.selectedSize && item.selectedSize.includes('Original') && artworks.find(a => a.id === item.id)?.isSold;
+                  const liveArt = artworks.find(a => a.id === item.id);
+                  const isDeleted = !isLoadingGallery && !liveArt; 
+                  const isItemSoldOut = liveArt && item.selectedSize && item.selectedSize.includes('Original') && liveArt.isSold;
+
                   return (
-                    <div key={i} className={`flex items-center justify-between glass-panel p-4 rounded-2xl shadow-sm border ${isItemSoldOut ? 'border-red-300 bg-red-50' : 'border-white'}`}>
+                    <div key={i} className={`flex items-center justify-between glass-panel p-4 rounded-2xl shadow-sm border ${isDeleted ? 'border-gray-400 bg-gray-100 opacity-80' : isItemSoldOut ? 'border-red-300 bg-red-50' : 'border-white'}`}>
                       <div className="flex items-center gap-4">
-                        <img src={item.image} className="w-20 h-20 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none" />
+                        <div className="relative">
+                            <img src={item.image} className={`w-20 h-20 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none ${isDeleted ? 'grayscale blur-[1px]' : ''}`} />
+                            {isDeleted && <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center"><svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg></div>}
+                        </div>
                         <div>
-                           <h4 className={`font-black text-lg ${isItemSoldOut ? 'text-red-800' : 'text-gray-900'}`}>{item.title}</h4>
-                           <p className="text-sm font-bold text-purple-600">{item.selectedSize}</p>
-                           {isItemSoldOut && <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block animate-pulse shadow-sm">Sold Out</span>}
+                           <h4 className={`font-black text-lg ${isDeleted ? 'text-gray-500 line-through' : isItemSoldOut ? 'text-red-800' : 'text-gray-900'}`}>{item.title}</h4>
+                           <p className={`text-sm font-bold ${isDeleted ? 'text-gray-400' : 'text-purple-600'}`}>{item.selectedSize}</p>
+                           {isDeleted && <span className="text-[10px] bg-gray-600 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block shadow-sm">Artwork Deleted (Not Available)</span>}
+                           {!isDeleted && isItemSoldOut && <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block animate-pulse shadow-sm">Sold Out</span>}
                         </div>
                       </div>
                       
                       <div className="text-right flex flex-col items-end">
-                        {item.priceOriginalOld && item.price && Number(item.priceOriginalOld) > Number(item.price) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="bg-yellow-400 text-gray-900 text-[10px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide">
-                              {Math.round(((Number(item.priceOriginalOld) - Number(item.price)) / Number(item.priceOriginalOld)) * 100)}% OFF
-                            </span>
-                            <span className="line-through text-gray-400 text-xs font-bold">{getPrice(item.priceOriginalOld)}</span>
-                          </div>
-                        ) : null}
-                        <p className={`font-black text-xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>{getPrice(item.price)}</p>
+                        {isDeleted ? (
+                            <p className="font-black text-xl text-gray-500 line-through">{getPrice(item.price)}</p>
+                        ) : (
+                            <>
+                                {item.priceOriginalOld && item.price && Number(item.priceOriginalOld) > Number(item.price) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
+                                  <div className="flex items-center gap-1.5 mb-0.5">
+                                    <span className="bg-yellow-400 text-gray-900 text-[10px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                                      {Math.round(((Number(item.priceOriginalOld) - Number(item.price)) / Number(item.priceOriginalOld)) * 100)}% OFF
+                                    </span>
+                                    <span className="line-through text-gray-400 text-xs font-bold">{getPrice(item.priceOriginalOld)}</span>
+                                  </div>
+                                ) : null}
+                                <p className={`font-black text-xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>{getPrice(item.price)}</p>
+                            </>
+                        )}
                         <button onClick={() => setCart(cart.filter(c => c.cartId !== item.cartId))} className="text-rose-500 text-sm font-bold hover:underline mt-1 cursor-pointer">Remove</button>
                       </div>
                     </div>
                   );
                 })}
-                <div className="bg-gradient-to-r from-purple-700 to-pink-600 text-white p-6 rounded-2xl mt-8 flex flex-col md:flex-row justify-between items-center shadow-xl">
+                
+                {hasDeletedItems && (
+                    <div className="bg-red-50 text-red-700 p-4 rounded-xl text-sm font-bold border border-red-200 mt-6 text-center animate-pulse">
+                       ⚠️ Action Required: Some artworks in your cart have been completely deleted by the artist. Please click 'Remove' on those items to proceed.
+                    </div>
+                )}
+
+                <div className="bg-gradient-to-r from-purple-700 to-pink-600 text-white p-6 rounded-2xl mt-4 flex flex-col md:flex-row justify-between items-center shadow-xl">
                   <div className="mb-4 md:mb-0 text-center md:text-left"><p className="text-sm text-purple-200 font-bold">Total Payable</p><p className="text-4xl font-black">{getPrice(total)}</p></div>
-                  <button onClick={() => startCheckout(cart, 'Gallery Purchase', {})} className="w-full md:w-auto bg-white text-purple-700 px-10 py-4 rounded-xl font-black text-lg shadow-lg hover:scale-105 transition-transform cursor-pointer">Proceed to Checkout</button>
+                  <button onClick={() => startCheckout(cart, 'Gallery Purchase', {})} disabled={validItems.length === 0 || hasDeletedItems} className={`w-full md:w-auto px-10 py-4 rounded-xl font-black text-lg shadow-lg transition-transform ${(validItems.length === 0 || hasDeletedItems) ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-white text-purple-700 hover:scale-105 cursor-pointer'}`}>Proceed to Checkout</button>
                 </div>
               </div>
             )}
@@ -1671,6 +1705,7 @@
         };
         const handleTouchEnd = () => setDragStart(null);
 
+        // Art panning/zooming touch handlers for phone users
         const handleArtTouchStart = (e, bgId, adj) => {
             if (adj.locked) return;
             if (e.touches.length === 1) {
@@ -2312,9 +2347,14 @@
           </header>
 
           {menuOpen ? (
-            <div className="fixed inset-0 top-20 z-50 bg-gray-900/40 backdrop-blur-sm" onClick={() => setMenuOpen(false)}>
-              <div className="bg-white w-full md:w-96 absolute right-0 shadow-2xl flex flex-col font-black text-lg border-l border-gray-100 h-full transform transition-transform" onClick={e => e.stopPropagation()}>
-                <div className="p-4 bg-gray-50 border-b text-xs text-gray-500 uppercase tracking-widest text-center">Navigation Menu</div>
+            <div className="fixed inset-0 z-50 bg-gray-900/70 backdrop-blur-md transition-all" onClick={() => setMenuOpen(false)}>
+              <div className="bg-white w-full md:w-96 absolute right-0 shadow-2xl flex flex-col font-black text-lg border-l border-gray-100 h-full transform transition-transform overflow-y-auto" onClick={e => e.stopPropagation()}>
+                <div className="p-4 bg-gray-50 border-b text-xs text-gray-500 uppercase tracking-widest text-center flex justify-between items-center">
+                    <span>Navigation Menu</span>
+                    <button onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-rose-500 transition">
+                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
                 
                 <button onClick={() => nav('gallery')} className={`text-left p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'gallery' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Gallery</button>
                 
@@ -2436,7 +2476,7 @@
                 <a href="https://wa.me/917281074416" target="_blank" rel="noopener noreferrer" className="p-4 bg-white text-green-500 rounded-full hover:bg-green-500 hover:text-white transition-all shadow-md hover:shadow-xl transform hover:-translate-y-1 block cursor-pointer">
                   <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
                 </a>
-                <a href="https://www.instagram.com/itzz_rx" target="_blank" rel="noopener noreferrer" className="p-4 bg-white text-pink-500 rounded-full hover:bg-pink-500 hover:text-white transition-all shadow-md hover:shadow-xl transform hover:-translate-y-1 block cursor-pointer">
+                <a href="https://www.instagram.com/rajaguptaact?igsh=MXZmODNvdDlrY3lnNg==" target="_blank" rel="noopener noreferrer" className="p-4 bg-white text-pink-500 rounded-full hover:bg-pink-500 hover:text-white transition-all shadow-md hover:shadow-xl transform hover:-translate-y-1 block cursor-pointer">
                   <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                 </a>
               </div>
