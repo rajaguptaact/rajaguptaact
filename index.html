@@ -96,7 +96,7 @@
       </div>
     );
 
-    // ✅ OLD MOCKUPS (Kept as fallback for old artworks so they don't break)
+    // ✅ OLD MOCKUPS
     const FrameMockup = ({ src }) => (
       <div className="w-full aspect-[4/5] bg-gradient-to-br from-[#f5f7fa] to-[#c3cfe2] rounded-2xl flex items-center justify-center p-4 shadow-inner relative overflow-hidden select-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.8)_0%,transparent_70%)]"></div>
@@ -124,7 +124,6 @@
       </div>
     );
 
-    // ✅ NEW SMART ARTWORK CARD COMPONENT
     const ArtworkCard = ({ art, getPrice, addToCart }) => {
       const scrollRef = useRef(null);
 
@@ -365,7 +364,7 @@
       const [isOrdersOpen, setIsOrdersOpen] = useState(false);
       
       const [dragStart, setDragStart] = useState(null);
-      const [artDragStart, setArtDragStart] = useState(null); // Added state for art panning/zooming
+      const [artDragStart, setArtDragStart] = useState(null); 
 
       const [savedBackgrounds, setSavedBackgrounds] = useState([]);
       const [selectedBgs, setSelectedBgs] = useState([]); 
@@ -640,8 +639,8 @@
 
       useEffect(() => {
         const unsubArt = db.collection("RajaStudio").onSnapshot(snap => {
-          setArtworks(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
-          setIsLoadingGallery(false); 
+          const fetchedArts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt);
+          setArtworks(fetchedArts);
         });
         const unsubOrd = db.collection("orders").onSnapshot(snap => {
           setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
@@ -655,14 +654,20 @@
         return () => { unsubArt(); unsubOrd(); unsubAnn(); unsubBg(); };
       }, []);
 
+      // INTELLIGENT SLOW NETWORK FIX
       useEffect(() => {
-         if (!isLoadingGallery && artworks.length === 0) {
-             const timer = setTimeout(() => setShowEmptyGallery(true), 1500);
-             return () => clearTimeout(timer);
+         let timer;
+         if (artworks.length === 0) {
+             timer = setTimeout(() => {
+                 setIsLoadingGallery(false);
+                 setShowEmptyGallery(true);
+             }, 3500); 
          } else {
+             setIsLoadingGallery(false);
              setShowEmptyGallery(false);
          }
-      }, [isLoadingGallery, artworks.length]);
+         return () => clearTimeout(timer);
+      }, [artworks]);
       
       useEffect(() => {
         if (isAdmin) {
@@ -1506,8 +1511,12 @@
 
         const handlePreview = async (e) => {
             e.preventDefault();
-            if (!uploadData.image || selectedBgs.length === 0) {
-                alert("Please select a Main Artwork Image and at least ONE Custom Background to generate a preview.");
+            if (!uploadData.image) {
+                alert("⚠️ Please select a Main Artwork Image first.");
+                return;
+            }
+            if (selectedBgs.length !== 3) {
+                alert(`⚠️ Action Required: You must select EXACTLY 3 backgrounds to generate a preview. You currently have ${selectedBgs.length} selected.`);
                 return;
             }
 
@@ -1529,8 +1538,8 @@
         const saveArtwork = async (e) => {
           e.preventDefault();
 
-          if (selectedBgs.length === 0 && (!uploadData.customMockups || uploadData.customMockups.length === 0)) {
-              alert("❌ A background must be selected to publish this artwork.");
+          if (selectedBgs.length !== 3) {
+              alert(`⚠️ Action Required: You must select EXACTLY 3 backgrounds before publishing. You currently have ${selectedBgs.length} selected.`);
               return;
           }
 
@@ -1651,19 +1660,17 @@
             if (dragStart.type === 'pan' && e.touches.length === 1) {
                 const dx = e.touches[0].clientX - dragStart.x;
                 const dy = e.touches[0].clientY - dragStart.y;
-                const newX = dragStart.origX - (dx / 2); 
-                const newY = dragStart.origY - (dy / 2);
+                const newX = dragStart.origX + (dx / 2); // Inverted fix: now follows finger +
+                const newY = dragStart.origY + (dy / 2); // Inverted fix: now follows finger +
                 setBgCropAdj(prev => ({...prev, x: Math.min(100, Math.max(0, newX)), y: Math.min(100, Math.max(0, newY))}));
             } else if (dragStart.type === 'zoom' && e.touches.length === 2) {
                 const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                // Better pinch zoom calculation for backgrounds
                 const newScale = dragStart.origScale * (dist / dragStart.dist);
                 setBgCropAdj(prev => ({...prev, scale: Math.min(300, Math.max(100, newScale))}));
             }
         };
         const handleTouchEnd = () => setDragStart(null);
 
-        // Art panning/zooming touch handlers for phone users
         const handleArtTouchStart = (e, bgId, adj) => {
             if (adj.locked) return;
             if (e.touches.length === 1) {
@@ -1680,8 +1687,8 @@
             if (artDragStart.type === 'pan' && e.touches.length === 1) {
                 const dx = e.touches[0].clientX - artDragStart.x;
                 const dy = e.touches[0].clientY - artDragStart.y;
-                const newX = artDragStart.origX + (dx / 2); 
-                const newY = artDragStart.origY + (dy / 2);
+                const newX = artDragStart.origX + (dx / 2); // Inverted fix: now follows finger +
+                const newY = artDragStart.origY + (dy / 2); // Inverted fix: now follows finger +
                 setAdj({ x: Math.min(100, Math.max(0, newX)), y: Math.min(100, Math.max(0, newY)) });
             } else if (artDragStart.type === 'zoom' && e.touches.length === 2) {
                 const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
@@ -1787,12 +1794,11 @@
                                 position: 'absolute',
                                 top: `${bgCropAdj.y}%`,
                                 left: `${bgCropAdj.x}%`,
-                                transform: 'translate(-50%, -50%)',
-                                width: `${bgCropAdj.scale}%`,
-                                height: 'auto',
-                                minWidth: '100%',
-                                minHeight: '100%',
-                                objectFit: 'cover'
+                                transform: `translate(-50%, -50%) scale(${bgCropAdj.scale / 100})`, // Full zoom fix
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                pointerEvents: 'none'
                             }} />
                         </div>
                         
@@ -1863,7 +1869,7 @@
 
                     {uploadData.image && savedBackgrounds.length > 0 && (
                       <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl mt-4">
-                         <p className="font-black text-gray-800 text-sm mb-2">Select Backgrounds (Choose up to 3 for best results):</p>
+                         <p className="font-black text-gray-800 text-sm mb-2">Select Backgrounds (Choose EXACTLY 3):</p>
                          
                          {editArtId && uploadData.customMockups?.length > 0 && selectedBgs.length === 0 && (
                              <p className="text-xs text-green-600 font-bold mb-3 p-2 bg-green-50 rounded-lg border border-green-200">
@@ -1877,15 +1883,16 @@
                                return (
                                <label key={bg.id} className={`relative cursor-pointer flex-none w-24 h-32 p-1 rounded-xl border-[3px] transition-all ${isSelected ? 'border-purple-600 shadow-md scale-105 bg-purple-100' : 'border-gray-200 hover:border-purple-300 bg-white'}`}>
                                   <input type="checkbox" className="hidden" checked={isSelected} 
-                                         onChange={(e) => {
-                                             if(e.target.checked) {
+                                         onChange={() => {
+                                             if(isSelected) {
+                                                 // ✅ RELIABLE UNCHECK LOGIC
+                                                 setSelectedBgs(selectedBgs.filter(id => id !== bg.id));
+                                             } else {
                                                  if(selectedBgs.length >= 3) {
-                                                     alert("⚠️ Maximum 3 backgrounds can be selected per artwork.");
+                                                     alert("⚠️ Maximum limit reached! Please unselect one first if you want to add a new one.");
                                                      return;
                                                  }
                                                  setSelectedBgs([...selectedBgs, bg.id]);
-                                             } else {
-                                                 setSelectedBgs(selectedBgs.filter(id => id !== bg.id));
                                              }
                                              setPreviewMockups([]); 
                                          }} />
