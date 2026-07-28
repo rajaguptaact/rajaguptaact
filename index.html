@@ -121,10 +121,33 @@
 
     const ArtworkCard = ({ art, getPrice, addToCart }) => {
       const scrollRef = useRef(null);
+      const [mockups, setMockups] = useState([]);
+      const [loadingMockups, setLoadingMockups] = useState(true);
+
+      useEffect(() => {
+          let isMounted = true;
+          // Lazy load mockups efficiently
+          if (art.customMockups && art.customMockups.length > 0) {
+              setMockups(art.customMockups);
+              setLoadingMockups(false);
+          } else {
+              db.collection('RajaMockups').where('artId', '==', art.id).get().then(snap => {
+                  if (!isMounted) return;
+                  const fetched = snap.docs.map(d => d.data()).sort((a,b) => a.index - b.index).map(d => d.image);
+                  if (fetched.length > 0) {
+                      setMockups(fetched);
+                  }
+                  setLoadingMockups(false);
+              }).catch(e => {
+                  if (isMounted) setLoadingMockups(false);
+              });
+          }
+          return () => { isMounted = false; };
+      }, [art.id, art.customMockups]);
 
       useEffect(() => {
         const interval = setInterval(() => {
-          if (scrollRef.current && window.innerWidth < 768) { 
+          if (scrollRef.current && window.innerWidth < 768 && mockups.length > 0) { 
             const maxScroll = scrollRef.current.scrollWidth - scrollRef.current.clientWidth;
             if (scrollRef.current.scrollLeft >= maxScroll - 50) {
               scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' }); 
@@ -135,7 +158,7 @@
           }
         }, 3500); 
         return () => clearInterval(interval);
-      }, []);
+      }, [mockups.length]);
 
       return (
         <div className="glass-panel rounded-3xl shadow-xl overflow-hidden p-6 md:p-10 mb-10">
@@ -154,8 +177,8 @@
               &larr; Auto Viewing Angles &rarr;
             </p>
             <div ref={scrollRef} className="flex overflow-x-auto gap-4 md:gap-6 mb-8 pb-4 hide-scrollbar snap-x snap-mandatory scroll-smooth pt-1">
-              {art.customMockups && art.customMockups.length > 0 ? (
-                 art.customMockups.map((m, i) => (
+              {mockups.length > 0 ? (
+                 mockups.map((m, i) => (
                     <div key={i} className="flex-none w-[85%] md:w-[45%] lg:w-[30%] snap-center">
                       <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-[0_4px_15px_rgba(0,0,0,0.1)] relative flex items-center justify-center bg-gray-100 border border-gray-200">
                          <img src={m} className="w-full h-full object-cover transition-transform hover:scale-[1.03] duration-500" onContextMenu={(e) => e.preventDefault()} />
@@ -163,6 +186,8 @@
                       </div>
                     </div>
                  ))
+              ) : loadingMockups ? (
+                 <div className="flex justify-center items-center h-48 w-full text-purple-400 font-bold animate-pulse">Loading High Quality Angles...</div>
               ) : (
                 <>
                   <div className="flex-none w-[85%] md:w-[45%] lg:w-[30%] snap-center">
@@ -467,7 +492,11 @@
       const [isOrderPlaced, setIsOrderPlaced] = useState(false); 
       const [lastOrderId, setLastOrderId] = useState(null); 
 
-      // ✅ POINT 1: CART FINGERPRINT SYSTEM (Invisible, Instant Auto-Load)
+      // ✅ POINT 1: Order History Search Global States (White Screen Fix)
+      const [searchWaInput, setSearchWaInput] = useState('');
+      const [hasSearched, setHasSearched] = useState(false);
+      const [recoveredOrders, setRecoveredOrders] = useState([]);
+
       const [deviceFingerprint, setDeviceFingerprint] = useState(null);
       
       useEffect(() => {
@@ -483,16 +512,13 @@
             ];
 
             try {
-                // Get IP quickly, abort if it takes longer than 2s to not delay UI
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 2000);
                 const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
                 const data = await res.json();
                 clearTimeout(timeoutId);
                 if (data.ip) components.push(data.ip);
-            } catch (e) {
-                // Fail silently, use device specs
-            }
+            } catch (e) {}
 
             const rawString = components.join('|');
             let hash = 0;
@@ -506,16 +532,13 @@
             if (isMounted) {
                 setDeviceFingerprint(secureFp);
                 
-                // Read local storage immediately
                 const localCartStr = window.localStorage.getItem('raja_cart_live_v1');
                 let localCartItems = [];
                 try { if(localCartStr) localCartItems = JSON.parse(localCartStr); } catch(e){}
 
-                // Check Firebase database for recovered cart based on fingerprint
                 db.collection('RecoveredCarts').doc(secureFp).get().then(doc => {
                     if (doc.exists && isMounted) {
                         const cloudCart = doc.data().items || [];
-                        // Only inject from cloud if local storage was cleared/empty
                         if (localCartItems.length === 0 && cloudCart.length > 0) {
                             setCart(cloudCart);
                             window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(cloudCart));
@@ -618,17 +641,14 @@
         return [];
       });
 
-      // ✅ CLOUD CART SYNC (Runs automatically when cart changes for 100% Real-time updates)
       useEffect(() => {
         try {
           if (cart && Array.isArray(cart)) {
              window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(cart));
              if (deviceFingerprint) {
                  if (cart.length === 0) {
-                     // Agar cart khali/empty ho jaye (ya order ho jaye), toh cloud se hamesha ke liye delete kar do
                      db.collection('RecoveredCarts').doc(deviceFingerprint).delete().catch(e=>{});
                  } else {
-                     // Cart mein naya add hua, cloud mein real-time save karo
                      db.collection('RecoveredCarts').doc(deviceFingerprint).set({ 
                          items: cart, 
                          updatedAt: Date.now() 
@@ -643,7 +663,7 @@
 
       const [checkoutData, setCheckoutData] = useState({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
       const [isValidating, setIsValidating] = useState(false);
-      const [isUploading, setIsUploading] = useState(false);
+      const [uploadStatus, setUploadStatus] = useState(''); // NEW HD UPLOAD STATUS INDICATOR
 
       const [currency, setCurrency] = useState('INR');
       
@@ -810,7 +830,15 @@
         } catch(e) { console.log(e); }
       }, [view, menuOpen, currency]);
 
-      const nav = (v) => { setView(v); setMenuOpen(false); window.scrollTo(0,0); };
+      // ✅ POINT 1 Fix: Order History State Lifted to fix White Screen bug
+      const nav = (v) => { 
+          setView(v); 
+          setMenuOpen(false); 
+          window.scrollTo(0,0); 
+          setHasSearched(false);
+          setSearchWaInput('');
+          setRecoveredOrders([]);
+      };
 
       const [lastAddedTime, setLastAddedTime] = useState(0);
 
@@ -1122,12 +1150,7 @@
         </div>
       );
 
-      // ✅ POINT 2: PROFESSIONAL ORDER RECOVERY SEARCH SYSTEM
       const MyOrdersView = () => {
-        const [searchWaInput, setSearchWaInput] = useState('');
-        const [hasSearched, setHasSearched] = useState(false);
-        const [recoveredOrders, setRecoveredOrders] = useState([]);
-
         const handleRecoverOrders = (e) => {
             e.preventDefault();
             if (!searchWaInput || searchWaInput.trim().length < 8) return;
@@ -1530,9 +1553,9 @@
              });
           }
 
+          // ✅ POINT 4: Order Finalized -> Auto-Delete Cart Real-time from everywhere
           setCart([]); 
           try { window.localStorage.removeItem('raja_cart_live_v1'); } catch(e){}
-          // Clear cloud cart permanently on successful purchase so it doesn't reappear
           if(deviceFingerprint) {
               db.collection('RecoveredCarts').doc(deviceFingerprint).delete().catch(e=>{});
           }
@@ -1699,7 +1722,7 @@
                 ctx.drawImage(img, -scaledW/2, -scaledH/2, scaledW, scaledH);
                 ctx.restore();
 
-                const bgData = canvas.toDataURL('image/jpeg', 0.95);
+                const bgData = canvas.toDataURL('image/jpeg', 0.92);
                 db.collection('RajaBackgrounds').add({ image: bgData, createdAt: Date.now() })
                   .then(() => {
                       alert("Background Cropped & Saved Successfully in HD!");
@@ -1744,7 +1767,7 @@
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, w, h);
-                setUploadData({...uploadData, image: canvas.toDataURL('image/jpeg', 0.95)});
+                setUploadData({...uploadData, image: canvas.toDataURL('image/jpeg', 0.92)});
               };
               img.src = event.target.result;
             };
@@ -1812,7 +1835,7 @@
                         ctx.drawImage(artImg, -w/2, -h/2, w, h);
                         ctx.restore();
                         
-                        resolve(canvas.toDataURL('image/jpeg', 0.95)); 
+                        resolve(canvas.toDataURL('image/jpeg', 0.92)); 
                     };
                     artImg.src = artDataUrl;
                 };
@@ -1827,7 +1850,7 @@
                 return;
             }
             if (selectedBgs.length !== 3) {
-                alert(`⚠️ Action Required: You must select EXACTLY 3 backgrounds to generate a preview. You currently have ${selectedBgs.length} selected.`);
+                alert(`⚠️ Action Required: You must select EXACTLY 3 backgrounds to generate a preview.`);
                 return;
             }
 
@@ -1846,11 +1869,12 @@
             window.scrollBy({ top: 400, behavior: 'smooth' });
         };
 
+        // ✅ POINT 3: UPLOAD FIX (Separate Mockup Uploads to bypass 1MB limit & show loading text)
         const saveArtwork = async (e) => {
           e.preventDefault();
 
-          if (selectedBgs.length !== 3) {
-              alert(`⚠️ Action Required: You must select EXACTLY 3 backgrounds before publishing. You currently have ${selectedBgs.length} selected.`);
+          if (selectedBgs.length > 0 && selectedBgs.length !== 3) {
+              alert(`⚠️ Action Required: You must select EXACTLY 3 backgrounds before publishing.`);
               return;
           }
 
@@ -1860,13 +1884,13 @@
           let oldP = Number(oldPStr) || 0;
           let curP = Number(curPStr) || 0;
 
+          // ✅ POINT 2 Fix: Hindi Error Message removed, strict English used
           if (oldP > 0 && curP > 0 && curP >= oldP) {
-              alert("❌ PRICE ERROR: Discount Price (Current) hamesha Old Price se kam hona chahiye! Please theek karein.");
-              setIsUploading(false);
+              alert("❌ PRICE ERROR: Discount Price (Current) MUST be strictly less than the Old Price. Please correct your inputs.");
               return;
           }
 
-          setIsUploading(true);
+          setUploadStatus("Uploading Main Artwork Details...");
 
           let finalPriceOld = oldPStr;
           let finalPriceCurrent = curPStr;
@@ -1876,50 +1900,72 @@
               finalPriceOld = ""; 
           }
 
-          let generatedMockups = [];
-          if (previewMockups.length > 0 && selectedBgs.length === previewMockups.length) {
-              generatedMockups = previewMockups;
-          } else if (uploadData.image && selectedBgs.length > 0) {
-              for (let bgId of selectedBgs) {
-                  const bgDoc = savedBackgrounds.find(b => b.id === bgId);
-                  if(bgDoc) {
-                      const adj = bgAdjustments[bgId] || {x:50, y:50, scale:40, rotate:0, shadow:true, locked:false};
-                      const finalBase64 = await generateComposite(bgDoc.image, uploadData.image, adj);
-                      generatedMockups.push(finalBase64);
-                  }
-              }
-          }
-
           const dataToSave = { 
-              ...uploadData, 
+              title: uploadData.title, 
+              desc: uploadData.desc, 
+              image: uploadData.image, // Main image only (keeps doc under 1MB limit safely)
               priceOriginal: finalPriceCurrent, 
-              priceOriginalOld: finalPriceOld,
-              customMockups: generatedMockups.length > 0 ? generatedMockups : (uploadData.customMockups || []),
+              priceOriginalOld: finalPriceOld, 
+              priceA3: uploadData.priceA3, 
+              priceA4: uploadData.priceA4, 
+              priceA5: uploadData.priceA5, 
+              isSold: uploadData.isSold, 
               savedBgsList: selectedBgs.length > 0 ? selectedBgs : (uploadData.savedBgsList || []),
               savedBgAdjustments: Object.keys(bgAdjustments).length > 0 ? bgAdjustments : (uploadData.savedBgAdjustments || {})
           };
 
-          if(editArtId) {
-             db.collection('RajaStudio').doc(editArtId).update(dataToSave)
-               .then(() => { 
-                   alert("Artwork Updated Successfully!"); 
-                   setEditArtId(null); 
-                   setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
-                   setSelectedBgs([]);
-                   setBgAdjustments({});
-                   setPreviewMockups([]);
-                   setIsUploading(false); 
-               });
-          } else {
-             db.collection('RajaStudio').add({ ...dataToSave, createdAt: Date.now() })
-               .then(() => { 
-                   alert("Artwork Uploaded Globally!"); 
-                   setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
-                   setSelectedBgs([]);
-                   setBgAdjustments({});
-                   setPreviewMockups([]);
-                   setIsUploading(false); 
-               });
+          try {
+              let artId = editArtId;
+
+              if(editArtId) {
+                 await db.collection('RajaStudio').doc(editArtId).update(dataToSave);
+              } else {
+                 const docRef = await db.collection('RajaStudio').add({ ...dataToSave, createdAt: Date.now() });
+                 artId = docRef.id;
+              }
+
+              // ✅ Save Mockups in a COMPLETELY SEPARATE Collection (RajaMockups) using Parallel Upload
+              if (selectedBgs.length === 3) {
+                  setUploadStatus("Generating HD Mockups ⏳...");
+                  let mockupsToSave = previewMockups;
+
+                  if (mockupsToSave.length !== 3) {
+                      mockupsToSave = [];
+                      for (let bgId of selectedBgs) {
+                          const bgDoc = savedBackgrounds.find(b => b.id === bgId);
+                          if(bgDoc) {
+                              const adj = bgAdjustments[bgId] || {x:50, y:50, scale:40, rotate:0, shadow:true, locked:false};
+                              const finalBase64 = await generateComposite(bgDoc.image, uploadData.image, adj);
+                              mockupsToSave.push(finalBase64);
+                          }
+                      }
+                  }
+
+                  setUploadStatus("Saving HD Mockups to Database ⏳...");
+                  // Save each separately so each file stays around 800-900KB (Well under 1MB limit)
+                  const uploadPromises = mockupsToSave.map((base64Img, idx) => {
+                      return db.collection('RajaMockups').doc(`${artId}_m${idx}`).set({
+                          artId: artId,
+                          index: idx,
+                          image: base64Img,
+                          updatedAt: Date.now()
+                      });
+                  });
+
+                  await Promise.all(uploadPromises);
+              }
+
+              alert(editArtId ? "Artwork Updated Successfully!" : "Artwork Uploaded Globally!"); 
+              setEditArtId(null); 
+              setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
+              setSelectedBgs([]);
+              setBgAdjustments({});
+              setPreviewMockups([]);
+              setUploadStatus(""); 
+          } catch (err) {
+              console.error(err);
+              alert("❌ ERROR: Failed to upload. Please try again. System memory might be full.");
+              setUploadStatus("");
           }
         };
 
@@ -2298,7 +2344,7 @@
 
                     {uploadData.image && selectedBgs.length > 0 && (
                         <div className="mt-6 border-t-2 border-dashed border-gray-200 pt-6">
-                            <button type="button" onClick={handlePreview} disabled={isGeneratingPreview} className={`w-full py-4 rounded-xl font-black text-lg border-2 transition shadow-sm ${isGeneratingPreview ? 'bg-gray-100 text-gray-500 border-gray-300 cursor-wait' : 'bg-indigo-50 text-indigo-700 border-indigo-300 hover:bg-indigo-100 cursor-pointer'}`}>
+                            <button type="button" onClick={handlePreview} disabled={isGeneratingPreview || !!uploadStatus} className={`w-full py-4 rounded-xl font-black text-lg border-2 transition shadow-sm ${isGeneratingPreview || uploadStatus ? 'bg-gray-100 text-gray-500 border-gray-300 cursor-wait' : 'bg-indigo-50 text-indigo-700 border-indigo-300 hover:bg-indigo-100 cursor-pointer'}`}>
                               {isGeneratingPreview ? "⏳ Generating HD Preview..." : "👁️ Generate Live Preview Before Publishing"}
                             </button>
                         </div>
@@ -2323,8 +2369,8 @@
                         </div>
                     )}
 
-                    <button type="submit" disabled={isUploading} className={`w-full py-4 rounded-xl font-black text-lg mt-6 shadow-lg transition ${isUploading ? 'bg-gray-400 text-gray-700 cursor-wait' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white cursor-pointer hover:shadow-xl hover:scale-[1.02]'}`}>
-                      {isUploading ? "Uploading to Live Gallery... Please Wait ⏳" : (editArtId ? "✅ Update Artwork Now" : "✅ Publish to Live Gallery")}
+                    <button type="submit" disabled={!!uploadStatus} className={`w-full py-4 rounded-xl font-black text-lg mt-6 shadow-lg transition ${uploadStatus ? 'bg-gray-400 text-gray-700 cursor-wait' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white cursor-pointer hover:shadow-xl hover:scale-[1.02]'}`}>
+                      {uploadStatus ? uploadStatus : (editArtId ? "✅ Update Artwork Now" : "✅ Publish to Live Gallery")}
                     </button>
                   </form>
                 </div>
@@ -2641,13 +2687,13 @@
           ) : null}
 
           <main className="flex-grow z-10 relative">
-            {view === 'gallery' ? GalleryView() : null}
-            {view === 'cart' ? CartView() : null}
-            {view === 'commission' ? CommissionView() : null}
-            {view === 'checkout_form' ? CheckoutForm() : null}
-            {view === 'payment' ? PaymentView() : null}
-            {view === 'public_notifications' ? PublicNotificationsView() : null}
-            {view === 'my_orders' ? MyOrdersView() : null}
+            {view === 'gallery' ? <GalleryView /> : null}
+            {view === 'cart' ? <CartView /> : null}
+            {view === 'commission' ? <CommissionView /> : null}
+            {view === 'checkout_form' ? <CheckoutForm /> : null}
+            {view === 'payment' ? <PaymentView /> : null}
+            {view === 'public_notifications' ? <PublicNotificationsView /> : null}
+            {view === 'my_orders' ? <MyOrdersView /> : null}
             
             {view === 'terms' ? <TermsView nav={nav} /> : null}
             {view === 'privacy' ? <PrivacyView nav={nav} /> : null}
@@ -2670,7 +2716,7 @@
                     </div>
                   </div>
               ) : (
-                  isAdmin ? AdminPanel() : 
+                  isAdmin ? <AdminPanel /> : 
                   <div className="p-6 max-w-sm mx-auto mt-20 text-center">
                     {adminStep === 1 ? (
                       <div className="glass-panel p-10 rounded-3xl shadow-2xl border-t-4 border-t-gray-900">
