@@ -783,6 +783,7 @@
         }
       };
 
+      // 🚨 MAIN LOADING LOGIC FIX 🚨
       useEffect(() => {
         let slowNetworkTimer = setTimeout(() => {
             if(isLoadingGallery) {
@@ -791,6 +792,7 @@
         }, 4500); 
 
         let emptyGalleryTimer;
+        let emptyAnnTimer;
 
         const unsubArt = db.collection("RajaStudio").onSnapshot(snap => {
           clearTimeout(emptyGalleryTimer);
@@ -798,41 +800,16 @@
           const fetchedArts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt);
           
           if (fetchedArts.length > 0) {
-              let loadedCount = 0;
-              const totalToLoad = fetchedArts.length;
-              let isResolved = false;
-
-              const finishLoading = () => {
-                  if(isResolved) return;
-                  isResolved = true;
-                  setArtworks(fetchedArts);
+              // Network se text (base64) turant fetch ho gaya. Isko direct set kardo bina preloader loop ke jisse phone hang na ho.
+              setArtworks(fetchedArts);
+              
+              // Browser ko base64 decode aur paint karne ke liye thoda 400ms ka buffer dete hain
+              setTimeout(() => {
                   setIsLoadingGallery(false);
                   setShowEmptyGallery(false);
                   clearTimeout(slowNetworkTimer);
                   setIsSlowNetwork(false);
-              };
-
-              // Force finish after max 2.5 seconds to prevent infinite loading
-              const forceFinishTimer = setTimeout(finishLoading, 2500);
-
-              fetchedArts.forEach(art => {
-                  if(!art.image) {
-                      loadedCount++;
-                      if(loadedCount === totalToLoad) { clearTimeout(forceFinishTimer); finishLoading(); }
-                      return;
-                  }
-                  const img = new Image();
-                  const checkDone = () => {
-                      loadedCount++;
-                      if (loadedCount === totalToLoad) {
-                          clearTimeout(forceFinishTimer);
-                          finishLoading();
-                      }
-                  };
-                  img.onload = checkDone;
-                  img.onerror = checkDone;
-                  img.src = art.image;
-              });
+              }, 400);
           } else {
               emptyGalleryTimer = setTimeout(() => {
                   setArtworks([]);
@@ -847,10 +824,22 @@
         const unsubOrd = db.collection("orders").onSnapshot(snap => {
           setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
         });
+        
         const unsubAnn = db.collection("announcements").onSnapshot(snap => {
-          setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
-          setIsLoadingAnnouncements(false); 
+          clearTimeout(emptyAnnTimer);
+          const fetchedAnn = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt);
+          
+          if (fetchedAnn.length > 0) {
+              setAnnouncements(fetchedAnn);
+              setIsLoadingAnnouncements(false); 
+          } else {
+              emptyAnnTimer = setTimeout(() => {
+                  setAnnouncements([]);
+                  setIsLoadingAnnouncements(false);
+              }, 1500);
+          }
         });
+
         const unsubBg = db.collection("RajaBackgrounds").onSnapshot(snap => {
           setSavedBackgrounds(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
         });
@@ -859,6 +848,7 @@
             unsubArt(); unsubOrd(); unsubAnn(); unsubBg(); 
             clearTimeout(slowNetworkTimer);
             clearTimeout(emptyGalleryTimer);
+            clearTimeout(emptyAnnTimer);
         };
       }, []);
       
