@@ -85,50 +85,23 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const A4Frame = ({ src, className }) => (
-      <div className={`bg-white p-1.5 md:p-2 border-[8px] md:border-[12px] border-gray-900 z-10 flex items-center justify-center w-[52%] aspect-[1/1.414] relative ${className}`}>
-        <div className="img-protect-overlay"></div> 
-        <img src={src} loading="eager" decoding="sync" alt="Artwork" className="w-full h-full object-cover pointer-events-none image-render-crisp" onContextMenu={(e) => e.preventDefault()} onDragStart={(e) => e.preventDefault()} />
-      </div>
-    );
-
-    const FrameMockup = ({ src }) => (
-      <div className="w-full aspect-[4/5] bg-gradient-to-br from-[#f5f7fa] to-[#c3cfe2] rounded-2xl flex items-center justify-center p-4 shadow-inner relative overflow-hidden select-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.8)_0%,transparent_70%)]"></div>
-        <A4Frame src={src} className="shadow-[0_15px_35px_rgba(0,0,0,0.15)] transition-transform hover:scale-105 duration-500 relative z-10" />
-      </div>
-    );
-    const WallMockup = ({ src }) => {
-      return (
-        <div className="w-full aspect-[4/5] rounded-2xl flex items-center justify-center p-4 shadow-inner relative overflow-hidden select-none bg-[#f4f1ea]">
-          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 19px, #ccc 19px, #ccc 20px)" }}></div>
-          <div className="absolute top-0 left-0 w-[150%] h-[100%] bg-gradient-to-br from-white/80 via-transparent to-black/5 transform -rotate-12 blur-2xl"></div>
-          <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-black/5 blur-xl rounded-full mix-blend-multiply"></div>
-          <A4Frame src={src} className="mt-[-5%] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] transition-transform hover:scale-105 duration-500 relative z-10" />
-        </div>
-      );
-    };
-    const TableMockup = ({ src }) => (
-      <div className="w-full aspect-[4/5] rounded-2xl relative overflow-hidden shadow-inner flex justify-center items-end pb-[12%] select-none bg-slate-100">
-        <div className="absolute top-0 left-0 w-full h-[70%] bg-[#d3dce6]" style={{ backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0px, rgba(255,255,255,0.4) 2px, transparent 2px, transparent 8px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.4) 0px, rgba(255,255,255,0.4) 2px, transparent 2px, transparent 8px)' }}></div>
-        <div className="absolute bottom-0 left-0 w-full h-[30%] bg-[#b08d6a] border-t-[8px] border-[#8a684a] shadow-[inset_0_10px_20px_rgba(0,0,0,0.2)]">
-            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 15px, rgba(0,0,0,0.1) 15px, rgba(0,0,0,0.1) 17px)' }}></div>
-        </div>
-        <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[60%] h-[15%] bg-black/40 blur-md rounded-[100%]"></div>
-        <A4Frame src={src} className="relative z-10 hover:-translate-y-2 shadow-[0_20px_25px_rgba(0,0,0,0.5)] transition-all duration-500" />
-      </div>
-    );
-
     const ArtworkCard = ({ art, getPrice, addToCart }) => {
       const scrollRef = useRef(null);
-      const [mockups, setMockups] = useState([]);
-      const [loadingMockups, setLoadingMockups] = useState(true);
+      // 🛠️ BUG 2 FIX: Flicker Hatao! Cache hold karke direct initialize karo
+      const [mockups, setMockups] = useState(() => {
+          if (art.customMockups && art.customMockups.length > 0) return art.customMockups;
+          return [];
+      });
+      const [loadingMockups, setLoadingMockups] = useState(() => {
+          if (art.customMockups && art.customMockups.length > 0) return false;
+          return true;
+      });
 
       useEffect(() => {
           let isMounted = true;
+          // Agar already cache me hai, toh dubara database mat jao
           if (art.customMockups && art.customMockups.length > 0) {
-              setMockups(art.customMockups);
-              setLoadingMockups(false);
+              if(isMounted) { setMockups(art.customMockups); setLoadingMockups(false); }
           } else {
               db.collection('RajaMockups').where('artId', '==', art.id).get().then(snap => {
                   if (!isMounted) return;
@@ -198,17 +171,13 @@
               ) : loadingMockups ? (
                  <div className="flex justify-center items-center h-48 w-full text-purple-400 font-bold animate-pulse">Loading High Quality Angles...</div>
               ) : (
-                <>
-                  <div className="flex-none w-[85%] md:w-[45%] lg:w-[30%] snap-center">
-                    <FrameMockup src={art.image} />
-                  </div>
-                  <div className="flex-none w-[85%] md:w-[45%] lg:w-[30%] snap-center">
-                    <WallMockup src={art.image} />
-                  </div>
-                  <div className="flex-none w-[85%] md:w-[45%] lg:w-[30%] snap-center">
-                    <TableMockup src={art.image} />
-                  </div>
-                </>
+                // 🛠️ BUG 4 FIX: Safe Fallback instead of fake old mockups
+                <div className="flex-none w-[85%] md:w-[45%] lg:w-[30%] snap-center mx-auto">
+                   <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-[0_4px_15px_rgba(0,0,0,0.1)] relative flex items-center justify-center bg-white border border-gray-200 p-4">
+                      <img src={art.image} className="w-full h-full object-contain transition-transform hover:scale-[1.03] duration-500 shadow-md" onContextMenu={(e) => e.preventDefault()} />
+                      <div className="img-protect-overlay"></div>
+                   </div>
+                </div>
               )}
             </div>
           </div>
@@ -1170,7 +1139,7 @@
       );
 
       const MyOrdersView = () => {
-        // 🛠️ SEARCH UI FIX: Automatically hide old results if input is changed/invalid
+        // 🛠️ BUG 1 FIX: WhatsApp Search exact match
         const handleRecoverOrders = (e) => {
             e.preventDefault();
             if (!searchWaInput || searchWaInput.trim().length < 5) {
@@ -1183,7 +1152,8 @@
             const matched = orders.filter(o => {
                 if (!o.phone) return false;
                 const cleanStored = o.phone.replace(/[\s\+\-]/g, '');
-                return cleanStored.includes(cleanSearch);
+                // Yahan Strict Match (===) laga diya gaya hai, pehle includes() tha.
+                return cleanStored === cleanSearch;
             });
             
             setRecoveredOrders(matched);
@@ -1258,7 +1228,7 @@
                </button>
                
                <div className={`px-6 md:px-8 pb-8 pt-2 ${isRecoverOpen ? 'block' : 'hidden'}`}>
-                   <p className="text-sm font-bold text-gray-500 mb-6 text-center">Enter the WhatsApp number used during checkout to retrieve your complete order history.</p>
+                   <p className="text-sm font-bold text-gray-500 mb-6 text-center">Enter the exact WhatsApp number used during checkout to retrieve your complete order history.</p>
                    
                    <form onSubmit={handleRecoverOrders} className="flex flex-col md:flex-row gap-3 max-w-2xl mx-auto">
                        <div className="relative flex-grow">
@@ -2549,7 +2519,15 @@
                                   <span className="text-gray-700">{o.type === 'Commission' ? 'Budget / Amount' : 'Total Paid'}</span>
                                   <span className="text-green-600 text-2xl">{o.displayAmount || '₹'+o.amount}</span>
                                 </div>
-                                <button onClick={() => { if(window.confirm("Delete this single order?")) db.collection('orders').doc(o.id).delete(); }} className="mt-4 w-full bg-rose-50 text-rose-600 py-2 rounded-xl font-bold text-sm cursor-pointer hover:bg-rose-100 transition">Delete Single Order</button>
+                                {/* 🛠️ BUG 3 FIX: Single order delete now removes ghost order from local storage too */}
+                                <button onClick={() => { 
+                                    if(window.confirm("Delete this single order?")) {
+                                        db.collection('orders').doc(o.id).delete(); 
+                                        const updatedLocal = myLocalOrders.filter(local => local.orderId !== o.orderId);
+                                        setMyLocalOrders(updatedLocal);
+                                        try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(updatedLocal)); } catch(e){}
+                                    } 
+                                }} className="mt-4 w-full bg-rose-50 text-rose-600 py-2 rounded-xl font-bold text-sm cursor-pointer hover:bg-rose-100 transition">Delete Single Order</button>
                               </div>
                             </div>
                           ))}
