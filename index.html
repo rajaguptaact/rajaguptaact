@@ -87,7 +87,6 @@
     }
     const db = firebase.firestore();
     
-    // 🛠️ BUG 3 FIX: Offline Persistence (Save to Browser Cache)
     try {
         db.enablePersistence().catch(function(err) {
             console.log("Offline cache active error:", err);
@@ -124,7 +123,6 @@
           return () => { isMounted = false; };
       }, [art.id, art.customMockups]);
 
-      // 🛠️ PRE-LOADER FIX
       useEffect(() => {
           if (mockups.length > 0) {
               mockups.forEach(src => {
@@ -150,15 +148,15 @@
       }, [mockups.length]);
 
       return (
-        <div className="glass-panel rounded-3xl shadow-xl overflow-hidden p-6 md:p-10 mb-10">
+        <div className="glass-panel rounded-3xl shadow-xl overflow-hidden p-5 md:p-10 mb-8 md:mb-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4 border-gray-200">
             <div>
-              <h2 className="text-3xl font-black text-gray-900 flex items-center gap-3">
+              <h2 className="text-2xl md:text-3xl font-black text-gray-900 flex items-center gap-3">
                   {art.title}
               </h2>
-              <span className="inline-block mt-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 text-xs font-black px-3 py-1 rounded-full border border-purple-200">100% COLOUR PENCIL</span>
+              <span className="inline-block mt-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 text-[10px] md:text-xs font-black px-3 py-1 rounded-full border border-purple-200">100% COLOUR PENCIL</span>
             </div>
-            <p className="text-gray-600 font-medium max-w-md mt-4 md:mt-0 text-sm md:text-right">{art.desc}</p>
+            <p className="text-gray-600 font-medium max-w-md mt-4 md:mt-0 text-sm md:text-right leading-relaxed">{art.desc}</p>
           </div>
           
           <div className="relative">
@@ -188,8 +186,8 @@
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 pb-4">
-            <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-4 rounded-2xl shadow-lg text-center flex flex-col justify-between text-white transform hover:-translate-y-1 transition relative">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4 pb-2 md:pb-4">
+            <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-3 md:p-4 rounded-2xl shadow-lg text-center flex flex-col justify-between text-white transform hover:-translate-y-1 transition relative">
               {art.priceOriginalOld && art.priceOriginal && Number(art.priceOriginalOld) > Number(art.priceOriginal) && (
                 <span className="absolute top-2 right-2 bg-yellow-400 text-gray-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide animate-pulse shadow-md">
                   {Math.round(((Number(art.priceOriginalOld) - Number(art.priceOriginal)) / Number(art.priceOriginalOld)) * 100)}% OFF
@@ -200,7 +198,7 @@
                 <p className="font-black text-sm md:text-lg mb-1">A4 Size</p>
                 <div className="flex flex-col items-center justify-center my-1 min-h-[50px]">
                   {art.priceOriginalOld && art.priceOriginal && Number(art.priceOriginalOld) > Number(art.priceOriginal) && (
-                    <span className="line-through text-purple-300 text-xs">{getPrice(art.priceOriginalOld)}</span>
+                    <span className="line-through text-purple-300 text-[10px] md:text-xs">{getPrice(art.priceOriginalOld)}</span>
                   )}
                   <p className="text-lg md:text-2xl font-black">{getPrice(art.priceOriginal || art.priceOriginalOld)}</p>
                 </div>
@@ -211,7 +209,7 @@
                   <button onClick={() => addToCart(art, 'Original A4 Colour Pencil', art.priceOriginal || art.priceOriginalOld, art.priceOriginal ? art.priceOriginalOld : null)} className="w-full bg-white text-purple-700 py-2 md:py-3 rounded-xl font-bold text-xs md:text-sm shadow-md hover:bg-gray-50 cursor-pointer mt-2 transform transition-transform duration-150 active:scale-95">Add to Cart</button>
               )}
             </div>
-            <div className="bg-white p-4 rounded-2xl shadow-md text-center border-2 border-gray-100 flex flex-col justify-between hover:border-pink-400 transition">
+            <div className="bg-white p-3 md:p-4 rounded-2xl shadow-md text-center border-2 border-gray-100 flex flex-col justify-between hover:border-pink-400 transition">
               <div>
                 <p className="font-bold text-gray-500 text-[10px] md:text-sm uppercase">HD Print</p>
                 <p className="font-black text-gray-800 text-sm md:text-lg mb-1">A3 Size</p>
@@ -219,7 +217,7 @@
               </div>
               <button onClick={() => addToCart(art, 'Print A3', art.priceA3, null)} className="w-full bg-gray-100 text-gray-900 border border-gray-200 py-2 md:py-3 rounded-xl font-bold text-xs md:text-sm hover:bg-pink-50 hover:text-pink-600 cursor-pointer mt-2 transform transition-all duration-150 active:scale-95">Add to Cart</button>
             </div>
-            <div className="bg-white p-4 rounded-2xl shadow-md text-center border-2 border-gray-100 flex flex-col justify-between hover:border-pink-400 transition">
+            <div className="bg-white p-3 md:p-4 rounded-2xl shadow-md text-center border-2 border-gray-100 flex flex-col justify-between hover:border-pink-400 transition">
               <div>
                 <p className="font-bold text-gray-500 text-[10px] md:text-sm uppercase">HD Print</p>
                 <p className="font-black text-gray-800 text-sm md:text-lg mb-1">A4 Size</p>
@@ -227,7 +225,7 @@
               </div>
               <button onClick={() => addToCart(art, 'Print A4', art.priceA4, null)} className="w-full bg-gray-100 text-gray-900 border border-gray-200 py-2 md:py-3 rounded-xl font-bold text-xs md:text-sm hover:bg-pink-50 hover:text-pink-600 cursor-pointer mt-2 transform transition-all duration-150 active:scale-95">Add to Cart</button>
             </div>
-            <div className="bg-white p-4 rounded-2xl shadow-md text-center border-2 border-gray-100 flex flex-col justify-between hover:border-pink-400 transition">
+            <div className="bg-white p-3 md:p-4 rounded-2xl shadow-md text-center border-2 border-gray-100 flex flex-col justify-between hover:border-pink-400 transition">
               <div>
                 <p className="font-bold text-gray-500 text-[10px] md:text-sm uppercase">HD Print</p>
                 <p className="font-black text-gray-800 text-sm md:text-lg mb-1">A5 Size</p>
@@ -768,7 +766,6 @@
         }
       };
 
-      // 🛠️ NO FLASH FIX: Gallery loading exactly balanced
       useEffect(() => {
         let slowNetworkTimer = setTimeout(() => {
             if(isLoadingGallery) setIsSlowNetwork(true);
@@ -914,28 +911,28 @@
         nav('checkout_form');
       };
 
-      // 🛠️ BUG 1 FIX: Render Gallery view via variable so it stays cached in DOM
       const GalleryView = () => (
-        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-12">
-          <div className="text-center space-y-4 mb-12 glass-panel p-10 rounded-3xl shadow-lg border-t-4 border-t-purple-500 relative">
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">
+        <div className="p-3 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-12">
+          {/* 🛠️ BUG FIX 2: Headline Box is smaller on mobile so images show without scrolling */}
+          <div className="text-center space-y-3 mb-6 md:mb-12 glass-panel p-5 md:p-10 rounded-2xl md:rounded-3xl shadow-lg border-t-4 border-t-purple-500 relative">
+            <h1 className="text-2xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">
               Highly Detailed Realistic Portraits
             </h1>
-            <p className="text-gray-700 font-bold text-lg max-w-2xl mx-auto">
+            <p className="text-gray-700 font-bold text-sm md:text-lg max-w-2xl mx-auto leading-relaxed">
               Welcome to my professional studio. All gallery pieces are 100% authentic, highly detailed <span className="text-purple-600">Colour Pencil</span> artworks. Every original piece is strictly drawn on premium <span className="text-pink-600">A4 size paper</span>.
             </p>
           </div>
           
           {isLoadingGallery ? (
-            <div className="text-center p-12 glass-panel rounded-3xl shadow-xl font-bold text-purple-600 text-xl flex flex-col items-center justify-center gap-4">
-              <svg className="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <div className="text-center p-10 glass-panel rounded-2xl shadow-xl font-bold text-purple-600 text-lg flex flex-col items-center justify-center gap-4">
+              <svg className="animate-spin h-8 w-8 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
               <span>Loading Gallery.... Please Wait</span>
               {isSlowNetwork && <span className="text-sm text-rose-500 mt-2 animate-pulse font-black">⚠️ Your internet connection seems slow. Please wait...</span>}
             </div>
           ) : artworks.length > 0 ? (
             artworks.map(art => <ArtworkCard key={art.id} art={art} getPrice={getPrice} addToCart={addToCart} />)
           ) : showEmptyGallery ? (
-            <div className="text-center p-12 glass-panel rounded-3xl shadow-xl font-bold text-gray-500 text-xl flex flex-col items-center justify-center gap-4">
+            <div className="text-center p-10 glass-panel rounded-2xl shadow-xl font-bold text-gray-500 text-lg flex flex-col items-center justify-center gap-4">
               <span className="text-4xl">🖼️</span>
               <span>No artworks uploaded yet. Please check back later!</span>
             </div>
@@ -1156,7 +1153,6 @@
             const matched = orders.filter(o => {
                 if (!o.phone) return false;
                 const cleanStored = o.phone.replace(/[\s\+\-]/g, '');
-                // 🛠️ BUG 1 FIX: WhatsApp exact match so missing number won't show false results
                 return cleanStored === cleanSearch;
             });
             
@@ -1172,15 +1168,29 @@
             </div>
 
             <div className="space-y-6">
-               <h3 className="text-xl font-black text-gray-800 border-b border-gray-200 pb-2">Recent Orders</h3>
+               <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                   <h3 className="text-xl font-black text-gray-800">Recent Orders</h3>
+                   {/* 🛠️ BUG FIX 3: Clear Local History Button for Client-Side Ghost Orders */}
+                   {myLocalOrders.length > 0 && (
+                       <button onClick={() => {
+                           if(window.confirm("Are you sure you want to clear your entire local order history from this device?")) {
+                               setMyLocalOrders([]);
+                               try { window.localStorage.removeItem('raja_my_orders_v1'); } catch(e){}
+                           }
+                       }} className="bg-rose-50 text-rose-600 border border-rose-200 px-4 py-1.5 rounded-lg text-xs font-black shadow-sm hover:bg-rose-100 transition">
+                           Clear History
+                       </button>
+                   )}
+               </div>
+
                {myLocalOrders.length === 0 ? (
                  <div className="text-center p-10 glass-panel rounded-3xl shadow-sm font-bold text-gray-400 text-lg border border-dashed border-gray-200">
                    No recent orders found on this specific device. Use the recovery search below to find past orders.
                  </div>
                ) : (
                  myLocalOrders.map((ord, idx) => (
-                   <div key={idx} className="glass-panel p-6 rounded-3xl shadow-lg border-l-8 border-purple-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-xl transition-shadow bg-white/70">
-                     <div>
+                   <div key={idx} className="glass-panel p-6 rounded-3xl shadow-lg border-l-8 border-purple-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-xl transition-shadow bg-white/70 relative">
+                     <div className="w-full">
                         <div className="flex items-center gap-3 mb-2">
                             <span className="bg-purple-100 text-purple-800 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">{ord.type}</span>
                             <span className="text-gray-500 text-sm font-bold">{ord.date} • {ord.time}</span>
@@ -1213,9 +1223,19 @@
                            )}
                         </div>
                      </div>
-                     <div className="text-left md:text-right w-full md:w-auto bg-gray-50 md:bg-transparent p-4 md:p-0 rounded-xl md:rounded-none border md:border-none border-gray-200">
-                        <p className="text-xs text-gray-500 font-black uppercase tracking-widest mb-1">{ord.type === 'Commission' ? 'Budget' : 'Total Paid'}</p>
-                        <p className="text-2xl md:text-3xl font-black text-green-600">{ord.displayAmount}</p>
+                     <div className="text-left md:text-right w-full md:w-auto bg-gray-50 md:bg-transparent p-4 md:p-0 rounded-xl md:rounded-none border md:border-none border-gray-200 flex flex-col md:items-end justify-between">
+                        <div>
+                           <p className="text-xs text-gray-500 font-black uppercase tracking-widest mb-1">{ord.type === 'Commission' ? 'Budget' : 'Total Paid'}</p>
+                           <p className="text-2xl md:text-3xl font-black text-green-600">{ord.displayAmount}</p>
+                        </div>
+                        {/* 🛠️ Single Delete Option for Ghost Orders */}
+                        <button onClick={() => {
+                            if(window.confirm("Delete this single order from your device history?")) {
+                                const updated = myLocalOrders.filter((_, i) => i !== idx);
+                                setMyLocalOrders(updated);
+                                try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(updated)); } catch(e){}
+                            }
+                        }} className="text-rose-500 text-xs font-bold underline mt-3 hover:text-rose-700 cursor-pointer block md:inline">Delete from History</button>
                      </div>
                    </div>
                  ))
@@ -2516,7 +2536,6 @@
                                   <span className="text-gray-700">{o.type === 'Commission' ? 'Budget / Amount' : 'Total Paid'}</span>
                                   <span className="text-green-600 text-2xl">{o.displayAmount || '₹'+o.amount}</span>
                                 </div>
-                                {/* 🛠️ BUG 2 FIX: Ghost Order Delete (Deep Clean Logic) */}
                                 <button onClick={() => { 
                                     if(window.confirm("Delete this single order?")) {
                                         db.collection('orders').doc(o.id).delete(); 
@@ -2678,8 +2697,10 @@
       };
 
       return (
-        <div className="min-h-screen flex flex-col relative overflow-hidden">
-          <header className="glass-panel sticky top-0 z-40 shadow-sm">
+        <div className="min-h-screen flex flex-col relative overflow-x-hidden">
+          
+          {/* 🛠️ BUG FIX 1: Header Fixed to Top */}
+          <header className="glass-panel fixed top-0 w-full z-40 shadow-sm border-b border-gray-100">
             <div className="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
               <div className="text-xl md:text-3xl font-black text-gray-900 tracking-tighter cursor-pointer flex items-center gap-1.5" onClick={() => nav('gallery')}>
                 <span className="uppercase">RAJA GUPTA ACT</span>
@@ -2698,7 +2719,7 @@
           {menuOpen ? (
             <div className="fixed inset-0 z-50 bg-gray-900/70 backdrop-blur-md transition-all" onClick={() => setMenuOpen(false)}>
               <div className="bg-white w-full md:w-96 absolute right-0 shadow-2xl flex flex-col font-black text-lg border-l border-gray-100 h-full transform transition-transform overflow-y-auto" onClick={e => e.stopPropagation()}>
-                <div className="p-4 bg-gray-50 border-b text-xs text-gray-500 uppercase tracking-widest text-center flex justify-between items-center">
+                <div className="p-4 bg-gray-50 border-b text-xs text-gray-500 uppercase tracking-widest text-center flex justify-between items-center mt-20">
                     <span>Navigation Menu</span>
                     <button onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-rose-500 transition">
                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -2729,8 +2750,8 @@
             </div>
           ) : null}
 
-          {/* 🛠️ BUG 1 FIX: Rendering trick to keep gallery alive in background */}
-          <main className="flex-grow z-10 relative">
+          {/* pt-24 added here to give space below the fixed header */}
+          <main className="flex-grow z-10 relative pt-24">
             <div className={view === 'gallery' ? 'block' : 'hidden'}>
               {GalleryView()}
             </div>
@@ -2862,7 +2883,7 @@
           </footer>
 
           {toastMessage && (
-            <div className="fixed bottom-10 left-1/2 z-50 animate-toast">
+            <div className="fixed bottom-10 left-1/2 z-[100] animate-toast">
               <div className="bg-gray-900 text-white px-6 py-4 rounded-full shadow-2xl font-black text-sm flex items-center gap-3 border border-gray-700">
                 <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                 {toastMessage}
