@@ -1759,7 +1759,8 @@
                  const batch = db.batch();
                  orders.forEach(o => {
                      const docRef = db.collection('orders').doc(o.id);
-                     batch.delete(docRef);
+                     batch.update(docRef, { isArchived: true });
+
                  });
                  await batch.commit();
                  
@@ -2513,9 +2514,10 @@
                       )}
                       
                       {orders.length === 0 ? <p className="text-gray-500 font-bold bg-white p-4 md:p-6 rounded-2xl text-center shadow-sm text-sm md:text-base">No orders yet.</p> : (
-                        <div className="space-y-4 md:space-y-6 max-h-[400px] md:max-h-[500px] overflow-y-auto pr-2">
-                          {orders.map(o => (
-                            <div key={o.id} className="bg-white p-5 md:p-6 rounded-3xl shadow-md border-l-8 border-pink-500">
+                                 <div className="space-y-4 md:space-y-6 max-h-[400px] md:max-h-[500px] overflow-y-auto pr-2">
+            {orders.filter(o => !o.isArchived).map(o => (
+              <div key={o.id} className="bg-white p-5 md:p-6 rounded-3xl shadow-md border-l-8 border-pink-500">
+ 
                               <div className="flex justify-between items-start mb-3 md:mb-4 border-b pb-3 md:pb-4">
                                 <div>
                                    <p className="font-black text-base md:text-xl text-gray-900">{o.type === 'Commission' ? 'Commission Request' : (o.orderId || 'Gallery Order')}</p>
@@ -2543,7 +2545,8 @@
                                 </div>
                                 <button onClick={() => { 
                                     if(window.confirm("Delete this single order?")) {
-                                        db.collection('orders').doc(o.id).delete(); 
+                                        db.collection('orders').doc(o.id).update({ isArchived: true });
+
                                         const updatedLocal = myLocalOrders.filter(local => {
                                             if (o.orderId && local.orderId) return local.orderId !== o.orderId;
                                             return !(local.date === o.date && local.time === o.time && local.displayAmount === o.displayAmount);
