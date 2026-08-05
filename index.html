@@ -166,7 +166,7 @@
             <div ref={scrollRef} className="flex overflow-x-auto gap-4 md:gap-6 mb-6 md:mb-8 pb-4 hide-scrollbar snap-x snap-mandatory scroll-smooth pt-1">
               {mockups.length > 0 ? (
                  mockups.map((m, i) => (
-                    <div key={i} className="flex-none w-[85%] md:w-[45%] lg:w-[30%] snap-center">
+                    <div key={i} className="flex-none w-[70%] md:w-[45%] lg:w-[30%] snap-center">
                       <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-[0_4px_15px_rgba(0,0,0,0.1)] relative flex items-center justify-center bg-gray-100 border border-gray-200">
                          <img src={m} className="w-full h-full object-cover transition-transform hover:scale-[1.03] duration-500" onContextMenu={(e) => e.preventDefault()} />
                          <div className="img-protect-overlay"></div>
@@ -176,7 +176,7 @@
               ) : loadingMockups ? (
                  <div className="flex justify-center items-center h-48 w-full text-purple-400 font-bold animate-pulse">Loading High Quality Angles...</div>
               ) : (
-                <div className="flex-none w-[85%] md:w-[45%] lg:w-[30%] snap-center mx-auto">
+                <div className="flex-none w-[70%] md:w-[45%] lg:w-[30%] snap-center mx-auto">
                    <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-[0_4px_15px_rgba(0,0,0,0.1)] relative flex items-center justify-center bg-white border border-gray-200 p-4">
                       <img src={art.image} className="w-full h-full object-contain transition-transform hover:scale-[1.03] duration-500 shadow-md" onContextMenu={(e) => e.preventDefault()} />
                       <div className="img-protect-overlay"></div>
