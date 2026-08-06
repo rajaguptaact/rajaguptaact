@@ -103,6 +103,7 @@
           if (art.customMockups && art.customMockups.length > 0) return false;
           return true;
       });
+      const [isDescOpen, setIsDescOpen] = useState(false);
 
       useEffect(() => {
           let isMounted = true;
@@ -251,11 +252,11 @@
           <p className="text-gray-600 font-medium text-[11px] md:text-sm leading-relaxed border-t border-gray-100 pt-3">
              {art.description}
           </p>
-        </div>
-      </div>
-
+       </div>
     </div>
-  );
+  </div>
+);
+
  
 
     const FAQItem = ({ question, answer }) => {
