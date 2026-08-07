@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Raja Gupta Art</title>
+    <!-- Professional design ke liye Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex flex-col items-center justify-center min-h-screen p-6">
+
+    <!-- 🛡️ Login Box -->
+    <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 w-full max-w-sm">
+        <h1 class="text-2xl font-bold mb-2 text-center text-gray-900">Welcome Back</h1>
+        <p class="text-sm text-gray-500 mb-8 text-center tracking-wide">
+           Sign in to save your wishlist and orders permanently.
+        </p>
+        
+        <!-- Google Login Button -->
+        <button id="googleLoginBtn" class="w-full py-3.5 bg-white border border-gray-300 rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-gray-50 transition-all focus:outline-none active:scale-95">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-6 h-6">
+          <span class="font-semibold text-gray-700 text-base" id="btnText">Continue with Google</span>
+        </button>
+
+        <!-- Terms & Conditions Checkbox -->
+        <div class="mt-8 flex items-start gap-3 bg-gray-50 p-3 rounded-lg border border-gray-100">
+          <input type="checkbox" id="termsCheck" class="w-5 h-5 mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+          <span class="text-xs text-gray-500 leading-relaxed">
+            By continuing, I agree to the <span class="font-semibold text-gray-700 cursor-pointer">Terms of Service</span> and <span class="font-semibold text-gray-700 cursor-pointer">Privacy Policy</span>.
+          </span>
+        </div>
+    </div>
+
+    <!-- Firebase System Logic -->
+    <script type="module">
+        // Firebase tools import kar rahe hain (HTML ke liye)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        // YAHAN HUM BAAD MEIN AAPKI FIREBASE KI API KEYS DALENGE
+        const firebaseConfig = {
+             // Config details baad mein setup karenge
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // Login Button Click System
+        document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+            const termsCheck = document.getElementById('termsCheck');
+            
+            // Checkbox check karna
+            if (!termsCheck.checked) {
+                alert("Please accept the Terms & Conditions and Privacy Policy first.");
+                return;
+            }
+            
+            const btnText = document.getElementById('btnText');
+            btnText.innerText = "Signing in...";
+
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                // GUEST DATA MERGE TRICK
+                const guestId = localStorage.getItem("art_guest_id");
+                if (guestId) {
+                    console.log("Shifting Data for: ", user.email);
+                    // Merge code will go here
+                }
+
+                // Login hote hi wapas website ke home page par bhejna
+                window.location.href = "index.html"; 
+
+            } catch (error) {
+                console.error("Login Error:", error);
+                alert("Login failed. Please try again.");
+                btnText.innerText = "Continue with Google";
+            }
+        });
+    </script>
+</body>
+</html>
