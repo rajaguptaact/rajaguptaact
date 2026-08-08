@@ -451,6 +451,13 @@
     );
 
     function App() {
+        // 🚀 GUEST ID GENERATOR FOR LOGIN MERGE
+  useEffect(() => {
+    if (!window.localStorage.getItem("art_guest_id")) {
+        window.localStorage.setItem("art_guest_id", "guest_" + Date.now() + Math.random().toString(36).substring(2));
+    }
+  }, []);
+
       const [view, setView] = useState('gallery');
       const [menuOpen, setMenuOpen] = useState(false);
       
@@ -2778,6 +2785,11 @@
                     <button onClick={() => { shareSite(); setMenuOpen(false); }} className="w-full text-left p-6 hover:bg-purple-50 flex items-center gap-4 text-purple-600 transition cursor-pointer">
                        Share Website
                     </button>
+                 {/* 🚀 NEW LOGIN BUTTON */}
+              <a href="login.html" className="w-full text-left p-6 border-b transition cursor-pointer flex items-center gap-4 text-blue-600 hover:bg-blue-50 font-black bg-blue-50/20">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                Login / Signup
+                </a>
                 </div>
                 
                 {/* Updated Menu Footer with exact requirements */}
