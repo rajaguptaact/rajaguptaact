@@ -510,6 +510,44 @@
       const [lastOrderId, setLastOrderId] = useState(null); 
 
       const [deviceFingerprint, setDeviceFingerprint] = useState(null);
+            // 🚀 MASTER AUTH, SYNC & ROUTING LOGIC
+      const [currentUser, setCurrentUser] = useState(null);
+
+      useEffect(() => {
+          // T&C aur Privacy Page direct kholne ka logic
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('open') === 'terms') setView('terms');
+          if (urlParams.get('open') === 'privacy') setView('privacy');
+          
+          if (urlParams.has('open')) {
+              window.history.replaceState({}, document.title, window.location.pathname);
+          }
+
+          // Flawless Login/Logout aur Data Saving
+          const unsub = firebase.auth().onAuthStateChanged(user => {
+              setCurrentUser(user);
+              if (user) {
+                  setDeviceFingerprint(user.uid);
+                  db.collection('RecoveredCarts').doc(user.uid).get().then(doc => {
+                      if (doc.exists) {
+                          const cloudCart = doc.data().items || [];
+                          const localCart = JSON.parse(window.localStorage.getItem('raja_cart_live_v1') || '[]');
+                          if (localCart.length === 0 && cloudCart.length > 0) {
+                              setCart(cloudCart);
+                              window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(cloudCart));
+                          }
+                      }
+                  }).catch(e => console.log(e));
+              } else {
+                  let guestId = window.localStorage.getItem("art_guest_id");
+                  if (guestId) setDeviceFingerprint(guestId);
+                  setCart([]);
+                  window.localStorage.removeItem('raja_cart_live_v1');
+              }
+          });
+          return () => unsub();
+      }, []);
+
       
       useEffect(() => {
         let isMounted = true;
