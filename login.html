@@ -49,10 +49,10 @@
      
      <p id="errorText" class="text-xs text-red-600 bg-red-50 border border-red-200 p-2 rounded-lg font-bold mt-4 text-center hidden"></p>
   </div>
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    // YAHAN HUMNE 'signInWithRedirect' AUR 'onAuthStateChanged' ADD KIYA HAI
+    import { getAuth, signInWithRedirect, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBCX9rALYZSxzYvawPexwXIHTSA3uhU24E",
@@ -72,6 +72,13 @@
     const emailInput = document.getElementById('emailInput');
     const passInput = document.getElementById('passInput');
 
+    // 🚀 REDIRECT GLITCH FIX: Agar pehle se login hai, toh turant wapas bhej do
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            window.location.replace("index.html"); 
+        }
+    });
+
     function showError(msg) {
        errorText.innerText = "❌ " + msg;
        errorText.classList.remove('hidden');
@@ -86,30 +93,31 @@
        return true;
     }
 
-    document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+    // 🚀 GOOGLE MOBILE FULL-SCREEN FIX
+    document.getElementById('googleLoginBtn').addEventListener('click', () => {
         if (!checkTerms()) return;
         const btnText = document.getElementById('googleBtnText');
-        btnText.innerText = "Signing in...";
-        try {
-            await signInWithPopup(auth, provider);
-            window.location.href = "index.html"; 
-        } catch (error) {
-            showError("Google Login Failed. Please try again.");
-            btnText.innerText = "Continue with Google";
-        }
+        btnText.innerText = "Connecting to Google...";
+        // Popup ki jagah Redirect use kiya hai taaki mobile par full screen khule aur fass na jaye
+        signInWithRedirect(auth, provider);
     });
 
+    // 🚀 SMART ERROR LOGIC FIX
     document.getElementById('emailLoginBtn').addEventListener('click', async () => {
         if (!checkTerms()) return;
         const email = emailInput.value.trim();
         const pass = passInput.value.trim();
-        if(!email || !pass) { showError("Enter your Email and Password."); return; }
+        
+        // Naya Smart Logic: Jo khali hai sirf wahi mangega
+        if(!email && !pass) { showError("Please enter your Email and Password."); return; }
+        if(!email) { showError("Please enter your Email Address."); return; }
+        if(!pass) { showError("Please enter your Password."); return; }
         
         const btn = document.getElementById('emailLoginBtn');
         btn.innerText = "Wait...";
         try {
             await signInWithEmailAndPassword(auth, email, pass);
-            window.location.href = "index.html";
+            // Login hote hi upar wala onAuthStateChanged apne aap redirect kar dega
         } catch (error) {
             showError("Invalid Email or Password. Try again.");
             btn.innerText = "Login";
@@ -120,14 +128,16 @@
         if (!checkTerms()) return;
         const email = emailInput.value.trim();
         const pass = passInput.value.trim();
-        if(!email || !pass) { showError("Enter Email and Password to Sign Up."); return; }
+        
+        if(!email && !pass) { showError("Please enter Email and Password to Sign Up."); return; }
+        if(!email) { showError("Please enter your Email Address."); return; }
+        if(!pass) { showError("Please enter a Password (Min 6 chars)."); return; }
         if(pass.length < 6) { showError("Password must be at least 6 characters."); return; }
         
         const btn = document.getElementById('emailSignupBtn');
         btn.innerText = "Wait...";
         try {
             await createUserWithEmailAndPassword(auth, email, pass);
-            window.location.href = "index.html";
         } catch (error) {
             if(error.code === 'auth/email-already-in-use') showError("Email already registered. Click 'Login' instead.");
             else showError(error.message);
@@ -135,6 +145,7 @@
         }
     });
   </script>
+  
 </body>
 </html>
 
