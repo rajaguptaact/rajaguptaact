@@ -15,11 +15,13 @@
      <div class="space-y-4 mb-6">
         <div>
            <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Email Address</label>
-           <input type="email" id="emailInput" class="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none font-medium text-sm text-gray-800" placeholder="name@example.com">
+           <!-- 🚀 FIX 1: autocomplete="username" lagaya gaya hai -->
+           <input type="email" id="emailInput" autocomplete="username" class="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none font-medium text-sm text-gray-800" placeholder="name@example.com">
         </div>
         <div>
            <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Password</label>
-           <input type="password" id="passInput" class="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none font-medium text-sm text-gray-800" placeholder="Min 6 characters">
+           <!-- 🚀 FIX 2: autocomplete="current-password" lagaya gaya hai taaki PASTE aur AUTOFILL kaam kare -->
+           <input type="password" id="passInput" autocomplete="current-password" class="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none font-medium text-sm text-gray-800" placeholder="Min 6 characters">
         </div>
         
         <div class="flex gap-3 pt-2">
@@ -39,7 +41,7 @@
         <span id="googleBtnText">Continue with Google</span>
      </button>
 
-     <!-- 🚀 LINKING DIRECTLY TO YOUR T&C AND PRIVACY VIEWS -->
+     <!-- 🚀 T&C aur Privacy link redirect fix -->
      <div class="flex items-start gap-3 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
         <input type="checkbox" id="termsCheck" class="w-5 h-5 mt-0.5 accent-purple-600 cursor-pointer">
         <span class="text-[10px] text-gray-500 font-bold leading-relaxed">
@@ -49,10 +51,11 @@
      
      <p id="errorText" class="text-xs text-red-600 bg-red-50 border border-red-200 p-2 rounded-lg font-bold mt-4 text-center hidden"></p>
   </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    // YAHAN HUMNE 'signInWithRedirect' AUR 'onAuthStateChanged' ADD KIYA HAI
-    import { getAuth, signInWithRedirect, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    // 🚀 FIX 3: getRedirectResult import kiya gaya hai
+    import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBCX9rALYZSxzYvawPexwXIHTSA3uhU24E",
@@ -71,13 +74,7 @@
     const errorText = document.getElementById('errorText');
     const emailInput = document.getElementById('emailInput');
     const passInput = document.getElementById('passInput');
-
-    // 🚀 REDIRECT GLITCH FIX: Agar pehle se login hai, toh turant wapas bhej do
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            window.location.replace("index.html"); 
-        }
-    });
+    const btnText = document.getElementById('googleBtnText');
 
     function showError(msg) {
        errorText.innerText = "❌ " + msg;
@@ -93,22 +90,35 @@
        return true;
     }
 
-    // 🚀 GOOGLE MOBILE FULL-SCREEN FIX
+    // 🚀 FIX 4: Google Redirect Catching Logic (Agar Google se wapas aaye toh turant login pakad lega)
+    getRedirectResult(auth).then((result) => {
+        if (result) {
+            btnText.innerText = "Login Successful! Redirecting...";
+            window.location.replace("index.html");
+        }
+    }).catch((error) => {
+        showError("Google Error: " + error.message);
+        btnText.innerText = "Continue with Google";
+    });
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            window.location.replace("index.html"); 
+        }
+    });
+
     document.getElementById('googleLoginBtn').addEventListener('click', () => {
         if (!checkTerms()) return;
-        const btnText = document.getElementById('googleBtnText');
         btnText.innerText = "Connecting to Google...";
-        // Popup ki jagah Redirect use kiya hai taaki mobile par full screen khule aur fass na jaye
         signInWithRedirect(auth, provider);
     });
 
-    // 🚀 SMART ERROR LOGIC FIX
+    // 🚀 FIX 5: Smart Error Logic (Jo khali hai wahi mangega)
     document.getElementById('emailLoginBtn').addEventListener('click', async () => {
         if (!checkTerms()) return;
         const email = emailInput.value.trim();
         const pass = passInput.value.trim();
         
-        // Naya Smart Logic: Jo khali hai sirf wahi mangega
         if(!email && !pass) { showError("Please enter your Email and Password."); return; }
         if(!email) { showError("Please enter your Email Address."); return; }
         if(!pass) { showError("Please enter your Password."); return; }
@@ -117,7 +127,6 @@
         btn.innerText = "Wait...";
         try {
             await signInWithEmailAndPassword(auth, email, pass);
-            // Login hote hi upar wala onAuthStateChanged apne aap redirect kar dega
         } catch (error) {
             showError("Invalid Email or Password. Try again.");
             btn.innerText = "Login";
@@ -139,13 +148,14 @@
         try {
             await createUserWithEmailAndPassword(auth, email, pass);
         } catch (error) {
-            if(error.code === 'auth/email-already-in-use') showError("Email already registered. Click 'Login' instead.");
-            else showError(error.message);
+            if(error.code === 'auth/email-already-in-use') {
+                showError("Email already registered. Click 'Login' instead.");
+            } else {
+                showError(error.message);
+            }
             btn.innerText = "Sign Up";
         }
     });
   </script>
-  
 </body>
 </html>
-
