@@ -2828,25 +2828,26 @@
         </a>
     )}
 
-                    
-                    <button onClick={() => nav('gallery')} className={`w-full text-left p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'gallery' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Gallery</button>
-                    
-                    <button onClick={() => nav('cart')} className={`w-full text-left p-6 border-b transition cursor-pointer flex items-center justify-between ${view === 'cart' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>
-                      <span>Cart</span>
-                      {cart.length > 0 ? <span className="bg-pink-500 text-white text-sm px-3 py-1 rounded-full shadow-sm">{cart.length}</span> : null}
-                    </button>
-                    
-                    <button onClick={() => nav('public_notifications')} className={`w-full text-left p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'public_notifications' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Public Notifications</button>
-                    
-                    <button onClick={() => nav('commission')} className={`w-full text-left p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'commission' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Commission</button>
-                    
-                    <button onClick={() => nav('my_orders')} className={`w-full text-left p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'my_orders' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Order History</button>
+                   <button onClick={() => nav('gallery')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'gallery' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Gallery</button>
 
-                    <button onClick={() => nav('admin')} className={`w-full text-left p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'admin' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}>Admin Panel</button>
+<button onClick={() => nav('cart')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center justify-between ${view === 'cart' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>
+  <span>Cart</span>
+  {cart.length > 0 ? <span className="bg-pink-500 text-white text-xs px-2.5 py-1 rounded-full shadow-sm">{cart.length}</span> : null}
+</button>
+
+<button onClick={() => nav('public_notifications')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'public_notifications' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Public Notifications</button>
+
+<button onClick={() => nav('commission')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'commission' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Commission</button>
+
+<button onClick={() => nav('my_orders')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'my_orders' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Order History</button>
+
+<button onClick={() => nav('admin')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'admin' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}>Admin Panel</button>
+
+<button onClick={() => { shareSite(); setMenuOpen(false); }} className="w-full text-left py-3.5 px-6 md:p-6 hover:bg-purple-50 flex items-center gap-4 text-purple-600 transition cursor-pointer border-b">
+   Share Website
+</button>
+ 
                     
-                    <button onClick={() => { shareSite(); setMenuOpen(false); }} className="w-full text-left p-6 hover:bg-purple-50 flex items-center gap-4 text-purple-600 transition cursor-pointer">
-                       Share Website
-                    </button>
                 </div>
                 
                 {/* Updated Menu Footer with exact requirements */}
