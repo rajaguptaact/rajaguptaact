@@ -12,23 +12,22 @@
      <h1 class="text-2xl font-black mb-2 text-center text-gray-900">Welcome</h1>
      <p class="text-xs text-gray-500 mb-6 text-center font-bold">Login or Create an account</p>
 
-     <div class="space-y-4 mb-6">
+     <!-- 🚀 AUTOFILL FIX: Form tag aur name attributes lagaye gaye hain taaki Paste/Saved Password aaye -->
+     <form id="authForm" class="space-y-4 mb-6">
         <div>
            <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Email Address</label>
-           <!-- 🚀 FIX 1: autocomplete="username" lagaya gaya hai -->
-           <input type="email" id="emailInput" autocomplete="username" class="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none font-medium text-sm text-gray-800" placeholder="name@example.com">
+           <input type="email" id="emailInput" name="email" autocomplete="username" class="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none font-medium text-sm text-gray-800" placeholder="name@example.com" required>
         </div>
         <div>
            <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Password</label>
-           <!-- 🚀 FIX 2: autocomplete="current-password" lagaya gaya hai taaki PASTE aur AUTOFILL kaam kare -->
-           <input type="password" id="passInput" autocomplete="current-password" class="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none font-medium text-sm text-gray-800" placeholder="Min 6 characters">
+           <input type="password" id="passInput" name="password" autocomplete="current-password" class="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none font-medium text-sm text-gray-800" placeholder="Min 6 characters" required>
         </div>
         
         <div class="flex gap-3 pt-2">
-           <button id="emailLoginBtn" class="flex-1 bg-purple-600 text-white py-3 rounded-xl font-black text-sm hover:bg-purple-700 shadow-md transition active:scale-95">Login</button>
-           <button id="emailSignupBtn" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 rounded-xl font-black text-sm hover:bg-purple-50 transition active:scale-95">Sign Up</button>
+           <button type="button" id="emailLoginBtn" class="flex-1 bg-purple-600 text-white py-3 rounded-xl font-black text-sm hover:bg-purple-700 shadow-md transition active:scale-95">Login</button>
+           <button type="button" id="emailSignupBtn" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 rounded-xl font-black text-sm hover:bg-purple-50 transition active:scale-95">Sign Up</button>
         </div>
-     </div>
+     </form>
 
      <div class="flex items-center gap-3 mb-6">
         <div class="flex-1 h-px bg-gray-200"></div>
@@ -36,12 +35,11 @@
         <div class="flex-1 h-px bg-gray-200"></div>
      </div>
 
-     <button id="googleLoginBtn" class="w-full py-3.5 bg-white border-2 border-gray-200 rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-gray-50 transition-all font-black text-gray-700 text-sm mb-6 active:scale-95">
+     <button type="button" id="googleLoginBtn" class="w-full py-3.5 bg-white border-2 border-gray-200 rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-gray-50 transition-all font-black text-gray-700 text-sm mb-6 active:scale-95">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5">
         <span id="googleBtnText">Continue with Google</span>
      </button>
 
-     <!-- 🚀 T&C aur Privacy link redirect fix -->
      <div class="flex items-start gap-3 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
         <input type="checkbox" id="termsCheck" class="w-5 h-5 mt-0.5 accent-purple-600 cursor-pointer">
         <span class="text-[10px] text-gray-500 font-bold leading-relaxed">
@@ -54,8 +52,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    // 🚀 FIX 3: getRedirectResult import kiya gaya hai
-    import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBCX9rALYZSxzYvawPexwXIHTSA3uhU24E",
@@ -90,14 +87,14 @@
        return true;
     }
 
-    // 🚀 FIX 4: Google Redirect Catching Logic (Agar Google se wapas aaye toh turant login pakad lega)
+    // 🚀 SMART GOOGLE LOGIN: Catch Redirect Result
     getRedirectResult(auth).then((result) => {
         if (result) {
             btnText.innerText = "Login Successful! Redirecting...";
             window.location.replace("index.html");
         }
     }).catch((error) => {
-        showError("Google Error: " + error.message);
+        showError("Login Error: " + error.message);
         btnText.innerText = "Continue with Google";
     });
 
@@ -107,14 +104,26 @@
         }
     });
 
-    document.getElementById('googleLoginBtn').addEventListener('click', () => {
+    // 🚀 SMART GOOGLE LOGIN: Tries Popup first, falls back to Redirect for Mobile
+    document.getElementById('googleLoginBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
         if (!checkTerms()) return;
-        btnText.innerText = "Connecting to Google...";
-        signInWithRedirect(auth, provider);
+        btnText.innerText = "Connecting...";
+        try {
+            await signInWithPopup(auth, provider);
+            window.location.replace("index.html");
+        } catch (error) {
+            if(error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
+                signInWithRedirect(auth, provider);
+            } else {
+                showError(error.message);
+                btnText.innerText = "Continue with Google";
+            }
+        }
     });
 
-    // 🚀 FIX 5: Smart Error Logic (Jo khali hai wahi mangega)
-    document.getElementById('emailLoginBtn').addEventListener('click', async () => {
+    document.getElementById('emailLoginBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
         if (!checkTerms()) return;
         const email = emailInput.value.trim();
         const pass = passInput.value.trim();
@@ -127,13 +136,15 @@
         btn.innerText = "Wait...";
         try {
             await signInWithEmailAndPassword(auth, email, pass);
+            window.location.replace("index.html");
         } catch (error) {
             showError("Invalid Email or Password. Try again.");
             btn.innerText = "Login";
         }
     });
 
-    document.getElementById('emailSignupBtn').addEventListener('click', async () => {
+    document.getElementById('emailSignupBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
         if (!checkTerms()) return;
         const email = emailInput.value.trim();
         const pass = passInput.value.trim();
@@ -147,6 +158,7 @@
         btn.innerText = "Wait...";
         try {
             await createUserWithEmailAndPassword(auth, email, pass);
+            window.location.replace("index.html");
         } catch (error) {
             if(error.code === 'auth/email-already-in-use') {
                 showError("Email already registered. Click 'Login' instead.");
