@@ -12,7 +12,6 @@
      <h1 class="text-2xl font-black mb-2 text-center text-gray-900">Welcome</h1>
      <p class="text-xs text-gray-500 mb-6 text-center font-bold">Login or Create an account</p>
 
-     <!-- 🚀 AUTOFILL FIX: Form tag aur name attributes lagaye gaye hain taaki Paste/Saved Password aaye -->
      <form id="authForm" class="space-y-4 mb-6">
         <div>
            <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Email Address</label>
@@ -52,7 +51,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBCX9rALYZSxzYvawPexwXIHTSA3uhU24E",
@@ -66,107 +65,47 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
+    
+    // 🚀 FIX: Persistence enable kiya taaki browser login bhule nahi
+    setPersistence(auth, browserLocalPersistence);
 
     const termsCheck = document.getElementById('termsCheck');
     const errorText = document.getElementById('errorText');
-    const emailInput = document.getElementById('emailInput');
-    const passInput = document.getElementById('passInput');
     const btnText = document.getElementById('googleBtnText');
 
-    function showError(msg) {
-       errorText.innerText = "❌ " + msg;
-       errorText.classList.remove('hidden');
-    }
+    function showError(msg) { errorText.innerText = "❌ " + msg; errorText.classList.remove('hidden'); }
+    function checkTerms() { if (!termsCheck.checked) { showError("Please accept Terms."); return false; } errorText.classList.add('hidden'); return true; }
 
-    function checkTerms() {
-       if (!termsCheck.checked) {
-           showError("Please tick the checkbox to accept Terms & Privacy.");
-           return false;
-       }
-       errorText.classList.add('hidden');
-       return true;
-    }
-
-    // 🚀 SMART GOOGLE LOGIN: Catch Redirect Result
+    // Fast Redirect Result Handling
     getRedirectResult(auth).then((result) => {
-        if (result) {
-            btnText.innerText = "Login Successful! Redirecting...";
-            window.location.replace("index.html");
-        }
-    }).catch((error) => {
-        showError("Login Error: " + error.message);
-        btnText.innerText = "Continue with Google";
-    });
+        if (result) window.location.replace("index.html");
+    }).catch(e => showError(e.message));
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            window.location.replace("index.html"); 
-        }
-    });
+    onAuthStateChanged(auth, (user) => { if (user) window.location.replace("index.html"); });
 
-    // 🚀 SMART GOOGLE LOGIN: Tries Popup first, falls back to Redirect for Mobile
-    document.getElementById('googleLoginBtn').addEventListener('click', async (e) => {
-        e.preventDefault();
+    document.getElementById('googleLoginBtn').addEventListener('click', async () => {
         if (!checkTerms()) return;
         btnText.innerText = "Connecting...";
-        try {
-            await signInWithPopup(auth, provider);
-            window.location.replace("index.html");
-        } catch (error) {
-            if(error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
-                signInWithRedirect(auth, provider);
-            } else {
-                showError(error.message);
-                btnText.innerText = "Continue with Google";
-            }
-        }
+        try { await signInWithPopup(auth, provider); } 
+        catch (e) { signInWithRedirect(auth, provider); }
     });
 
-    document.getElementById('emailLoginBtn').addEventListener('click', async (e) => {
-        e.preventDefault();
+    document.getElementById('emailLoginBtn').addEventListener('click', async () => {
         if (!checkTerms()) return;
-        const email = emailInput.value.trim();
-        const pass = passInput.value.trim();
-        
-        if(!email && !pass) { showError("Please enter your Email and Password."); return; }
-        if(!email) { showError("Please enter your Email Address."); return; }
-        if(!pass) { showError("Please enter your Password."); return; }
-        
-        const btn = document.getElementById('emailLoginBtn');
-        btn.innerText = "Wait...";
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-            window.location.replace("index.html");
-        } catch (error) {
-            showError("Invalid Email or Password. Try again.");
-            btn.innerText = "Login";
-        }
+        const email = document.getElementById('emailInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
+        if(!email || !pass) return showError("Enter Email & Password.");
+        try { await signInWithEmailAndPassword(auth, email, pass); } 
+        catch (e) { showError("Login failed."); }
     });
 
-    document.getElementById('emailSignupBtn').addEventListener('click', async (e) => {
-        e.preventDefault();
+    document.getElementById('emailSignupBtn').addEventListener('click', async () => {
         if (!checkTerms()) return;
-        const email = emailInput.value.trim();
-        const pass = passInput.value.trim();
-        
-        if(!email && !pass) { showError("Please enter Email and Password to Sign Up."); return; }
-        if(!email) { showError("Please enter your Email Address."); return; }
-        if(!pass) { showError("Please enter a Password (Min 6 chars)."); return; }
-        if(pass.length < 6) { showError("Password must be at least 6 characters."); return; }
-        
-        const btn = document.getElementById('emailSignupBtn');
-        btn.innerText = "Wait...";
-        try {
-            await createUserWithEmailAndPassword(auth, email, pass);
-            window.location.replace("index.html");
-        } catch (error) {
-            if(error.code === 'auth/email-already-in-use') {
-                showError("Email already registered. Click 'Login' instead.");
-            } else {
-                showError(error.message);
-            }
-            btn.innerText = "Sign Up";
-        }
+        const email = document.getElementById('emailInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
+        if(!email || pass.length < 6) return showError("Enter Email & Min 6 digit Password.");
+        try { await createUserWithEmailAndPassword(auth, email, pass); } 
+        catch (e) { showError(e.message); }
     });
   </script>
 </body>
