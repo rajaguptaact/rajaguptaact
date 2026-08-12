@@ -510,43 +510,107 @@
       const [lastOrderId, setLastOrderId] = useState(null); 
 
       const [deviceFingerprint, setDeviceFingerprint] = useState(null);
-            // 🚀 MASTER AUTH, SYNC & ROUTING LOGIC
-      const [currentUser, setCurrentUser] = useState(null);
+                  const [currentUser, setCurrentUser] = useState(null);
+      const [wishlist, setWishlist] = useState([]);
+      const [userLikes, setUserLikes] = useState([]);
+      const [isDataLoaded, setIsDataLoaded] = useState(false);
+      const [deviceFingerprint, setDeviceFingerprint] = useState(null);
 
       useEffect(() => {
-          // T&C aur Privacy Page direct kholne ka logic
+          // T&C, Privacy aur Deep Linking (Direct Art open karna)
           const urlParams = new URLSearchParams(window.location.search);
           if (urlParams.get('open') === 'terms') setView('terms');
           if (urlParams.get('open') === 'privacy') setView('privacy');
-          
-          if (urlParams.has('open')) {
-              window.history.replaceState({}, document.title, window.location.pathname);
+          if (urlParams.get('art')) {
+              setTimeout(() => { 
+                  const el = document.getElementById('art-' + urlParams.get('art')); 
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+              }, 1500);
           }
+          if (urlParams.has('open')) window.history.replaceState({}, document.title, window.location.pathname);
 
-          // Flawless Login/Logout aur Data Saving
-          const unsub = firebase.auth().onAuthStateChanged(user => {
+          const unsubAuth = firebase.auth().onAuthStateChanged(async (user) => {
               setCurrentUser(user);
-              if (user) {
-                  setDeviceFingerprint(user.uid);
-                  db.collection('RecoveredCarts').doc(user.uid).get().then(doc => {
-                      if (doc.exists) {
-                          const cloudCart = doc.data().items || [];
-                          const localCart = JSON.parse(window.localStorage.getItem('raja_cart_live_v1') || '[]');
-                          if (localCart.length === 0 && cloudCart.length > 0) {
-                              setCart(cloudCart);
-                              window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(cloudCart));
-                          }
+              const activeId = user ? user.uid : (window.localStorage.getItem("art_guest_id") || "guest_" + Date.now());
+              setDeviceFingerprint(activeId);
+
+              // 🚀 GUEST DATA MERGE INTO GMAIL ACCOUNT
+              if (user && window.localStorage.getItem("art_guest_id")) {
+                  const oldGuestId = window.localStorage.getItem("art_guest_id");
+                  try {
+                      const guestSaves = await db.collection('UserSaves').doc(oldGuestId).get();
+                      const guestCart = await db.collection('RecoveredCarts').doc(oldGuestId).get();
+                      const guestOrders = await db.collection('UserOrders').doc(oldGuestId).get();
+                      
+                      if (guestSaves.exists) {
+                          await db.collection('UserSaves').doc(user.uid).set({ wishlist: guestSaves.data().wishlist || [], likes: guestSaves.data().likes || [], updatedAt: Date.now() }, { merge: true });
+                          await db.collection('UserSaves').doc(oldGuestId).delete(); 
                       }
-                  }).catch(e => console.log(e));
-              } else {
-                  let guestId = window.localStorage.getItem("art_guest_id");
-                  if (guestId) setDeviceFingerprint(guestId);
-                  setCart([]);
-                  window.localStorage.removeItem('raja_cart_live_v1');
+                      if (guestCart.exists) {
+                          await db.collection('RecoveredCarts').doc(user.uid).set({ items: guestCart.data().items || [], updatedAt: Date.now() }, { merge: true });
+                          await db.collection('RecoveredCarts').doc(oldGuestId).delete();
+                      }
+                      if (guestOrders.exists) {
+                          await db.collection('UserOrders').doc(user.uid).set({ orders: guestOrders.data().orders || [], updatedAt: Date.now() }, { merge: true });
+                          await db.collection('UserOrders').doc(oldGuestId).delete();
+                      }
+                      window.localStorage.removeItem("art_guest_id");
+                  } catch(e) { console.log("Merge Error", e); }
               }
+
+              // 🚀 REAL-TIME CLOUD LISTENERS
+              db.collection('RecoveredCarts').doc(activeId).onSnapshot(doc => {
+                  if (doc.exists) setCart(doc.data().items || []); else setCart([]);
+              });
+              db.collection('UserOrders').doc(activeId).onSnapshot(doc => {
+                  if (doc.exists) {
+                      setMyLocalOrders(doc.data().orders || []);
+                      window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(doc.data().orders || []));
+                  } else {
+                      setMyLocalOrders([]);
+                  }
+              });
+              db.collection('UserSaves').doc(activeId).onSnapshot(doc => {
+                  if (doc.exists) {
+                      setWishlist(doc.data().wishlist || []);
+                      setUserLikes(doc.data().likes || []);
+                  } else {
+                      setWishlist([]); setUserLikes([]);
+                  }
+                  setIsDataLoaded(true);
+              });
           });
-          return () => unsub();
+
+          return () => unsubAuth();
       }, []);
+
+      // 30 Days Expiry Logic for Cloud Saves
+      const getExpiry = () => currentUser ? null : Date.now() + (30 * 24 * 60 * 60 * 1000);
+
+      const toggleWishlist = (art) => {
+          const isWishlisted = wishlist.some(item => item.id === art.id);
+          const newList = isWishlisted ? wishlist.filter(item => item.id !== art.id) : [...wishlist, art];
+          db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
+          showToast(isWishlisted ? "Removed from Wishlist" : "🔖 Saved to Wishlist!");
+      };
+
+      const handleLikeArt = (art) => {
+          const isLiked = userLikes.includes(art.id);
+          const newLikes = isLiked ? userLikes.filter(id => id !== art.id) : [...userLikes, art.id];
+          db.collection('UserSaves').doc(deviceFingerprint).set({ likes: newLikes, expireAt: getExpiry() }, { merge: true });
+          db.collection('RajaStudio').doc(art.id).update({ realLikes: firebase.firestore.FieldValue.increment(isLiked ? -1 : 1) });
+      };
+
+      const shareArtwork = (art) => {
+        const shareUrl = window.location.origin + window.location.pathname + "?art=" + art.id;
+        if (navigator.share) {
+            navigator.share({ title: art.title, url: shareUrl }).catch(()=>{});
+        } else {
+            navigator.clipboard.writeText(shareUrl);
+            showToast("🔗 Link copied! Ready to share.");
+        }
+      };
+
 
       
       useEffect(() => {
