@@ -12,19 +12,48 @@
      <h1 class="text-2xl font-black mb-2 text-center text-gray-900">Welcome</h1>
      <p class="text-xs text-gray-500 mb-6 text-center font-bold">Login or Create an account</p>
 
+     <!-- 🚀 AUTOFILL FIX: Form tag aur autocomplete add kiya gaya hai -->
      <form id="authForm" class="space-y-4 mb-6">
         <div>
            <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Email Address</label>
-           <input type="email" id="emailInput" name="email" autocomplete="username" class="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none font-medium text-sm text-gray-800" placeholder="name@example.com" required>
+           <input 
+              type="email" 
+              id="emailInput" 
+              name="email" 
+              autocomplete="username" 
+              class="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none font-medium text-sm text-gray-800" 
+              placeholder="name@example.com" 
+              required
+           >
         </div>
         <div>
            <label class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Password</label>
-           <input type="password" id="passInput" name="password" autocomplete="current-password" class="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none font-medium text-sm text-gray-800" placeholder="Min 6 characters" required>
+           <input 
+              type="password" 
+              id="passInput" 
+              name="password" 
+              autocomplete="current-password" 
+              class="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-purple-500 outline-none font-medium text-sm text-gray-800" 
+              placeholder="Min 6 characters" 
+              required
+           >
         </div>
         
         <div class="flex gap-3 pt-2">
-           <button type="button" id="emailLoginBtn" class="flex-1 bg-purple-600 text-white py-3 rounded-xl font-black text-sm hover:bg-purple-700 shadow-md transition active:scale-95">Login</button>
-           <button type="button" id="emailSignupBtn" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 rounded-xl font-black text-sm hover:bg-purple-50 transition active:scale-95">Sign Up</button>
+           <button 
+              type="button" 
+              id="emailLoginBtn" 
+              class="flex-1 bg-purple-600 text-white py-3 rounded-xl font-black text-sm hover:bg-purple-700 shadow-md transition active:scale-95"
+           >
+              Login
+           </button>
+           <button 
+              type="button" 
+              id="emailSignupBtn" 
+              class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 rounded-xl font-black text-sm hover:bg-purple-50 transition active:scale-95"
+           >
+              Sign Up
+           </button>
         </div>
      </form>
 
@@ -34,7 +63,11 @@
         <div class="flex-1 h-px bg-gray-200"></div>
      </div>
 
-     <button type="button" id="googleLoginBtn" class="w-full py-3.5 bg-white border-2 border-gray-200 rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-gray-50 transition-all font-black text-gray-700 text-sm mb-6 active:scale-95">
+     <button 
+        type="button" 
+        id="googleLoginBtn" 
+        class="w-full py-3.5 bg-white border-2 border-gray-200 rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-gray-50 transition-all font-black text-gray-700 text-sm mb-6 active:scale-95"
+     >
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5">
         <span id="googleBtnText">Continue with Google</span>
      </button>
@@ -42,7 +75,10 @@
      <div class="flex items-start gap-3 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
         <input type="checkbox" id="termsCheck" class="w-5 h-5 mt-0.5 accent-purple-600 cursor-pointer">
         <span class="text-[10px] text-gray-500 font-bold leading-relaxed">
-           I agree to the <a href="index.html?open=terms" class="text-purple-600 underline hover:text-purple-800 cursor-pointer">Terms of Service</a> & <a href="index.html?open=privacy" class="text-purple-600 underline hover:text-purple-800 cursor-pointer">Privacy Policy</a>.
+           I agree to the 
+           <a href="index.html?open=terms" class="text-purple-600 underline hover:text-purple-800 cursor-pointer">Terms of Service</a> 
+           & 
+           <a href="index.html?open=privacy" class="text-purple-600 underline hover:text-purple-800 cursor-pointer">Privacy Policy</a>.
         </span>
      </div>
      
@@ -51,7 +87,18 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { 
+        getAuth, 
+        signInWithPopup, 
+        signInWithRedirect, 
+        getRedirectResult, 
+        GoogleAuthProvider, 
+        signInWithEmailAndPassword, 
+        createUserWithEmailAndPassword, 
+        onAuthStateChanged, 
+        setPersistence, 
+        browserLocalPersistence 
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBCX9rALYZSxzYvawPexwXIHTSA3uhU24E",
@@ -65,47 +112,138 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-    
-    // 🚀 FIX: Persistence enable kiya taaki browser login bhule nahi
+
+    // 🚀 BROWSER KO BATAYEGA KI LOGIN YAAD RAKHNA HAI
     setPersistence(auth, browserLocalPersistence);
 
     const termsCheck = document.getElementById('termsCheck');
     const errorText = document.getElementById('errorText');
+    const emailInput = document.getElementById('emailInput');
+    const passInput = document.getElementById('passInput');
     const btnText = document.getElementById('googleBtnText');
 
-    function showError(msg) { errorText.innerText = "❌ " + msg; errorText.classList.remove('hidden'); }
-    function checkTerms() { if (!termsCheck.checked) { showError("Please accept Terms."); return false; } errorText.classList.add('hidden'); return true; }
+    function showError(msg) {
+       errorText.innerText = "❌ " + msg;
+       errorText.classList.remove('hidden');
+    }
 
-    // Fast Redirect Result Handling
+    function checkTerms() {
+       if (!termsCheck.checked) {
+           showError("Please tick the checkbox to accept Terms & Privacy.");
+           return false;
+       }
+       errorText.classList.add('hidden');
+       return true;
+    }
+
+    // 🚀 REDIRECT GLITCH FIX: YAHAN SE WAPAS AANE PAR TURANT REDIRECT KAREGA
     getRedirectResult(auth).then((result) => {
-        if (result) window.location.replace("index.html");
-    }).catch(e => showError(e.message));
-
-    onAuthStateChanged(auth, (user) => { if (user) window.location.replace("index.html"); });
-
-    document.getElementById('googleLoginBtn').addEventListener('click', async () => {
-        if (!checkTerms()) return;
-        btnText.innerText = "Connecting...";
-        try { await signInWithPopup(auth, provider); } 
-        catch (e) { signInWithRedirect(auth, provider); }
+        if (result) {
+            btnText.innerText = "Login Successful! Redirecting...";
+            window.location.replace("index.html");
+        }
+    }).catch((error) => {
+        showError("Login Error: " + error.message);
+        btnText.innerText = "Continue with Google";
     });
 
-    document.getElementById('emailLoginBtn').addEventListener('click', async () => {
-        if (!checkTerms()) return;
-        const email = document.getElementById('emailInput').value.trim();
-        const pass = document.getElementById('passInput').value.trim();
-        if(!email || !pass) return showError("Enter Email & Password.");
-        try { await signInWithEmailAndPassword(auth, email, pass); } 
-        catch (e) { showError("Login failed."); }
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            window.location.replace("index.html"); 
+        }
     });
 
-    document.getElementById('emailSignupBtn').addEventListener('click', async () => {
+    // GOOGLE LOGIN LOGIC
+    document.getElementById('googleLoginBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
         if (!checkTerms()) return;
-        const email = document.getElementById('emailInput').value.trim();
-        const pass = document.getElementById('passInput').value.trim();
-        if(!email || pass.length < 6) return showError("Enter Email & Min 6 digit Password.");
-        try { await createUserWithEmailAndPassword(auth, email, pass); } 
-        catch (e) { showError(e.message); }
+        
+        btnText.innerText = "Connecting to Google...";
+        try {
+            await signInWithPopup(auth, provider);
+            window.location.replace("index.html");
+        } catch (error) {
+            if(error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
+                signInWithRedirect(auth, provider);
+            } else {
+                showError(error.message);
+                btnText.innerText = "Continue with Google";
+            }
+        }
+    });
+
+    // EMAIL LOGIN LOGIC
+    document.getElementById('emailLoginBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!checkTerms()) return;
+        
+        const email = emailInput.value.trim();
+        const pass = passInput.value.trim();
+        
+        if(!email && !pass) { 
+            showError("Please enter your Email and Password."); 
+            return; 
+        }
+        if(!email) { 
+            showError("Please enter your Email Address."); 
+            return; 
+        }
+        if(!pass) { 
+            showError("Please enter your Password."); 
+            return; 
+        }
+        
+        const btn = document.getElementById('emailLoginBtn');
+        btn.innerText = "Wait...";
+        
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+            window.location.replace("index.html");
+        } catch (error) {
+            showError("Invalid Email or Password. Try again.");
+            btn.innerText = "Login";
+        }
+    });
+
+    // EMAIL SIGNUP LOGIC
+    document.getElementById('emailSignupBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!checkTerms()) return;
+        
+        const email = emailInput.value.trim();
+        const pass = passInput.value.trim();
+        
+        if(!email && !pass) { 
+            showError("Please enter Email and Password to Sign Up."); 
+            return; 
+        }
+        if(!email) { 
+            showError("Please enter your Email Address."); 
+            return; 
+        }
+        if(!pass) { 
+            showError("Please enter a Password (Min 6 chars)."); 
+            return; 
+        }
+        if(pass.length < 6) { 
+            showError("Password must be at least 6 characters."); 
+            return; 
+        }
+        
+        const btn = document.getElementById('emailSignupBtn');
+        btn.innerText = "Wait...";
+        
+        try {
+            await createUserWithEmailAndPassword(auth, email, pass);
+            window.location.replace("index.html");
+        } catch (error) {
+            if(error.code === 'auth/email-already-in-use') {
+                showError("Email already registered. Click 'Login' instead.");
+            } else {
+                showError(error.message);
+            }
+            btn.innerText = "Sign Up";
+        }
     });
   </script>
 </body>
