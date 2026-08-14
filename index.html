@@ -673,11 +673,17 @@
           return [];
       });
 
-      const addLocalOrder = (orderData) => {
+            const addLocalOrder = (orderData) => {
           const newOrders = [orderData, ...myLocalOrders];
           setMyLocalOrders(newOrders);
           try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(newOrders)); } catch(e){}
+          
+          // 🚀 NAYI LINE: Order ko Cloud mein save karne ke liye
+          if (deviceFingerprint) {
+              db.collection('UserOrders').doc(deviceFingerprint).set({ orders: newOrders, expireAt: getExpiry() }, { merge: true }).catch(e=>{});
+          }
       };
+
 
       const [toastMessage, setToastMessage] = useState(null);
       const showToast = (msg) => {
