@@ -579,10 +579,19 @@
                   } catch(e) { console.log("Merge Error", e); }
               }
 
-              // 🚀 REAL-TIME CLOUD LISTENERS
+                            // 🚀 STABLE REAL-TIME CLOUD LISTENERS (FIXED BLINKING)
               db.collection('RecoveredCarts').doc(activeId).onSnapshot(doc => {
-                  if (doc.exists) setCart(doc.data().items || []); else setCart([]);
+                  if (doc.exists) {
+                      const cloudItems = doc.data().items || [];
+                      setCart(prevCart => {
+                          if (JSON.stringify(prevCart) !== JSON.stringify(cloudItems)) {
+                              return cloudItems;
+                          }
+                          return prevCart;
+                      });
+                  }
               });
+
               db.collection('UserOrders').doc(activeId).onSnapshot(doc => {
                   if (doc.exists) {
                       setMyLocalOrders(doc.data().orders || []);
