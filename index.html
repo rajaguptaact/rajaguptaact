@@ -2553,6 +2553,12 @@
                       <div><label className="text-[10px] md:text-xs font-black text-gray-500 uppercase">Print A3 Price (Base ₹)</label><input required type="text" placeholder="₹" className="w-full border-2 p-2 md:p-3 rounded-xl bg-white font-bold text-base md:text-lg" value={formatAdminPrice(uploadData.priceA3)} onChange={e => setUploadData({...uploadData, priceA3: e.target.value.replace(/[^\d]/g, '')})} /></div>
                       <div><label className="text-[10px] md:text-xs font-black text-gray-500 uppercase">Print A4 Price (Base ₹)</label><input required type="text" placeholder="₹" className="w-full border-2 p-2 md:p-3 rounded-xl bg-white font-bold text-base md:text-lg" value={formatAdminPrice(uploadData.priceA4)} onChange={e => setUploadData({...uploadData, priceA4: e.target.value.replace(/[^\d]/g, '')})} /></div>
                       <div className="md:col-span-2"><label className="text-[10px] md:text-xs font-black text-gray-500 uppercase">Print A5 Price (Base ₹)</label><input required type="text" placeholder="₹" className="w-full border-2 p-2 md:p-3 rounded-xl bg-white font-bold text-base md:text-lg" value={formatAdminPrice(uploadData.priceA5)} onChange={e => setUploadData({...uploadData, priceA5: e.target.value.replace(/[^\d]/g, '')})} /></div>
+
+                      <div className="md:col-span-2 mt-2">
+                      <label className="text-[10px] md:text-xs font-black text-pink-500 uppercase">🔥 BOOST FAKE LIKES</label>
+                        <input type="number" placeholder="Eg: 1250" className="w-full border-2 border-pink-200 p-2 md:p-3 rounded-xl bg-pink-50 font-bold text-base md:text-lg" value={uploadData.fakeLikes || ''} onChange={e => setUploadData({...uploadData, fakeLikes: e.target.value})} />
+                      </div>
+
                     </div>
 
                     <label className="flex items-center gap-2 md:gap-3 font-black text-red-600 bg-red-50 p-3 md:p-4 rounded-xl border border-red-200 cursor-pointer mt-3 md:mt-4 text-xs md:text-sm">
