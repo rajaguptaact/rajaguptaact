@@ -108,15 +108,25 @@
       });
       const [isDescOpen, setIsDescOpen] = useState(false);
 
+            // Global memory cache taaki mockups dobara fetch na hoan
+      window.rajaMockupCache = window.rajaMockupCache || {};
+
       useEffect(() => {
           let isMounted = true;
+          if (window.rajaMockupCache[art.id]) {
+              setMockups(window.rajaMockupCache[art.id]);
+              setLoadingMockups(false);
+              return;
+          }
           if (art.customMockups && art.customMockups.length > 0) {
+              window.rajaMockupCache[art.id] = art.customMockups;
               if(isMounted) { setMockups(art.customMockups); setLoadingMockups(false); }
           } else {
               db.collection('RajaMockups').where('artId', '==', art.id).get().then(snap => {
                   if (!isMounted) return;
                   const fetched = snap.docs.map(d => d.data()).sort((a,b) => a.index - b.index).map(d => d.image);
                   if (fetched.length > 0) {
+                      window.rajaMockupCache[art.id] = fetched;
                       setMockups(fetched);
                   }
                   setLoadingMockups(false);
