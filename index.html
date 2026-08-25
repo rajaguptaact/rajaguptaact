@@ -2115,8 +2115,10 @@
                   title: uploadData.title, desc: uploadData.desc, 
                   priceOriginal: finalPriceCurrent, priceOriginalOld: finalPriceOld, 
                   priceA3: uploadData.priceA3, priceA4: uploadData.priceA4, priceA5: uploadData.priceA5, 
-                  isSold: uploadData.isSold
+                  isSold: uploadData.isSold,
+                  fakeLikes: Number(uploadData.fakeLikes || 0)
               };
+
               
               try {
                   await db.collection('RajaStudio').doc(editArtId).update(quickData);
