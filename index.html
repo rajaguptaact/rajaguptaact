@@ -2106,7 +2106,7 @@
 
           setUploadStatus("Uploading Main Artwork Details...");
 
-          const dataToSave = { 
+                    const dataToSave = { 
               title: uploadData.title, 
               desc: uploadData.desc, 
               image: uploadData.image,
@@ -2116,6 +2116,7 @@
               priceA4: uploadData.priceA4, 
               priceA5: uploadData.priceA5, 
               isSold: uploadData.isSold, 
+              fakeLikes: Number(uploadData.fakeLikes || 0),
               savedBgsList: selectedBgs.length > 0 ? selectedBgs : (uploadData.savedBgsList || []),
               savedBgAdjustments: Object.keys(bgAdjustments).length > 0 ? bgAdjustments : (uploadData.savedBgAdjustments || {})
           };
