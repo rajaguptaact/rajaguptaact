@@ -2187,15 +2187,17 @@
               showCurrent = ''; 
           }
 
-          setUploadData({ 
+                    setUploadData({ 
               title: art.title, desc: art.desc, image: art.image, 
               priceOriginal: showCurrent, 
               priceOriginalOld: showOld, 
               priceA3: art.priceA3, priceA4: art.priceA4, priceA5: art.priceA5, isSold: art.isSold || false,
+              fakeLikes: art.fakeLikes || '',
               customMockups: art.customMockups || [],
               savedBgsList: art.savedBgsList || [],
               savedBgAdjustments: art.savedBgAdjustments || {}
           });
+
           setSelectedBgs(art.savedBgsList || []); 
           setBgAdjustments(art.savedBgAdjustments || {});
           setPreviewMockups([]);
