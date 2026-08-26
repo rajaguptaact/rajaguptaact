@@ -2496,9 +2496,11 @@
                         setBgAdjustments({}); 
                         setPreviewMockups([]); 
                         setIsMediaModified(false);
+                        setUploadStatus("");
                     }} className="text-[10px] md:text-xs text-red-500 underline font-bold cursor-pointer">
                         {editArtId ? "Cancel Edit" : "Cancel Upload (Clear)"}
                     </button>
+
                   </h3>
                   
                   <form onSubmit={saveArtwork} className="space-y-3 md:space-y-4">
