@@ -264,9 +264,9 @@
               </button>
           </div>
           
-          <p className="font-black text-sm text-gray-900 mb-2">
-    {Number((art.realLikes || 0) + Number(art.fakeLikes || 0)).toLocaleString('en-IN')} likes
- </p>
+                    <p className="font-black text-sm text-gray-900 mb-2">
+            {Number((Number(art.realLikes) || 0) + (Number(art.fakeLikes) || 0)).toLocaleString('en-IN')} likes
+          </p>
 
                     {/* Clean Amazon-Style Description Toggle */}
           <div className="w-full mt-6 pt-4 border-t border-gray-200">
