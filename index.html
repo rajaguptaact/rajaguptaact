@@ -1198,16 +1198,17 @@
                             </div>
                         )}
                                                                         <div className="flex items-center justify-end gap-2 md:gap-3 mt-2 w-full">
+                                                   <div className="flex items-center justify-end gap-2 md:gap-3 mt-2 w-full">
                            <button onClick={() => {
                                const liveArt = artworks.find(a => a.id === item.id);
                                if (liveArt) {
-                                   const isWishlisted = wishlist.some(w => w.id === liveArt.id);
+                                   const isWishlisted = wishlist.some(w => w.id === liveArt.id && w.savedSize === item.selectedSize);
                                    if (!isWishlisted) {
-                                       const newList = [...wishlist, liveArt];
+                                       const newList = [...wishlist, { ...liveArt, savedSize: item.selectedSize }];
                                        setWishlist(newList);
                                        if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
                                    }
-                                   showToast("🔖 Moved to Wishlist!");
+                                   showToast(`Moved ${item.selectedSize} to Wishlist!`);
                                }
                                const updatedCart = cart.filter(c => c.cartId !== item.cartId);
                                setCart(updatedCart);
@@ -1222,6 +1223,7 @@
                                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
                            }} className="text-rose-500 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Remove</button>
                         </div>
+
 
 
                      </div>
