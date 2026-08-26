@@ -3366,6 +3366,45 @@
               </div>
             </div>
           )}
+                    {/* 🚀 WISHLIST SIZE POPUP (PAPA PLANE) */}
+            {wishlistPopupArt && (
+                <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setWishlistPopupArt(null)}>
+                    <div className="bg-white rounded-3xl p-5 md:p-6 w-full max-w-sm shadow-2xl relative" onClick={e => e.stopPropagation()}>
+                        <button onClick={() => setWishlistPopupArt(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 font-black text-xl cursor-pointer">✕</button>
+                        
+                        <h3 className="font-black text-lg md:text-xl text-gray-900 mb-4 pr-6">Select Size to Save</h3>
+                        
+                        <div className="space-y-3">
+                            {['Original Artwork', 'A3', 'A4', 'A5'].map(size => {
+                                // Check karenge ki kya is artwork mein yeh size/price available hai ya nahi
+                                let hasSize = false;
+                                if (size === 'Original Artwork' && wishlistPopupArt.priceOriginal) hasSize = true;
+                                if (size === 'A3' && wishlistPopupArt.priceA3) hasSize = true;
+                                if (size === 'A4' && wishlistPopupArt.priceA4) hasSize = true;
+                                if (size === 'A5' && wishlistPopupArt.priceA5) hasSize = true;
+                                
+                                if (!hasSize) return null;
+                                
+                                const isSaved = wishlist.some(w => w.id === wishlistPopupArt.id && w.savedSize === size);
+                                
+                                return (
+                                    <div key={size} onClick={() => { 
+                                        toggleWishlist(wishlistPopupArt, size); 
+                                        setWishlistPopupArt(null); // Click karte hi popup band ho jayega
+                                    }} className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition active:scale-95 ${isSaved ? 'border-purple-500 bg-purple-50' : 'border-gray-100 hover:border-purple-200 bg-gray-50'}`}>
+                                        <span className={`font-black text-sm md:text-base ${isSaved ? 'text-purple-700' : 'text-gray-700'}`}>{size}</span>
+                                        {isSaved ? (
+                                            <span className="text-[10px] md:text-xs font-black text-purple-600 bg-purple-200 px-2 py-1 rounded-md">SAVED</span>
+                                        ) : (
+                                            <span className="text-[10px] md:text-xs font-black text-gray-400">+ Save</span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div>
       );
