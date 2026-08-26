@@ -153,20 +153,21 @@
         }
     });
 
-        // 🚀 FIXED GOOGLE LOGIN LOGIC (1-CLICK GUARANTEE FOR MOBILE & DESKTOP)
+            // 🚀 FIXED GOOGLE LOGIN LOGIC (No Loop, Direct Login)
     document.getElementById('googleLoginBtn').addEventListener('click', (e) => {
         e.preventDefault();
         if (!checkTerms()) return;
         
         btnText.innerText = "Connecting to Google...";
-        
-        // Mobile browsers popup block karte hain, isliye direct Redirect use karenge.
-        // Yeh ek click mein 100% kaam karega kisi bhi naye ya purane Gmail account ke liye.
-        signInWithRedirect(auth, provider).catch((error) => {
-            showError(error.message);
+        // Direct popup bina ruke, taaki mobile browser block na kare aur loop na bane
+        signInWithPopup(auth, provider).then(() => {
+            window.location.replace("index.html");
+        }).catch((error) => {
+            showError("Please try again or use another browser.");
             btnText.innerText = "Continue with Google";
         });
     });
+
 
     // EMAIL LOGIN LOGIC
     document.getElementById('emailLoginBtn').addEventListener('click', async (e) => {
