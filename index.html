@@ -2126,32 +2126,36 @@
               finalPriceOld = ""; 
           }
 
-          if (editArtId && !isMediaModified) {
-              setUploadStatus("Updating Text Details...");
+                   if (editArtId && !isMediaModified) {
+              setUploadStatus("Updating Details & Likes...");
+              
               const quickData = {
                   title: uploadData.title, desc: uploadData.desc, 
                   priceOriginal: finalPriceCurrent, priceOriginalOld: finalPriceOld, 
                   priceA3: uploadData.priceA3, priceA4: uploadData.priceA4, priceA5: uploadData.priceA5, 
                   isSold: uploadData.isSold,
                   fakeLikes: Number(uploadData.fakeLikes) || 0
-
               };
 
-              
-                            try {
+              try {
+                  // Aapka purana instant aur solid logic
                   await db.collection('RajaStudio').doc(editArtId).update(quickData);
-                  showToast("✅ Details & Likes Updated Instantly!"); 
-                  alert("✅ Artwork Details & Likes Updated Successfully!"); 
+                  
+                  showToast("✅ Details & Likes Updated Instantly! ⚡");
+                  alert("✅ Artwork Details & Likes Updated Successfully!");
+                  
                   setEditArtId(null); 
                   setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
-                  setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); setUploadStatus(""); 
+                  setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); 
+                  setUploadStatus(""); 
                   setIsMediaModified(false);
               } catch(e) {
-                  alert("❌ ERROR: Failed to update text.");
+                  alert("❌ ERROR: Failed to update details.");
                   setUploadStatus("");
               }
               return;
           }
+
 
           if (selectedBgs.length > 0 && selectedBgs.length !== 3) {
               alert(`⚠️ Action Required: You must select EXACTLY 3 backgrounds before publishing.`);
