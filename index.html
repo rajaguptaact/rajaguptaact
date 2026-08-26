@@ -2614,11 +2614,8 @@
                    <label className="text-[10px] md:text-xs font-black text-pink-500 uppercase">🔥 BOOST FAKE LIKES</label>
                    <input type="number" placeholder="Eg: 1250" className="w-full border-2 border-pink-200 p-2 md:p-3 rounded-xl bg-pink-50 font-bold text-base md:text-lg" value={uploadData.fakeLikes || ''} onChange={e => setUploadData({...uploadData, fakeLikes: e.target.value})} />
                   </div>
-
-                      
-                      </div>
-
-                    </div>
+ 
+                </div>
 
                     <label className="flex items-center gap-2 md:gap-3 font-black text-red-600 bg-red-50 p-3 md:p-4 rounded-xl border border-red-200 cursor-pointer mt-3 md:mt-4 text-xs md:text-sm">
                       <input type="checkbox" className="w-5 h-5 md:w-6 md:h-6 cursor-pointer accent-red-500" checked={uploadData.isSold || false} onChange={e => setUploadData({...uploadData, isSold: e.target.checked})} />
