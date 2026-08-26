@@ -2133,13 +2133,15 @@
                   priceOriginal: finalPriceCurrent, priceOriginalOld: finalPriceOld, 
                   priceA3: uploadData.priceA3, priceA4: uploadData.priceA4, priceA5: uploadData.priceA5, 
                   isSold: uploadData.isSold,
-                  fakeLikes: Number(uploadData.fakeLikes || 0)
+                  fakeLikes: Number(uploadData.fakeLikes) || 0
+
               };
 
               
-              try {
+                            try {
                   await db.collection('RajaStudio').doc(editArtId).update(quickData);
-                  alert("Artwork Text/Price Updated Instantly! ⚡");
+                  showToast("✅ Details & Likes Updated Instantly!"); 
+                  alert("✅ Artwork Details & Likes Updated Successfully!"); 
                   setEditArtId(null); 
                   setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
                   setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); setUploadStatus(""); 
