@@ -113,6 +113,9 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
+    // 🚀 FORCE CLEAN GMAIL SELECTION (No looping, No extra passwords)
+    provider.setCustomParameters({ prompt: 'select_account' });
+
     // 🚀 BROWSER KO BATAYEGA KI LOGIN YAAD RAKHNA HAI
     setPersistence(auth, browserLocalPersistence);
 
@@ -153,21 +156,18 @@
         }
     });
 
-            // 🚀 FIXED GOOGLE LOGIN LOGIC (No Loop, Direct Login)
+    // 🚀 FIXED GOOGLE LOGIN LOGIC (DIRECT REDIRECT, NO POPUP BLOCKS)
     document.getElementById('googleLoginBtn').addEventListener('click', (e) => {
         e.preventDefault();
         if (!checkTerms()) return;
         
         btnText.innerText = "Connecting to Google...";
-        // Direct popup bina ruke, taaki mobile browser block na kare aur loop na bane
-        signInWithPopup(auth, provider).then(() => {
-            window.location.replace("index.html");
-        }).catch((error) => {
-            showError("Please try again or use another browser.");
+        // Direct redirect mobile ke liye sabse safe hai. Isse loop nahi banega.
+        signInWithRedirect(auth, provider).catch((error) => {
+            showError("Browser Error: " + error.message);
             btnText.innerText = "Continue with Google";
         });
     });
-
 
     // EMAIL LOGIN LOGIC
     document.getElementById('emailLoginBtn').addEventListener('click', async (e) => {
