@@ -1197,8 +1197,8 @@
                                 <p className={`font-black text-lg md:text-xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>{getPrice(item.price)}</p>
                             </div>
                         )}
-                                                                        <div className="flex items-center justify-end gap-2 md:gap-3 mt-2 w-full">
-                                                   <div className="flex items-center justify-end gap-2 md:gap-3 mt-2 w-full">
+                        
+                        <div className="flex items-center justify-end gap-2 md:gap-3 mt-2 w-full">
                            <button onClick={() => {
                                const liveArt = artworks.find(a => a.id === item.id);
                                if (liveArt) {
@@ -1223,9 +1223,6 @@
                                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
                            }} className="text-rose-500 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Remove</button>
                         </div>
-
-
-
                      </div>
                    </div>
                   );
@@ -1246,6 +1243,8 @@
           </div>
         );
       };
+
+                               
 
       const CommissionView = () => {
         const handleCommissionBack = () => {
