@@ -628,15 +628,26 @@
       // 30 Days Expiry Logic for Cloud Saves
       const getExpiry = () => currentUser ? null : Date.now() + (30 * 24 * 60 * 60 * 1000);
 
-            const toggleWishlist = (art) => {
-          if (!deviceFingerprint) { showToast("⏳ Wait, connecting securely..."); return; }
-          const isWishlisted = wishlist.some(item => item.id === art.id);
-          const newList = isWishlisted ? wishlist.filter(item => item.id !== art.id) : [...wishlist, art];
+                  const toggleWishlist = (art, specificSize = null) => {
+          if (!deviceFingerprint) { showToast("Wait, connecting securely..."); return; }
           
-          setWishlist(newList); // 🚀 INSTANT UPDATE: Click karte hi turant save dikhayega
-          db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
-          showToast(isWishlisted ? "Removed from Wishlist" : "🔖 Saved to Wishlist!");
+          if (specificSize) {
+              const isWishlisted = wishlist.some(item => item.id === art.id && item.savedSize === specificSize);
+              const newList = isWishlisted 
+                  ? wishlist.filter(item => !(item.id === art.id && item.savedSize === specificSize)) 
+                  : [...wishlist, { ...art, savedSize: specificSize }];
+              
+              setWishlist(newList); 
+              if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
+              showToast(isWishlisted ? `Removed ${specificSize} from Wishlist` : `Saved ${specificSize} to Wishlist!`);
+          } else if (art.savedSize) {
+              const newList = wishlist.filter(item => !(item.id === art.id && item.savedSize === art.savedSize));
+              setWishlist(newList);
+              if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
+              showToast("Removed from Wishlist");
+          }
       };
+
 
       const handleLikeArt = (art) => {
           if (!deviceFingerprint) { showToast("⏳ Wait, connecting securely..."); return; }
