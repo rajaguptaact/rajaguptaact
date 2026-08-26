@@ -627,16 +627,22 @@
       // 30 Days Expiry Logic for Cloud Saves
       const getExpiry = () => currentUser ? null : Date.now() + (30 * 24 * 60 * 60 * 1000);
 
-      const toggleWishlist = (art) => {
+            const toggleWishlist = (art) => {
+          if (!deviceFingerprint) { showToast("⏳ Wait, connecting securely..."); return; }
           const isWishlisted = wishlist.some(item => item.id === art.id);
           const newList = isWishlisted ? wishlist.filter(item => item.id !== art.id) : [...wishlist, art];
+          
+          setWishlist(newList); // 🚀 INSTANT UPDATE: Click karte hi turant save dikhayega
           db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
           showToast(isWishlisted ? "Removed from Wishlist" : "🔖 Saved to Wishlist!");
       };
 
       const handleLikeArt = (art) => {
+          if (!deviceFingerprint) { showToast("⏳ Wait, connecting securely..."); return; }
           const isLiked = userLikes.includes(art.id);
           const newLikes = isLiked ? userLikes.filter(id => id !== art.id) : [...userLikes, art.id];
+          
+          setUserLikes(newLikes); // 🚀 INSTANT UPDATE: Dil turant lal hoga aur infinite click rok dega
           db.collection('UserSaves').doc(deviceFingerprint).set({ likes: newLikes, expireAt: getExpiry() }, { merge: true });
           db.collection('RajaStudio').doc(art.id).update({ realLikes: firebase.firestore.FieldValue.increment(isLiked ? -1 : 1) });
       };
