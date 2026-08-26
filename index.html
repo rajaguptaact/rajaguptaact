@@ -2961,18 +2961,18 @@
             <div className="overflow-hidden flex-1">
                 <p className="font-black text-gray-900 text-sm md:text-base truncate leading-tight">{currentUser.displayName || 'My Account'}</p>
                 <p className="font-bold text-gray-500 text-[10px] md:text-xs truncate mb-1">{currentUser.email}</p>
-             <button onClick={() => { 
-        firebase.auth().signOut().then(() => {
-        // Logout par screen se saara local data saaf kar do
-        window.localStorage.removeItem('raja_cart_live_v1');
-        window.localStorage.removeItem('raja_my_orders_v1');
-        setCart([]);
-        setWishlist([]);
-        setUserLikes([]);
-        setMyLocalOrders([]);
-        showToast("Logged out successfully");
-    }); 
-}} className="text-rose-500 text-[10px] md:text-xs font-black uppercase hover:underline cursor-pointer">Logout</button>
+                          <button onClick={() => { 
+                firebase.auth().signOut().then(() => {
+                    // Logout par screen se saara local data saaf kar do
+                    window.localStorage.removeItem('raja_cart_live_v1');
+                    window.localStorage.removeItem('raja_my_orders_v1');
+                    setCart([]);
+                    setWishlist([]);
+                    setUserLikes([]);
+                    setMyLocalOrders([]);
+                    showToast("Logged out successfully");
+                }); 
+            }} className="text-rose-500 text-[10px] md:text-xs font-black uppercase hover:underline cursor-pointer">Logout</button>
 
             </div>
         </div>
