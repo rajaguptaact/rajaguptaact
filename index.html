@@ -1185,7 +1185,7 @@
                                 <p className={`font-black text-lg md:text-xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>{getPrice(item.price)}</p>
                             </div>
                         )}
-                                                <div className="flex items-center gap-3 md:gap-4 mt-1 md:mt-2">
+                                                                        <div className="flex items-center justify-end gap-2 md:gap-3 mt-2 w-full">
                            <button onClick={() => {
                                const liveArt = artworks.find(a => a.id === item.id);
                                if (liveArt) {
@@ -1204,33 +1204,13 @@
                            
                            <span className="text-gray-300">|</span>
                            
-                                                   <div className="flex flex-col items-end gap-1.5 mt-1 md:mt-0">
-                           <button onClick={() => {
-                               const liveArt = artworks.find(a => a.id === item.id);
-                               if (liveArt) {
-                                   const isWishlisted = wishlist.some(w => w.id === liveArt.id);
-                                   if (!isWishlisted) {
-                                       const newList = [...wishlist, liveArt];
-                                       setWishlist(newList);
-                                       if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
-                                   }
-                                   showToast("🔖 Moved to Wishlist!");
-                               }
-                               const updatedCart = cart.filter(c => c.cartId !== item.cartId);
-                               setCart(updatedCart);
-                               try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
-                           }} className="text-purple-600 bg-purple-50 px-2 py-1 rounded-md border border-purple-100 text-[10px] md:text-xs font-bold hover:bg-purple-100 cursor-pointer shadow-sm">
-                               Move to Wishlist
-                           </button>
-                           
                            <button onClick={() => {
                                const updatedCart = cart.filter(c => c.cartId !== item.cartId);
                                setCart(updatedCart);
                                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
-                           }} className="text-rose-500 text-[10px] md:text-xs font-bold hover:underline cursor-pointer mr-1">
-                               Remove
-                           </button>
+                           }} className="text-rose-500 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Remove</button>
                         </div>
+
 
                         </div>
 
