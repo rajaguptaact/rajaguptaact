@@ -3388,8 +3388,13 @@
                                 
                                 const isSaved = wishlist.some(w => w.id === wishlistPopupArt.id && w.savedSize === size);
                                 
-                                return (
+                                 return (
                                     <div key={size} onClick={() => { 
+                                        if (isSaved) {
+                                            showToast("⚠️ Already saved in Wishlist!");
+                                            setWishlistPopupArt(null);
+                                            return; // 🚀 Delete hone se rok dega
+                                        }
                                         toggleWishlist(wishlistPopupArt, size); 
                                         setWishlistPopupArt(null); // Click karte hi popup band ho jayega
                                     }} className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition active:scale-95 ${isSaved ? 'border-purple-500 bg-purple-50' : 'border-gray-100 hover:border-purple-200 bg-gray-50'}`}>
