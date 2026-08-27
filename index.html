@@ -1037,21 +1037,38 @@
 
       const [lastAddedTime, setLastAddedTime] = useState(0);
 
-      const addToCart = (art, size, price, oldPrice) => {
+            const addToCart = (art, size, price, oldPrice) => {
         const now = Date.now();
-        if (now - lastAddedTime < 5000) {
-            showToast("⏳ Please wait a few seconds before adding another item.");
+        if (now - lastAddedTime < 3000) {
+            showToast("⏳ Processing... Please wait a moment.");
             return;
         }
 
         if (size && size.includes('Original')) {
             const alreadyInCart = cart.some(c => c.id === art.id && c.selectedSize.includes('Original'));
             if (alreadyInCart) {
-                alert("❌ You have already added this Original Artwork to your cart. Since it's a unique piece, it can only be added once.");
+                alert("❌ Cannot Add: This Original Artwork is a unique piece and is already in your cart.");
                 return;
             }
         }
         
+        // 🚀 NAYA LOGIC: Check agar item pehle se cart mein hai (same id, same size)
+        const existingItemIndex = cart.findIndex(c => c.id === art.id && c.selectedSize === size);
+
+        if (existingItemIndex !== -1) {
+            // Agar hai, toh quantity badao
+            setCart(prev => {
+                const newCart = [...prev];
+                newCart[existingItemIndex].qty = (newCart[existingItemIndex].qty || 1) + 1;
+                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
+                return newCart;
+            });
+            setLastAddedTime(Date.now());
+            showToast("Item quantity updated in Cart!");
+            return; 
+        }
+
+        // Naya item hai toh normal add karo
         const img = new Image();
         img.onload = () => {
             const canvas = document.createElement('canvas');
@@ -1070,7 +1087,8 @@
                 selectedSize: size,
                 price: Number(price),
                 priceOriginalOld: oldPrice ? Number(oldPrice) : null,
-                cartId: Date.now()
+                cartId: Date.now(),
+                qty: 1 // 🚀 Quantity default 1
             };
             
             setCart(prev => {
@@ -1079,10 +1097,11 @@
                 return newCart;
             });
             setLastAddedTime(Date.now());
-            showToast("Artwork added to your Cart!");
+            showToast("Artwork successfully added to Cart!");
         };
         img.src = art.image;
       };
+
 
       const startCheckout = (items, type, extraData) => {
         if (type === 'Gallery Purchase') {
