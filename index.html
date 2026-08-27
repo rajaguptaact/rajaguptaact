@@ -1144,7 +1144,7 @@
         </div>
       );
 
-      const CartView = () => {
+    const CartView = () => {
         const validItems = cart.filter(item => artworks.some(a => a.id === item.id));
         const total = validItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
 
@@ -1199,21 +1199,13 @@
                         )}
                         
                         <div className="flex items-center justify-end gap-2 md:gap-3 mt-2 w-full">
-                             lassName="text-purple-600 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Move to Wishlist</button>
-                           
-                           <span className="text-gray-300">|</span>
-                           
                            <button onClick={() => {
-                               const updatedCart = cart.filter(c => c.cartId !== item.cartId);
-                               setCart(updatedCart);
-                               try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
-                             <button onClick={() => {
                                const liveArt = artworks.find(a => a.id === item.id);
                                if (liveArt) {
                                    const isWishlisted = wishlist.some(w => w.id === liveArt.id && w.savedSize === item.selectedSize);
                                    if (isWishlisted) {
                                        showToast("⚠️ Already saved in Wishlist!");
-                                       return; // 🚀 Yahan ruk jayega, Cart se nahi hategi (Ghasakegi nahi)
+                                       return; 
                                    }
                                    const newList = [...wishlist, { ...liveArt, savedSize: item.selectedSize }];
                                    setWishlist(newList);
@@ -1224,6 +1216,14 @@
                                setCart(updatedCart);
                                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
                            }} className="text-purple-600 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Move to Wishlist</button>
+                           
+                           <span className="text-gray-300">|</span>
+                           
+                           <button onClick={() => {
+                               const updatedCart = cart.filter(c => c.cartId !== item.cartId);
+                               setCart(updatedCart);
+                               try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
+                           }} className="text-rose-500 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Remove</button>
                         </div>
                      </div>
                    </div>
@@ -1244,10 +1244,8 @@
             )}
           </div>
         );
-      };
-
-                               
-
+      }; 
+               
       const CommissionView = () => {
         const handleCommissionBack = () => {
            if (commissionInput.subject.trim() !== '' || commissionInput.budget !== '' || commissionInput.instagram.trim() !== '') {
