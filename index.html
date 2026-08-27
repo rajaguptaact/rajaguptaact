@@ -921,141 +921,7 @@
         } catch(e) { console.error(e); }
       };
 
-      const sendSilentAlert = (orderInfo) => {
-        if (!orderInfo) return; // Ghost Fix
-        
-        let msg = `🚨 *NEW STUDIO ORDER* 🚨\n\n`;
-        msg += `*Order ID:* ${orderInfo.orderId || "Commission Request"}\n`;
-        msg += `*Date/Time:* ${orderInfo.date} • ${orderInfo.time}\n`;
-        msg += `*Order Type:* ${orderInfo.type}\n`;
-        msg += `*Name:* ${orderInfo.name}\n`;
-        msg += `*WhatsApp:* ${orderInfo.phone}\n`;
-        if (orderInfo.instagram) msg += `*Insta:* ${orderInfo.instagram}\n`;
-        msg += `*Email:* ${orderInfo.email}\n`;
-        msg += `*Country:* ${orderInfo.country}\n\n`;
-        
-        msg += `*Delivery Details:*\n`;
-        msg += `*Address:* ${orderInfo.address}\n`;
-        if (orderInfo.city) {
-           msg += `*City/State:* ${orderInfo.city}, ${orderInfo.state}\n`;
-           msg += `*PIN Code:* ${orderInfo.pin}\n\n`;
-        } else {
-           msg += `*ZIP/Postal:* ${orderInfo.pin}\n\n`;
-        }
-        
-        if (orderInfo.itemDetails && orderInfo.itemDetails.length > 0) {
-           msg += `*Order Items:*\n`;
-           orderInfo.itemDetails.forEach(item => {
-              const qtyStr = (item.qty && item.qty > 1) ? ` (Qty: ${item.qty})` : '';
-              msg += `- ${item.title} (${item.selectedSize})${qtyStr}\n`;
-           });
-           msg += `\n`;
-        }
-
-        msg += `*Total Final Payable:* ${orderInfo.displayAmount}\n`;
-
-        // 🚀 GHOST NOTIFICATION FIX
-        if (msg.trim().length > 20) {
-            const safeMsg = encodeURIComponent(msg);
-            const url = `https://api.telegram.org/bot${ORDER_BOT_TOKEN}/sendMessage?chat_id=${ORDER_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
-            fetch(url).catch(err => console.log("Telegram Error Bypassed"));
-        }
-      };
-
-
-      const shareSite = () => {
-        const shareData = {
-          title: 'Raja Gupta Act | Professional Colour Pencil Studio',
-          text: 'Check out the highly detailed realistic colour pencil artworks by Raja Gupta! We ship worldwide.',
-          url: window.location.href
-        };
-        if (navigator.share) {
-          navigator.share(shareData).catch(console.error);
-        } else {
-          navigator.clipboard.writeText(window.location.href);
-          showToast("Studio link copied to clipboard!");
-        }
-      };
-
-      useEffect(() => {
-        let slowNetworkTimer = setTimeout(() => {
-            if(isLoadingGallery) setIsSlowNetwork(true);
-        }, 4500); 
-
-        const unsubArt = db.collection("RajaStudio").onSnapshot(snap => {
-          const fetchedArts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt);
-          setArtworks(fetchedArts);
-          
-          if (snap.empty) {
-              setTimeout(() => { setShowEmptyGallery(true); setIsLoadingGallery(false); }, 100);
-          } else {
-              setShowEmptyGallery(false);
-              setIsLoadingGallery(false);
-          }
-          
-          clearTimeout(slowNetworkTimer);
-          setIsSlowNetwork(false);
-        });
-
-        const unsubOrd = db.collection("orders").onSnapshot(snap => {
-          setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
-        });
-        const unsubAnn = db.collection("announcements").onSnapshot(snap => {
-          setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
-        });
-        const unsubBg = db.collection("RajaBackgrounds").onSnapshot(snap => {
-          setSavedBackgrounds(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
-        });
-
-        return () => { 
-            unsubArt(); unsubOrd(); unsubAnn(); unsubBg(); 
-            clearTimeout(slowNetworkTimer);
-        };
-      }, []);
-      
-      useEffect(() => {
-        if (isAdmin) {
-           const unsubSess = db.collection("trustedDevices").onSnapshot(snap => {
-               setActiveSessions(snap.docs.map(doc => doc.data()).sort((a,b) => b.createdAt - a.createdAt));
-           });
-           return () => unsubSess();
-        }
-      }, [isAdmin]);
-
-      useEffect(() => { 
-        try {
-            if (window.feather) {
-                window.feather.replace(); 
-            }
-        } catch(e) { console.log(e); }
-      }, [view, menuOpen, currency]);
-
-      const nav = (v) => { 
-          setView(v); 
-          setMenuOpen(false); 
-          window.scrollTo(0,0); 
-          setHasSearched(false);
-          setSearchWaInput('');
-          setRecoveredOrders([]);
-          setIsRecoverOpen(false);
-      };
-
-      const [lastAddedTime, setLastAddedTime] = useState(0);
-
-            const addToCart = (art, size, price, oldPrice) => {
-        const now = Date.now();
-        if (now - lastAddedTime < 3000) {
-            showToast("⏳ Processing... Please wait a moment.");
-            return;
-        }
-
-        if (size && size.includes('Original')) {
-            const alreadyInCart = cart.some(c => c.id === art.id && c.selectedSize.includes('Original'));
-            if (alreadyInCart) {
-                alert("❌ Cannot Add: This Original Artwork is a unique piece and is already in your cart.");
-                return;
-            }
-        }
+                
         
         // 🚀 NAYA LOGIC: Check agar item pehle se cart mein hai (same id, same size)
         const existingItemIndex = cart.findIndex(c => c.id === art.id && c.selectedSize === size);
@@ -1279,6 +1145,330 @@
                                     <p className={`font-black text-lg md:text-xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>{getPrice(item.price)}</p>
                                     
                                     {/* 🚀 SMART PLUS/MINUS QUANTITY CONTROLS */}
+                                    {(!isItemSoldOut && !isDeleted && !item.selectedSize.includes('Original')) && (
+                                        <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-md px-1.5 py-0.5 mt-1">
+                                            <button onClick={() => handleQtyChange(item.cartId, -1)} className="text-gray-500 hover:text-rose-500 font-bold px-1.5 text-xs md:text-sm cursor-pointer">−</button>
+                                            <span className="text-[10px] md:text-xs font-black text-gray-700 w-8 text-center select-none">Qty: {itemQty}</span>
+                                            <button onClick={() => handleQtyChange(item.cartId, 1)} className="text-gray-500 hover:text-green-500 font-bold px-1.5 text-xs md:text-sm cursor-pointer">+</button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                             const sendSilentAlert = (orderInfo) => {
+        if (!orderInfo) return; // 🚀 Ghost Fix
+        
+        let msg = `🚨 *NEW STUDIO ORDER* 🚨\n\n`;
+        msg += `*Order ID:* ${orderInfo.orderId || "Commission Request"}\n`;
+        msg += `*Date/Time:* ${orderInfo.date} • ${orderInfo.time}\n`;
+        msg += `*Order Type:* ${orderInfo.type}\n`;
+        msg += `*Name:* ${orderInfo.name}\n`;
+        msg += `*WhatsApp:* ${orderInfo.phone}\n`;
+        if (orderInfo.instagram) msg += `*Insta:* ${orderInfo.instagram}\n`;
+        msg += `*Email:* ${orderInfo.email}\n`;
+        msg += `*Country:* ${orderInfo.country}\n\n`;
+        
+        msg += `*Delivery Details:*\n`;
+        msg += `*Address:* ${orderInfo.address}\n`;
+        if (orderInfo.city) {
+           msg += `*City/State:* ${orderInfo.city}, ${orderInfo.state}\n`;
+           msg += `*PIN Code:* ${orderInfo.pin}\n\n`;
+        } else {
+           msg += `*ZIP/Postal:* ${orderInfo.pin}\n\n`;
+        }
+        
+        if (orderInfo.itemDetails && orderInfo.itemDetails.length > 0) {
+           msg += `*Order Items:*\n`;
+           orderInfo.itemDetails.forEach(item => {
+              const qtyStr = (item.qty && item.qty > 1) ? ` (Qty: ${item.qty})` : '';
+              msg += `- ${item.title} (${item.selectedSize})${qtyStr}\n`;
+           });
+           msg += `\n`;
+        }
+
+        msg += `*Total Final Payable:* ${orderInfo.displayAmount}\n`;
+
+        // 🚀 GHOST NOTIFICATION FIX: Only send if message is valid
+        if (msg.trim().length > 20) {
+            const safeMsg = encodeURIComponent(msg);
+            const url = `https://api.telegram.org/bot${ORDER_BOT_TOKEN}/sendMessage?chat_id=${ORDER_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
+            fetch(url).catch(err => console.log("Telegram Error Bypassed"));
+        }
+      };
+
+      const shareSite = () => {
+        const shareData = {
+          title: 'Raja Gupta Act | Professional Colour Pencil Studio',
+          text: 'Check out the highly detailed realistic colour pencil artworks by Raja Gupta! We ship worldwide.',
+          url: window.location.href
+        };
+        if (navigator.share) {
+          navigator.share(shareData).catch(console.error);
+        } else {
+          navigator.clipboard.writeText(window.location.href);
+          showToast("Studio link copied to clipboard!");
+        }
+      };
+
+      useEffect(() => {
+        let slowNetworkTimer = setTimeout(() => {
+            if(isLoadingGallery) setIsSlowNetwork(true);
+        }, 4500); 
+
+        const unsubArt = db.collection("RajaStudio").onSnapshot(snap => {
+          const fetchedArts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt);
+          setArtworks(fetchedArts);
+          
+          if (snap.empty) {
+              setTimeout(() => { setShowEmptyGallery(true); setIsLoadingGallery(false); }, 100);
+          } else {
+              setShowEmptyGallery(false);
+              setIsLoadingGallery(false);
+          }
+          
+          clearTimeout(slowNetworkTimer);
+          setIsSlowNetwork(false);
+        });
+
+        const unsubOrd = db.collection("orders").onSnapshot(snap => {
+          setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
+        });
+        const unsubAnn = db.collection("announcements").onSnapshot(snap => {
+          setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
+        });
+        const unsubBg = db.collection("RajaBackgrounds").onSnapshot(snap => {
+          setSavedBackgrounds(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
+        });
+
+        return () => { 
+            unsubArt(); unsubOrd(); unsubAnn(); unsubBg(); 
+            clearTimeout(slowNetworkTimer);
+        };
+      }, []);
+      
+      useEffect(() => {
+        if (isAdmin) {
+           const unsubSess = db.collection("trustedDevices").onSnapshot(snap => {
+               setActiveSessions(snap.docs.map(doc => doc.data()).sort((a,b) => b.createdAt - a.createdAt));
+           });
+           return () => unsubSess();
+        }
+      }, [isAdmin]);
+
+      useEffect(() => { 
+        try {
+            if (window.feather) {
+                window.feather.replace(); 
+            }
+        } catch(e) { console.log(e); }
+      }, [view, menuOpen, currency]);
+
+      const nav = (v) => { 
+          setView(v); 
+          setMenuOpen(false); 
+          window.scrollTo(0,0); 
+          setHasSearched(false);
+          setSearchWaInput('');
+          setRecoveredOrders([]);
+          setIsRecoverOpen(false);
+      };
+
+      const [lastAddedTime, setLastAddedTime] = useState(0);
+
+      const addToCart = (art, size, price, oldPrice) => {
+        const now = Date.now();
+        if (now - lastAddedTime < 3000) {
+            showToast("⏳ Processing... Please wait a moment.");
+            return;
+        }
+
+        if (size && size.includes('Original')) {
+            const alreadyInCart = cart.some(c => c.id === art.id && c.selectedSize.includes('Original'));
+            if (alreadyInCart) {
+                alert("❌ Cannot Add: This Original Artwork is a unique piece and is already in your cart.");
+                return;
+            }
+        }
+        
+        const existingItemIndex = cart.findIndex(c => c.id === art.id && c.selectedSize === size);
+
+        if (existingItemIndex !== -1) {
+            setCart(prev => {
+                const newCart = [...prev];
+                newCart[existingItemIndex].qty = (newCart[existingItemIndex].qty || 1) + 1;
+                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
+                return newCart;
+            });
+            setLastAddedTime(Date.now());
+            showToast("Item quantity updated in Cart!");
+            return; 
+        }
+
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX = 200; 
+            let w = img.width; let h = img.height;
+            if (w > h && w > MAX) { h *= MAX / w; w = MAX; } 
+            else if (h > MAX) { w *= MAX / h; h = MAX; }
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            
+            const lightCartItem = {
+                id: art.id,
+                title: art.title,
+                image: canvas.toDataURL('image/jpeg', 0.85), 
+                selectedSize: size,
+                price: Number(price),
+                priceOriginalOld: oldPrice ? Number(oldPrice) : null,
+                cartId: Date.now(),
+                qty: 1
+            };
+            
+            setCart(prev => {
+                const newCart = [lightCartItem, ...prev];
+                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
+                return newCart;
+            });
+            setLastAddedTime(Date.now());
+            showToast("Artwork successfully added to Cart!");
+        };
+        img.src = art.image;
+      };
+
+      const startCheckout = (items, type, extraData) => {
+        if (type === 'Gallery Purchase') {
+           let soldItems = [];
+           items.forEach(cartItem => {
+               if (cartItem.selectedSize && cartItem.selectedSize.includes('Original')) {
+                   const liveArt = artworks.find(a => a.id === cartItem.id);
+                   if (liveArt && liveArt.isSold) {
+                       soldItems.push(cartItem.title);
+                   }
+               }
+           });
+           if (soldItems.length > 0) {
+               alert(`❌ STOCK ALERT: The following Original Artwork(s) have just been SOLD OUT to another buyer:\n\n- ${soldItems.join('\n- ')}\n\nPlease remove them from your cart to proceed.`);
+               return; 
+           }
+
+           const hasDeletedItems = items.some(item => !artworks.find(a => a.id === item.id));
+           if (hasDeletedItems) {
+               alert("❌ Action Required: Some items in your cart have been removed by the artist and are no longer available. Please click 'Remove' on the deleted items to proceed with your purchase.");
+               return;
+           }
+        }
+
+        let total = items.reduce((sum, item) => sum + ((Number(item.price) || 0) * (item.qty || 1)), 0);
+        const initCountry = currency === 'USD' ? 'International' : 'India';
+        const insta = (extraData && extraData.instagram) ? extraData.instagram : '';
+        
+        setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: initCountry, type: type, itemDetails: items, amount: total, instagram: insta });
+        
+        setIsValidating(false);
+        nav('checkout_form');
+      };
+
+      const GalleryView = () => (
+        <div className="p-3 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-12">
+          <div className="text-center space-y-3 mb-6 md:mb-12 glass-panel p-5 md:p-10 rounded-2xl md:rounded-3xl shadow-lg border-t-4 border-t-purple-500 relative mx-2 md:mx-0">
+            <h1 className="text-2xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">
+              Highly Detailed Realistic Portraits
+            </h1>
+            <p className="text-gray-700 font-bold text-[11px] md:text-lg max-w-2xl mx-auto leading-relaxed">
+              Welcome to my professional studio. All gallery pieces are 100% authentic, highly detailed <span className="text-purple-600">Colour Pencil</span> artworks. Every original piece is strictly drawn on premium <span className="text-pink-600">A4 size paper</span>.
+            </p>
+          </div>
+          
+          {isLoadingGallery || !isDataLoaded ? (
+            <div className="text-center p-10 glass-panel rounded-2xl shadow-xl font-bold text-purple-600 text-lg flex flex-col items-center justify-center gap-4 mx-2 md:mx-0">
+              <svg className="animate-spin h-8 w-8 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              <span>Loading Gallery.... Please Wait</span>
+              {isSlowNetwork && <span className="text-sm text-rose-500 mt-2 animate-pulse font-black">⚠️ Your internet connection seems slow. Please wait...</span>}
+            </div>
+          ) : artworks.length > 0 ? (
+            artworks.map(art => <ArtworkCard key={art.id} art={art} getPrice={getPrice} addToCart={addToCart} wishlist={wishlist || []} userLikes={userLikes || []} toggleWishlist={toggleWishlist} handleLikeArt={handleLikeArt} shareArtwork={shareArtwork} setWishlistPopupArt={setWishlistPopupArt} />)
+          ) : showEmptyGallery ? (
+            <div className="text-center p-10 glass-panel rounded-2xl shadow-xl font-bold text-gray-500 text-lg flex flex-col items-center justify-center gap-4 mx-2 md:mx-0">
+              <span className="text-4xl">🖼️</span>
+              <span>No artworks uploaded yet. Please check back later!</span>
+            </div>
+          ) : null}
+        </div>
+      );
+
+      const CartView = () => {
+        const validItems = cart.filter(item => artworks.some(a => a.id === item.id));
+        const total = validItems.reduce((sum, item) => sum + ((Number(item.price) || 0) * (item.qty || 1)), 0);
+
+        const hasDeletedItems = cart.some(item => {
+           const liveArt = artworks.find(a => a.id === item.id);
+           return !isLoadingGallery && !liveArt;
+        });
+
+        const handleQtyChange = (cartId, delta) => {
+            setCart(prev => {
+                const newCart = prev.map(c => {
+                    if (c.cartId === cartId) {
+                        const newQty = (c.qty || 1) + delta;
+                        return { ...c, qty: newQty > 0 ? newQty : 0 };
+                    }
+                    return c;
+                }).filter(c => c.qty > 0); 
+                
+                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
+                return newCart;
+            });
+        };
+
+        return (
+          <div className="p-4 md:p-6 max-w-3xl mx-auto min-h-screen">
+            <button onClick={() => nav('gallery')} className="mb-6 text-purple-600 font-bold flex items-center gap-2 hover:text-purple-800 transition">
+               &larr; Back to Gallery
+            </button>
+            <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b pb-4 text-purple-800">Your Cart</h2>
+            {cart.length === 0 ? <p className="text-gray-500 font-bold glass-panel p-8 rounded-2xl text-center">Your cart is completely empty.</p> : (
+              <div className="space-y-4">
+                {cart.map((item, i) => {
+                  const liveArt = artworks.find(a => a.id === item.id);
+                  const isDeleted = !isLoadingGallery && !liveArt; 
+                  const isItemSoldOut = liveArt && item.selectedSize && item.selectedSize.includes('Original') && liveArt.isSold;
+                  const itemQty = item.qty || 1;
+
+                  return (
+                    <div key={i} className={`flex flex-col md:flex-row md:items-center justify-between glass-panel p-4 rounded-2xl shadow-sm border gap-4 md:gap-0 ${isDeleted ? 'border-gray-400 bg-gray-100 opacity-80' : isItemSoldOut ? 'border-red-300 bg-red-50' : 'border-white'}`}>
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <img src={item.image} className={`w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none ${isDeleted ? 'grayscale blur-[1px]' : ''}`} />
+                            {isDeleted && <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center"><svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg></div>}
+                        </div>
+                        <div>
+                           <h4 className={`font-black text-sm md:text-lg line-clamp-1 ${isDeleted ? 'text-gray-500 line-through' : isItemSoldOut ? 'text-red-800' : 'text-gray-900'}`}>{item.title}</h4>
+                           <p className={`text-xs md:text-sm font-bold ${isDeleted ? 'text-gray-400' : 'text-purple-600'}`}>{item.selectedSize}</p>
+                           {isDeleted && <span className="text-[9px] md:text-[10px] bg-gray-600 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block shadow-sm">Item Unavailable</span>}
+                           {!isDeleted && isItemSoldOut && <span className="text-[9px] md:text-[10px] bg-red-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block animate-pulse shadow-sm">Sold Out</span>}
+                        </div>
+                      </div>
+                      
+                      <div className="text-right flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start">
+                        {isDeleted ? (
+                            <p className="font-black text-lg md:text-xl text-gray-500 line-through">{getPrice(item.price)}</p>
+                        ) : (
+                            <div className="flex flex-col items-end">
+                                {item.priceOriginalOld && item.price && Number(item.priceOriginalOld) > Number(item.price) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
+                                  <div className="flex items-center gap-1.5 mb-0.5">
+                                    <span className="bg-yellow-400 text-gray-900 text-[9px] md:text-[10px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                                      {Math.round(((Number(item.priceOriginalOld) - Number(item.price)) / Number(item.priceOriginalOld)) * 100)}% OFF
+                                    </span>
+                                    <span className="line-through text-gray-400 text-[10px] md:text-xs font-bold">{getPrice(item.priceOriginalOld)}</span>
+                                  </div>
+                                ) : null}
+                                
+                                <div className="flex flex-col items-end gap-1">
+                                    <p className={`font-black text-lg md:text-xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>{getPrice(item.price)}</p>
+                                    
                                     {(!isItemSoldOut && !isDeleted && !item.selectedSize.includes('Original')) && (
                                         <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-md px-1.5 py-0.5 mt-1">
                                             <button onClick={() => handleQtyChange(item.cartId, -1)} className="text-gray-500 hover:text-rose-500 font-bold px-1.5 text-xs md:text-sm cursor-pointer">−</button>
