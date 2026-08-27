@@ -2252,7 +2252,34 @@
               finalPriceOld = ""; 
           }
 
-                   if (editArtId && !isMediaModified) {
+                            // 🚀 ADMIN SMART LOCK: Agar kuch change nahi kiya, toh upload roko
+          if (editArtId) {
+              const liveArt = artworks.find(a => a.id === editArtId);
+              if (liveArt) {
+                  const isTextChanged = 
+                      liveArt.title !== uploadData.title ||
+                      liveArt.desc !== uploadData.desc ||
+                      liveArt.priceOriginal !== finalPriceCurrent ||
+                      liveArt.priceOriginalOld !== finalPriceOld ||
+                      liveArt.priceA3 !== uploadData.priceA3 ||
+                      liveArt.priceA4 !== uploadData.priceA4 ||
+                      liveArt.priceA5 !== uploadData.priceA5 ||
+                      !!liveArt.isSold !== !!uploadData.isSold ||
+                      (Number(liveArt.fakeLikes) || 0) !== (Number(uploadData.fakeLikes) || 0);
+
+                  const isBgsChanged = JSON.stringify(liveArt.savedBgsList || []) !== JSON.stringify(selectedBgs);
+                  const isAdjChanged = JSON.stringify(liveArt.savedBgAdjustments || {}) !== JSON.stringify(bgAdjustments);
+
+                  if (!isTextChanged && !isMediaModified && !isBgsChanged && !isAdjChanged) {
+                      alert("⚠️ No modifications detected. The artwork is already up to date.");
+                      showToast("No changes to update.");
+                      setUploadStatus(""); // Roko load hone se
+                      return; 
+                  }
+              }
+          }
+
+          if (editArtId && !isMediaModified) {
               setUploadStatus("Updating Details & Likes...");
               
               const quickData = {
