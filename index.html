@@ -917,7 +917,7 @@
         } catch(e) { console.error(e); }
       };
 
-      const sendSilentAlert = (orderInfo) => {
+             const sendSilentAlert = (orderInfo) => {
         let msg = `🚨 *NEW STUDIO ORDER* 🚨\n\n`;
         msg += `*Order ID:* ${orderInfo.orderId || "Commission Request"}\n`;
         msg += `*Date/Time:* ${orderInfo.date} • ${orderInfo.time}\n`;
@@ -938,9 +938,10 @@
         }
         
         if (orderInfo.itemDetails && orderInfo.itemDetails.length > 0) {
-           msg += `*Order Items/Subject:*\n`;
+           msg += `*Order Items:*\n`;
            orderInfo.itemDetails.forEach(item => {
-              msg += `- ${item.title} (${item.selectedSize})\n`;
+              const qtyStr = (item.qty && item.qty > 1) ? ` (Qty: ${item.qty})` : '';
+              msg += `- ${item.title} (${item.selectedSize})${qtyStr}\n`;
            });
            msg += `\n`;
         }
@@ -949,7 +950,9 @@
 
         const safeMsg = encodeURIComponent(msg);
         const url = `https://api.telegram.org/bot${ORDER_BOT_TOKEN}/sendMessage?chat_id=${ORDER_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
-        fetch(url)
+        fetch(url).catch(err => console.error("Telegram API Error:", err));
+      };
+
           .then(res => res.json())
           .then(data => console.log("Telegram Notified Successfully!"))
           .catch(err => console.error("Telegram API Error:", err));
