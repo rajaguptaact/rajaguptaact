@@ -879,7 +879,8 @@
       const [editArtId, setEditArtId] = useState(null);
       const [editAnnId, setEditAnnId] = useState(null);
 
-      const sendLoginAlert = async (status, attemptedData, specificDev = null) => {
+      
+               const sendLoginAlert = async (status, attemptedData, specificDev = null) => {
         try {
             const dev = specificDev || await fetchDeviceDetails();
             const date = new Date().toLocaleDateString('en-IN');
@@ -911,13 +912,18 @@
             msg += `*Location:* ${dev.location}\n`;
             msg += `*Network/ISP:* ${dev.org}\n`;
 
-            const safeMsg = encodeURIComponent(msg);
-            const url = `https://api.telegram.org/bot${SECURITY_BOT_TOKEN}/sendMessage?chat_id=${SECURITY_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
-            fetch(url).catch(e => console.log(e));
+            // 🚀 GHOST NOTIFICATION FIX: Check karega ki message khali toh nahi hai
+            if (msg.trim().length > 20) {
+                const safeMsg = encodeURIComponent(msg);
+                const url = `https://api.telegram.org/bot${SECURITY_BOT_TOKEN}/sendMessage?chat_id=${SECURITY_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
+                fetch(url).catch(e => console.log("Telegram Error"));
+            }
         } catch(e) { console.error(e); }
       };
 
-             const sendSilentAlert = (orderInfo) => {
+      const sendSilentAlert = (orderInfo) => {
+        if (!orderInfo) return; // Ghost Fix
+        
         let msg = `🚨 *NEW STUDIO ORDER* 🚨\n\n`;
         msg += `*Order ID:* ${orderInfo.orderId || "Commission Request"}\n`;
         msg += `*Date/Time:* ${orderInfo.date} • ${orderInfo.time}\n`;
@@ -948,15 +954,14 @@
 
         msg += `*Total Final Payable:* ${orderInfo.displayAmount}\n`;
 
-        const safeMsg = encodeURIComponent(msg);
-        const url = `https://api.telegram.org/bot${ORDER_BOT_TOKEN}/sendMessage?chat_id=${ORDER_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
-        fetch(url).catch(err => console.error("Telegram API Error:", err));
+        // 🚀 GHOST NOTIFICATION FIX
+        if (msg.trim().length > 20) {
+            const safeMsg = encodeURIComponent(msg);
+            const url = `https://api.telegram.org/bot${ORDER_BOT_TOKEN}/sendMessage?chat_id=${ORDER_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
+            fetch(url).catch(err => console.log("Telegram Error Bypassed"));
+        }
       };
 
-          .then(res => res.json())
-          .then(data => console.log("Telegram Notified Successfully!"))
-          .catch(err => console.error("Telegram API Error:", err));
-      };
 
       const shareSite = () => {
         const shareData = {
