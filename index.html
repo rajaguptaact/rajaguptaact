@@ -1201,6 +1201,59 @@
                            {isDeleted && <span className="text-[9px] md:text-[10px] bg-gray-600 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block shadow-sm">Artwork Deleted</span>}
                            {!isDeleted && isItemSoldOut && <span className="text-[9px] md:text-[10px] bg-red-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block animate-pulse shadow-sm">Sold Out</span>}
                         </div>
+       const CartView = () => {
+        const validItems = cart.filter(item => artworks.some(a => a.id === item.id));
+        // 🚀 Total calculation with Quantity
+        const total = validItems.reduce((sum, item) => sum + ((Number(item.price) || 0) * (item.qty || 1)), 0);
+
+        const hasDeletedItems = cart.some(item => {
+           const liveArt = artworks.find(a => a.id === item.id);
+           return !isLoadingGallery && !liveArt;
+        });
+
+        // 🚀 NAYA LOGIC: Plus/Minus Handler
+        const handleQtyChange = (cartId, delta) => {
+            setCart(prev => {
+                const newCart = prev.map(c => {
+                    if (c.cartId === cartId) {
+                        const newQty = (c.qty || 1) + delta;
+                        return { ...c, qty: newQty > 0 ? newQty : 0 };
+                    }
+                    return c;
+                }).filter(c => c.qty > 0); // Agar quantity 0 ho gayi toh remove kar do
+                
+                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
+                return newCart;
+            });
+        };
+
+        return (
+          <div className="p-4 md:p-6 max-w-3xl mx-auto min-h-screen">
+            <button onClick={() => nav('gallery')} className="mb-6 text-purple-600 font-bold flex items-center gap-2 hover:text-purple-800 transition">
+               &larr; Back to Gallery
+            </button>
+            <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b pb-4 text-purple-800">Your Cart</h2>
+            {cart.length === 0 ? <p className="text-gray-500 font-bold glass-panel p-8 rounded-2xl text-center">Your cart is completely empty.</p> : (
+              <div className="space-y-4">
+                {cart.map((item, i) => {
+                  const liveArt = artworks.find(a => a.id === item.id);
+                  const isDeleted = !isLoadingGallery && !liveArt; 
+                  const isItemSoldOut = liveArt && item.selectedSize && item.selectedSize.includes('Original') && liveArt.isSold;
+                  const itemQty = item.qty || 1;
+
+                  return (
+                    <div key={i} className={`flex flex-col md:flex-row md:items-center justify-between glass-panel p-4 rounded-2xl shadow-sm border gap-4 md:gap-0 ${isDeleted ? 'border-gray-400 bg-gray-100 opacity-80' : isItemSoldOut ? 'border-red-300 bg-red-50' : 'border-white'}`}>
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <img src={item.image} className={`w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none ${isDeleted ? 'grayscale blur-[1px]' : ''}`} />
+                            {isDeleted && <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center"><svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg></div>}
+                        </div>
+                        <div>
+                           <h4 className={`font-black text-sm md:text-lg line-clamp-1 ${isDeleted ? 'text-gray-500 line-through' : isItemSoldOut ? 'text-red-800' : 'text-gray-900'}`}>{item.title}</h4>
+                           <p className={`text-xs md:text-sm font-bold ${isDeleted ? 'text-gray-400' : 'text-purple-600'}`}>{item.selectedSize}</p>
+                           {isDeleted && <span className="text-[9px] md:text-[10px] bg-gray-600 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block shadow-sm">Item Unavailable</span>}
+                           {!isDeleted && isItemSoldOut && <span className="text-[9px] md:text-[10px] bg-red-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block animate-pulse shadow-sm">Sold Out</span>}
+                        </div>
                       </div>
                       
                       <div className="text-right flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start">
@@ -1216,7 +1269,19 @@
                                     <span className="line-through text-gray-400 text-[10px] md:text-xs font-bold">{getPrice(item.priceOriginalOld)}</span>
                                   </div>
                                 ) : null}
-                                <p className={`font-black text-lg md:text-xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>{getPrice(item.price)}</p>
+                                
+                                <div className="flex flex-col items-end gap-1">
+                                    <p className={`font-black text-lg md:text-xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>{getPrice(item.price)}</p>
+                                    
+                                    {/* 🚀 SMART PLUS/MINUS QUANTITY CONTROLS */}
+                                    {(!isItemSoldOut && !isDeleted && !item.selectedSize.includes('Original')) && (
+                                        <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-md px-1.5 py-0.5 mt-1">
+                                            <button onClick={() => handleQtyChange(item.cartId, -1)} className="text-gray-500 hover:text-rose-500 font-bold px-1.5 text-xs md:text-sm cursor-pointer">−</button>
+                                            <span className="text-[10px] md:text-xs font-black text-gray-700 w-8 text-center select-none">Qty: {itemQty}</span>
+                                            <button onClick={() => handleQtyChange(item.cartId, 1)} className="text-gray-500 hover:text-green-500 font-bold px-1.5 text-xs md:text-sm cursor-pointer">+</button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
                         
@@ -1226,13 +1291,13 @@
                                if (liveArt) {
                                    const isWishlisted = wishlist.some(w => w.id === liveArt.id && w.savedSize === item.selectedSize);
                                    if (isWishlisted) {
-                                       showToast("⚠️ Already saved in Wishlist!");
+                                       showToast("⚠️ Already saved in your Wishlist.");
                                        return; 
                                    }
                                    const newList = [...wishlist, { ...liveArt, savedSize: item.selectedSize }];
                                    setWishlist(newList);
                                    if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
-                                   showToast(`🔖 Moved ${item.selectedSize} to Wishlist!`);
+                                   showToast(`🔖 Saved ${item.selectedSize} to Wishlist.`);
                                }
                                const updatedCart = cart.filter(c => c.cartId !== item.cartId);
                                setCart(updatedCart);
@@ -1254,7 +1319,7 @@
                 
                 {hasDeletedItems && (
                     <div className="bg-red-50 text-red-700 p-3 md:p-4 rounded-xl text-xs md:text-sm font-bold border border-red-200 mt-6 text-center animate-pulse">
-                       ⚠️ Action Required: Some artworks in your cart have been completely deleted by the artist. Please click 'Remove' on those items to proceed.
+                       ⚠️ Notice: Some items in your cart are no longer available. Please remove them to proceed.
                     </div>
                 )}
 
@@ -1266,7 +1331,8 @@
             )}
           </div>
         );
-      }; 
+      };
+
                
       const CommissionView = () => {
         const handleCommissionBack = () => {
