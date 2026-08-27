@@ -95,7 +95,7 @@
         });
     } catch (e) {}
     
-      const ArtworkCard = ({ art, getPrice, addToCart, wishlist, userLikes, toggleWishlist, handleLikeArt, shareArtwork }) => {
+      const ArtworkCard = ({ art, getPrice, addToCart, wishlist, userLikes, toggleWishlist, handleLikeArt, shareArtwork, setWishlistPopupArt }) => {
 
       const scrollRef = useRef(null);
       const [mockups, setMockups] = useState(() => {
