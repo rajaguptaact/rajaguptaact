@@ -1199,21 +1199,7 @@
                         )}
                         
                         <div className="flex items-center justify-end gap-2 md:gap-3 mt-2 w-full">
-                           <button onClick={() => {
-                               const liveArt = artworks.find(a => a.id === item.id);
-                               if (liveArt) {
-                                   const isWishlisted = wishlist.some(w => w.id === liveArt.id && w.savedSize === item.selectedSize);
-                                   if (!isWishlisted) {
-                                       const newList = [...wishlist, { ...liveArt, savedSize: item.selectedSize }];
-                                       setWishlist(newList);
-                                       if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
-                                   }
-                                   showToast(`Moved ${item.selectedSize} to Wishlist!`);
-                               }
-                               const updatedCart = cart.filter(c => c.cartId !== item.cartId);
-                               setCart(updatedCart);
-                               try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
-                           }} className="text-purple-600 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Move to Wishlist</button>
+                             lassName="text-purple-600 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Move to Wishlist</button>
                            
                            <span className="text-gray-300">|</span>
                            
@@ -1221,7 +1207,23 @@
                                const updatedCart = cart.filter(c => c.cartId !== item.cartId);
                                setCart(updatedCart);
                                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
-                           }} className="text-rose-500 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Remove</button>
+                             <button onClick={() => {
+                               const liveArt = artworks.find(a => a.id === item.id);
+                               if (liveArt) {
+                                   const isWishlisted = wishlist.some(w => w.id === liveArt.id && w.savedSize === item.selectedSize);
+                                   if (isWishlisted) {
+                                       showToast("⚠️ Already saved in Wishlist!");
+                                       return; // 🚀 Yahan ruk jayega, Cart se nahi hategi (Ghasakegi nahi)
+                                   }
+                                   const newList = [...wishlist, { ...liveArt, savedSize: item.selectedSize }];
+                                   setWishlist(newList);
+                                   if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
+                                   showToast(`🔖 Moved ${item.selectedSize} to Wishlist!`);
+                               }
+                               const updatedCart = cart.filter(c => c.cartId !== item.cartId);
+                               setCart(updatedCart);
+                               try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
+                           }} className="text-purple-600 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Move to Wishlist</button>
                         </div>
                      </div>
                    </div>
