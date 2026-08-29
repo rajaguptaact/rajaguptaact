@@ -939,9 +939,10 @@
         
         if (orderInfo.itemDetails && orderInfo.itemDetails.length > 0) {
            msg += `*Order Items/Subject:*\n`;
-           orderInfo.itemDetails.forEach(item => {
-              msg += `- ${item.title} (${item.selectedSize})\n`;
+            orderInfo.itemDetails.forEach(item => {
+           msg += `- ${item.title} (${item.selectedSize}) - Qty: ${item.qty || 1}\n`;
            });
+
            msg += `\n`;
         }
 
