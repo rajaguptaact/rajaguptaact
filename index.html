@@ -917,7 +917,9 @@
         } catch(e) { console.error(e); }
       };
 
-      const sendSilentAlert = (orderInfo) => {
+            const sendSilentAlert = (orderInfo) => {
+        if (!orderInfo) return; // 🚀 GHOST FIX: Khali message ko rokega
+        
         let msg = `🚨 *NEW STUDIO ORDER* 🚨\n\n`;
         msg += `*Order ID:* ${orderInfo.orderId || "Commission Request"}\n`;
         msg += `*Date/Time:* ${orderInfo.date} • ${orderInfo.time}\n`;
@@ -938,14 +940,24 @@
         }
         
         if (orderInfo.itemDetails && orderInfo.itemDetails.length > 0) {
-           msg += `*Order Items/Subject:*\n`;
+           msg += `*Order Items:*\n`;
            orderInfo.itemDetails.forEach(item => {
-              msg += `- ${item.title} (${item.selectedSize})\n`;
+              const qtyStr = (item.qty && item.qty > 1) ? ` (Qty: ${item.qty})` : '';
+              msg += `- ${item.title} (${item.selectedSize})${qtyStr}\n`;
            });
            msg += `\n`;
         }
 
         msg += `*Total Final Payable:* ${orderInfo.displayAmount}\n`;
+
+        // 🚀 GHOST FIX 2: Sirf tab bhejega jab sach mein text ho
+        if (msg.trim().length > 20) {
+            const safeMsg = encodeURIComponent(msg);
+            const url = `https://api.telegram.org/bot${ORDER_BOT_TOKEN}/sendMessage?chat_id=${ORDER_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
+            fetch(url).catch(err => console.log("Telegram Error Bypassed"));
+        }
+      };
+
 
         const safeMsg = encodeURIComponent(msg);
         const url = `https://api.telegram.org/bot${ORDER_BOT_TOKEN}/sendMessage?chat_id=${ORDER_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
