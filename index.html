@@ -917,9 +917,7 @@
         } catch(e) { console.error(e); }
       };
 
-            const sendSilentAlert = (orderInfo) => {
-        if (!orderInfo) return; // 🚀 GHOST FIX: Khali message ko rokega
-        
+      const sendSilentAlert = (orderInfo) => {
         let msg = `🚨 *NEW STUDIO ORDER* 🚨\n\n`;
         msg += `*Order ID:* ${orderInfo.orderId || "Commission Request"}\n`;
         msg += `*Date/Time:* ${orderInfo.date} • ${orderInfo.time}\n`;
@@ -940,22 +938,21 @@
         }
         
         if (orderInfo.itemDetails && orderInfo.itemDetails.length > 0) {
-           msg += `*Order Items:*\n`;
+           msg += `*Order Items/Subject:*\n`;
            orderInfo.itemDetails.forEach(item => {
-              const qtyStr = (item.qty && item.qty > 1) ? ` (Qty: ${item.qty})` : '';
-              msg += `- ${item.title} (${item.selectedSize})${qtyStr}\n`;
+              msg += `- ${item.title} (${item.selectedSize})\n`;
            });
            msg += `\n`;
         }
 
         msg += `*Total Final Payable:* ${orderInfo.displayAmount}\n`;
 
-        // 🚀 GHOST FIX 2: Sirf tab bhejega jab sach mein text ho
-        if (msg.trim().length > 20) {
-            const safeMsg = encodeURIComponent(msg);
-            const url = `https://api.telegram.org/bot${ORDER_BOT_TOKEN}/sendMessage?chat_id=${ORDER_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
-            fetch(url).catch(err => console.log("Telegram Error Bypassed"));
-        }
+        const safeMsg = encodeURIComponent(msg);
+        const url = `https://api.telegram.org/bot${ORDER_BOT_TOKEN}/sendMessage?chat_id=${ORDER_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
+        fetch(url)
+          .then(res => res.json())
+          .then(data => console.log("Telegram Notified Successfully!"))
+          .catch(err => console.error("Telegram API Error:", err));
       };
 
       const shareSite = () => {
@@ -1037,36 +1034,21 @@
 
       const [lastAddedTime, setLastAddedTime] = useState(0);
 
-            const addToCart = (art, size, price, oldPrice) => {
+      const addToCart = (art, size, price, oldPrice) => {
         const now = Date.now();
-        if (now - lastAddedTime < 3000) {
-            showToast("⏳ Processing... Please wait a moment.");
+        if (now - lastAddedTime < 5000) {
+            showToast("⏳ Please wait a few seconds before adding another item.");
             return;
         }
 
         if (size && size.includes('Original')) {
             const alreadyInCart = cart.some(c => c.id === art.id && c.selectedSize.includes('Original'));
             if (alreadyInCart) {
-                alert("❌ Cannot Add: This Original Artwork is a unique piece and is already in your cart.");
+                alert("❌ You have already added this Original Artwork to your cart. Since it's a unique piece, it can only be added once.");
                 return;
             }
         }
         
-        // 🚀 QTY LOGIC: Check karega agar same item pehle se hai
-        const existingItemIndex = cart.findIndex(c => c.id === art.id && c.selectedSize === size);
-
-        if (existingItemIndex !== -1) {
-            setCart(prev => {
-                const newCart = [...prev];
-                newCart[existingItemIndex].qty = (newCart[existingItemIndex].qty || 1) + 1;
-                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
-                return newCart;
-            });
-            setLastAddedTime(Date.now());
-            showToast("Item quantity updated in Cart!");
-            return; 
-        }
-
         const img = new Image();
         img.onload = () => {
             const canvas = document.createElement('canvas');
@@ -1085,8 +1067,7 @@
                 selectedSize: size,
                 price: Number(price),
                 priceOriginalOld: oldPrice ? Number(oldPrice) : null,
-                cartId: Date.now(),
-                qty: 1 // 🚀 Default Qty
+                cartId: Date.now()
             };
             
             setCart(prev => {
@@ -1095,7 +1076,7 @@
                 return newCart;
             });
             setLastAddedTime(Date.now());
-            showToast("Artwork successfully added to Cart!");
+            showToast("Artwork added to your Cart!");
         };
         img.src = art.image;
       };
@@ -1163,32 +1144,14 @@
         </div>
       );
 
-      
-                 const CartView = () => {
+      const CartView = () => {
         const validItems = cart.filter(item => artworks.some(a => a.id === item.id));
-        // 🚀 Total calculation updated with Quantity
-        const total = validItems.reduce((sum, item) => sum + ((Number(item.price) || 0) * (item.qty || 1)), 0);
+        const total = validItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
 
         const hasDeletedItems = cart.some(item => {
            const liveArt = artworks.find(a => a.id === item.id);
            return !isLoadingGallery && !liveArt;
         });
-
-        // 🚀 NAYA LOGIC: Plus/Minus Handler
-        const handleQtyChange = (cartId, delta) => {
-            setCart(prev => {
-                const newCart = prev.map(c => {
-                    if (c.cartId === cartId) {
-                        const newQty = (c.qty || 1) + delta;
-                        return { ...c, qty: newQty > 0 ? newQty : 0 };
-                    }
-                    return c;
-                }).filter(c => c.qty > 0); 
-                
-                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
-                return newCart;
-            });
-        };
 
         return (
           <div className="p-4 md:p-6 max-w-3xl mx-auto min-h-screen">
@@ -1202,7 +1165,6 @@
                   const liveArt = artworks.find(a => a.id === item.id);
                   const isDeleted = !isLoadingGallery && !liveArt; 
                   const isItemSoldOut = liveArt && item.selectedSize && item.selectedSize.includes('Original') && liveArt.isSold;
-                  const itemQty = item.qty || 1; // 🚀 Default quantity
 
                   return (
                     <div key={i} className={`flex flex-col md:flex-row md:items-center justify-between glass-panel p-4 rounded-2xl shadow-sm border gap-4 md:gap-0 ${isDeleted ? 'border-gray-400 bg-gray-100 opacity-80' : isItemSoldOut ? 'border-red-300 bg-red-50' : 'border-white'}`}>
@@ -1232,19 +1194,7 @@
                                     <span className="line-through text-gray-400 text-[10px] md:text-xs font-bold">{getPrice(item.priceOriginalOld)}</span>
                                   </div>
                                 ) : null}
-                                
-                                <div className="flex flex-col items-end gap-1">
-                                    <p className={`font-black text-lg md:text-xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>{getPrice(item.price)}</p>
-                                    
-                                    {/* 🚀 SMART PLUS/MINUS QUANTITY CONTROLS */}
-                                    {(!isItemSoldOut && !isDeleted && !item.selectedSize.includes('Original')) && (
-                                        <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-md px-1.5 py-0.5 mt-1">
-                                            <button onClick={() => handleQtyChange(item.cartId, -1)} className="text-gray-500 hover:text-rose-500 font-bold px-1.5 text-xs md:text-sm cursor-pointer">−</button>
-                                            <span className="text-[10px] md:text-xs font-black text-gray-700 w-8 text-center select-none">Qty: {itemQty}</span>
-                                            <button onClick={() => handleQtyChange(item.cartId, 1)} className="text-gray-500 hover:text-green-500 font-bold px-1.5 text-xs md:text-sm cursor-pointer">+</button>
-                                        </div>
-                                    )}
-                                </div>
+                                <p className={`font-black text-lg md:text-xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>{getPrice(item.price)}</p>
                             </div>
                         )}
                         
@@ -1253,14 +1203,12 @@
                                const liveArt = artworks.find(a => a.id === item.id);
                                if (liveArt) {
                                    const isWishlisted = wishlist.some(w => w.id === liveArt.id && w.savedSize === item.selectedSize);
-                                   if (isWishlisted) {
-                                       showToast("⚠️ Already saved in your Wishlist.");
-                                       return; 
+                                   if (!isWishlisted) {
+                                       const newList = [...wishlist, { ...liveArt, savedSize: item.selectedSize }];
+                                       setWishlist(newList);
+                                       if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
                                    }
-                                   const newList = [...wishlist, { ...liveArt, savedSize: item.selectedSize }];
-                                   setWishlist(newList);
-                                   if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
-                                   showToast(`🔖 Saved ${item.selectedSize} to Wishlist.`);
+                                   showToast(`Moved ${item.selectedSize} to Wishlist!`);
                                }
                                const updatedCart = cart.filter(c => c.cartId !== item.cartId);
                                setCart(updatedCart);
@@ -1295,7 +1243,8 @@
           </div>
         );
       };
-                    
+
+                               
 
       const CommissionView = () => {
         const handleCommissionBack = () => {
@@ -2260,29 +2209,26 @@
             window.scrollBy({ top: 400, behavior: 'smooth' });
         };
 
-                  // 🚀 ADMIN SMART LOCK: Agar kuch change nahi kiya, toh upload roko
-          if (editArtId) {
-              const liveArt = artworks.find(a => a.id === editArtId);
-              if (liveArt) {
-                  const isTextChanged = 
-                      liveArt.title !== uploadData.title || liveArt.desc !== uploadData.desc ||
-                      liveArt.priceOriginal !== finalPriceCurrent || liveArt.priceOriginalOld !== finalPriceOld ||
-                      liveArt.priceA3 !== uploadData.priceA3 || liveArt.priceA4 !== uploadData.priceA4 ||
-                      liveArt.priceA5 !== uploadData.priceA5 || !!liveArt.isSold !== !!uploadData.isSold ||
-                      (Number(liveArt.fakeLikes) || 0) !== (Number(uploadData.fakeLikes) || 0);
+        const saveArtwork = async (e) => {
+          e.preventDefault();
 
-                  const isBgsChanged = JSON.stringify(liveArt.savedBgsList || []) !== JSON.stringify(selectedBgs);
-                  const isAdjChanged = JSON.stringify(liveArt.savedBgAdjustments || {}) !== JSON.stringify(bgAdjustments);
+          let oldPStr = uploadData.priceOriginalOld ? uploadData.priceOriginalOld.toString().replace(/[^\d]/g, '') : '';
+          let curPStr = uploadData.priceOriginal ? uploadData.priceOriginal.toString().replace(/[^\d]/g, '') : '';
+          
+          let oldP = Number(oldPStr) || 0;
+          let curP = Number(curPStr) || 0;
 
-                  if (!isTextChanged && !isMediaModified && !isBgsChanged && !isAdjChanged) {
-                      alert("⚠️ No modifications detected. The artwork is already up to date.");
-                      showToast("No changes to update.");
-                      setUploadStatus(""); 
-                      return; 
-                  }
-              }
+          if (oldP > 0 && curP > 0 && curP >= oldP) {
+              alert("❌ PRICE ERROR: Discount Price (Current) MUST be strictly less than the Old Price. Please correct your inputs.");
+              return;
           }
 
+          let finalPriceOld = oldPStr;
+          let finalPriceCurrent = curPStr;
+          if (!finalPriceCurrent || finalPriceCurrent === "") {
+              finalPriceCurrent = finalPriceOld;
+              finalPriceOld = ""; 
+          }
 
                    if (editArtId && !isMediaModified) {
               setUploadStatus("Updating Details & Likes...");
