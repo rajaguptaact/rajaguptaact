@@ -1070,11 +1070,26 @@
                 cartId: Date.now()
             };
             
-            setCart(prev => {
+                        setCart(prev => {
+                const existingIndex = prev.findIndex(c => c.id === art.id && c.selectedSize === size);
+                if (existingIndex >= 0 && (!size || !size.includes('Original'))) {
+                    const newCart = [...prev];
+                    if ((newCart[existingIndex].qty || 1) < 5) {
+                        newCart[existingIndex].qty = (newCart[existingIndex].qty || 1) + 1;
+                        showToast("Item quantity updated in Cart!");
+                    } else {
+                        showToast("Maximum 5 quantity allowed per item.");
+                    }
+                    try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
+                    return newCart;
+                }
+                
+                lightCartItem.qty = 1;
                 const newCart = [lightCartItem, ...prev];
                 try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
                 return newCart;
             });
+
             setLastAddedTime(Date.now());
             showToast("Artwork added to your Cart!");
         };
