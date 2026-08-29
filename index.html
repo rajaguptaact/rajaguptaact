@@ -1161,7 +1161,7 @@
 
       const CartView = () => {
         const validItems = cart.filter(item => artworks.some(a => a.id === item.id));
-        const total = validItems.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        const total = validItems.reduce((sum, item) => sum + ((Number(item.price) || 0) * (item.qty || 1)), 0);
 
         const hasDeletedItems = cart.some(item => {
            const liveArt = artworks.find(a => a.id === item.id);
