@@ -1046,20 +1046,69 @@
 
       const [lastAddedTime, setLastAddedTime] = useState(0);
 
-      const addToCart = (art, size, price, oldPrice) => {
+            const addToCart = (art, size, price, oldPrice) => {
         const now = Date.now();
-        if (now - lastAddedTime < 5000) {
-            showToast("⏳ Please wait a few seconds before adding another item.");
+        if (now - lastAddedTime < 3000) {
+            showToast("⏳ Processing... Please wait a moment.");
             return;
         }
 
         if (size && size.includes('Original')) {
             const alreadyInCart = cart.some(c => c.id === art.id && c.selectedSize.includes('Original'));
             if (alreadyInCart) {
-                alert("❌ You have already added this Original Artwork to your cart. Since it's a unique piece, it can only be added once.");
+                alert("❌ Cannot Add: This Original Artwork is a unique piece and is already in your cart.");
                 return;
             }
         }
+        
+        // 🚀 QTY LOGIC: Check karega agar same item pehle se hai
+        const existingItemIndex = cart.findIndex(c => c.id === art.id && c.selectedSize === size);
+
+        if (existingItemIndex !== -1) {
+            setCart(prev => {
+                const newCart = [...prev];
+                newCart[existingItemIndex].qty = (newCart[existingItemIndex].qty || 1) + 1;
+                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
+                return newCart;
+            });
+            setLastAddedTime(Date.now());
+            showToast("Item quantity updated in Cart!");
+            return; 
+        }
+
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX = 200; 
+            let w = img.width; let h = img.height;
+            if (w > h && w > MAX) { h *= MAX / w; w = MAX; } 
+            else if (h > MAX) { w *= MAX / h; h = MAX; }
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            
+            const lightCartItem = {
+                id: art.id,
+                title: art.title,
+                image: canvas.toDataURL('image/jpeg', 0.85), 
+                selectedSize: size,
+                price: Number(price),
+                priceOriginalOld: oldPrice ? Number(oldPrice) : null,
+                cartId: Date.now(),
+                qty: 1 // 🚀 Default Qty
+            };
+            
+            setCart(prev => {
+                const newCart = [lightCartItem, ...prev];
+                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
+                return newCart;
+            });
+            setLastAddedTime(Date.now());
+            showToast("Artwork successfully added to Cart!");
+        };
+        img.src = art.image;
+      };
+
         
         const img = new Image();
         img.onload = () => {
