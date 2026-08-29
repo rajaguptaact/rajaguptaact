@@ -2270,26 +2270,29 @@
             window.scrollBy({ top: 400, behavior: 'smooth' });
         };
 
-        const saveArtwork = async (e) => {
-          e.preventDefault();
+                  // 🚀 ADMIN SMART LOCK: Agar kuch change nahi kiya, toh upload roko
+          if (editArtId) {
+              const liveArt = artworks.find(a => a.id === editArtId);
+              if (liveArt) {
+                  const isTextChanged = 
+                      liveArt.title !== uploadData.title || liveArt.desc !== uploadData.desc ||
+                      liveArt.priceOriginal !== finalPriceCurrent || liveArt.priceOriginalOld !== finalPriceOld ||
+                      liveArt.priceA3 !== uploadData.priceA3 || liveArt.priceA4 !== uploadData.priceA4 ||
+                      liveArt.priceA5 !== uploadData.priceA5 || !!liveArt.isSold !== !!uploadData.isSold ||
+                      (Number(liveArt.fakeLikes) || 0) !== (Number(uploadData.fakeLikes) || 0);
 
-          let oldPStr = uploadData.priceOriginalOld ? uploadData.priceOriginalOld.toString().replace(/[^\d]/g, '') : '';
-          let curPStr = uploadData.priceOriginal ? uploadData.priceOriginal.toString().replace(/[^\d]/g, '') : '';
-          
-          let oldP = Number(oldPStr) || 0;
-          let curP = Number(curPStr) || 0;
+                  const isBgsChanged = JSON.stringify(liveArt.savedBgsList || []) !== JSON.stringify(selectedBgs);
+                  const isAdjChanged = JSON.stringify(liveArt.savedBgAdjustments || {}) !== JSON.stringify(bgAdjustments);
 
-          if (oldP > 0 && curP > 0 && curP >= oldP) {
-              alert("❌ PRICE ERROR: Discount Price (Current) MUST be strictly less than the Old Price. Please correct your inputs.");
-              return;
+                  if (!isTextChanged && !isMediaModified && !isBgsChanged && !isAdjChanged) {
+                      alert("⚠️ No modifications detected. The artwork is already up to date.");
+                      showToast("No changes to update.");
+                      setUploadStatus(""); 
+                      return; 
+                  }
+              }
           }
 
-          let finalPriceOld = oldPStr;
-          let finalPriceCurrent = curPStr;
-          if (!finalPriceCurrent || finalPriceCurrent === "") {
-              finalPriceCurrent = finalPriceOld;
-              finalPriceOld = ""; 
-          }
 
                    if (editArtId && !isMediaModified) {
               setUploadStatus("Updating Details & Likes...");
