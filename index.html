@@ -1719,11 +1719,9 @@
                                <button onClick={() => {
                                    const alreadyInCart = cart.some(c => c.id === liveArt.id && c.selectedSize === cartSizeName);
                                    if (alreadyInCart) {
-                                       // Agar Cart me ek bhi item hai, toh sidha error dega
+                                       // Sirf niche wala VIP popup aayega
                                        showToast("⚠️ This item is already in your Cart.");
-                                       alert("❌ This item is already in your Cart. Please go to the Cart page to increase its quantity.");
                                    } else {
-                                       // Naya hai toh add hoga aur Wishlist se delete hoga
                                        addToCart(liveArt, cartSizeName, displayPrice, cartSizeName.includes('Original') ? liveArt.priceOriginalOld : null);
                                        const newList = wishlist.filter(item => !(item.id === liveArt.id && item.savedSize === wItem.savedSize));
                                        setWishlist(newList);
