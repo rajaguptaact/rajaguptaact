@@ -2845,7 +2845,7 @@
                       <div><label className="text-[10px] md:text-xs font-black text-gray-500 uppercase">Print A3 Price (Base ₹)</label><input required type="text" placeholder="₹" className="w-full border-2 p-2 md:p-3 rounded-xl bg-white font-bold text-base md:text-lg" value={formatAdminPrice(uploadData.priceA3)} onChange={e => setUploadData({...uploadData, priceA3: e.target.value.replace(/[^\d]/g, '')})} /></div>
                       <div><label className="text-[10px] md:text-xs font-black text-gray-500 uppercase">Print A4 Price (Base ₹)</label><input required type="text" placeholder="₹" className="w-full border-2 p-2 md:p-3 rounded-xl bg-white font-bold text-base md:text-lg" value={formatAdminPrice(uploadData.priceA4)} onChange={e => setUploadData({...uploadData, priceA4: e.target.value.replace(/[^\d]/g, '')})} /></div>
                       <div className="md:col-span-2"><label className="text-[10px] md:text-xs font-black text-gray-500 uppercase">Print A5 Price (Base ₹)</label><input required type="text" placeholder="₹" className="w-full border-2 p-2 md:p-3 rounded-xl bg-white font-bold text-base md:text-lg" value={formatAdminPrice(uploadData.priceA5)} onChange={e => setUploadData({...uploadData, priceA5: e.target.value.replace(/[^\d]/g, '')})} /></div>
-                                        <div className="md:col-span-2 mt-3 bg-pink-50 p-3 md:p-4 rounded-xl border border-pink-200 shadow-sm relative overflow-hidden">
+                                                                               <div className="md:col-span-2 mt-3 bg-pink-50 p-3 md:p-4 rounded-xl border border-pink-200 shadow-sm relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-1 h-full bg-pink-500"></div>
                         <div className="flex justify-between items-center mb-3">
                            <label className="text-[10px] md:text-xs font-black text-pink-600 uppercase flex items-center gap-1.5">
@@ -2853,7 +2853,10 @@
                               Manage Likes
                            </label>
                            <div className="bg-white px-2 md:px-3 py-1 rounded-lg border border-pink-100 shadow-sm flex items-center gap-2 text-[10px] md:text-xs font-bold text-gray-600">
-                               Real Likes: <span className="text-pink-600 font-black text-xs md:text-sm">{uploadData.realLikes || 0}</span>
+                               {/* 🔴 FIX: Reading accurate LIVE real likes from database, ensuring it never shows negative */}
+                               Real Likes: <span className="text-pink-600 font-black text-xs md:text-sm">
+                                   {editArtId ? Math.max(0, Number(artworks.find(a => a.id === editArtId)?.realLikes || 0)) : 0}
+                               </span>
                            </div>
                         </div>
                         
@@ -2865,7 +2868,8 @@
                            <div className="w-full md:flex-1 bg-white p-2 md:p-3 rounded-lg border-2 border-dashed border-pink-200 text-center flex flex-col justify-center h-full">
                               <p className="text-[9px] md:text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Public Will See (Total)</p>
                               <p className="font-black text-pink-600 text-base md:text-lg">
-                                 = {Number((Number(uploadData.realLikes) || 0) + (Number(uploadData.fakeLikes) || 0)).toLocaleString('en-IN')}
+                                 {/* 🔴 FIX: Calculating accurate total based on LIVE real likes */}
+                                 = {Number((editArtId ? Math.max(0, Number(artworks.find(a => a.id === editArtId)?.realLikes || 0)) : 0) + (Number(uploadData.fakeLikes) || 0)).toLocaleString('en-IN')}
                               </p>
                            </div>
                         </div>
