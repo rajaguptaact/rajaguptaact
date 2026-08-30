@@ -3373,7 +3373,14 @@
   {cart.length > 0 ? <span className="bg-pink-500 text-white text-xs px-2.5 py-1 rounded-full shadow-sm">{cart.length}</span> : null}
 </button>
 
-<button onClick={() => nav('public_notifications')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'public_notifications' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Public Notifications</button>
+<button onClick={() => nav('public_notifications')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center justify-between ${view === 'public_notifications' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>
+  <span>Public Notifications</span>
+  {/* 🔴 NEW: Logic to check if there is any active notification posted in the last 24 hours */}
+  {announcements.some(a => (!a.expireAt || a.expireAt > Date.now()) && (Date.now() - a.createdAt < 24 * 60 * 60 * 1000)) ? (
+      <span className="bg-yellow-400 text-gray-900 text-[10px] md:text-xs font-black px-2 py-0.5 rounded-full shadow-sm animate-pulse">NEW</span>
+  ) : null}
+</button>
+
 
 <button onClick={() => nav('commission')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'commission' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Commission</button>
 
