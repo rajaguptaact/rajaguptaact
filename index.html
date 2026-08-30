@@ -1412,7 +1412,27 @@
           </div>
         );
       };
-
+        // 🔴 NEW: LIVE COUNTDOWN TIMER COMPONENT
+        const LiveCountdown = ({ targetTime }) => {
+            const [timeLeft, setTimeLeft] = useState(targetTime - Date.now());
+            useEffect(() => {
+                const interval = setInterval(() => setTimeLeft(targetTime - Date.now()), 1000);
+                return () => clearInterval(interval);
+            }, [targetTime]);
+            
+            if (timeLeft <= 0) return <span className="text-rose-500 font-black text-[10px] md:text-xs">Expired</span>;
+            
+            const d = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const h = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+            const m = Math.floor((timeLeft / 1000 / 60) % 60);
+            const s = Math.floor((timeLeft / 1000) % 60);
+            return (
+                <span className="font-mono bg-rose-50 text-rose-600 px-2.5 py-1 rounded-md text-[10px] md:text-xs font-black border border-rose-200 shadow-sm animate-pulse inline-block">
+                    ⏳ Ends in: {d > 0 ? `${d}d ` : ''}{h}h {m}m {s}s
+                </span>
+            );
+        };
+      
         const PublicNotificationsView = () => {
         // Auto-Remove Filter: Sirf wo dikhayega jinka time bacha hai (ya permanent hain)
         const validAnns = announcements.filter(a => !a.expireAt || a.expireAt > Date.now());
