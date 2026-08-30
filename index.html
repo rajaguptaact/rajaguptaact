@@ -3033,7 +3033,7 @@
                      <input required placeholder="Announcement Title" value={annTitle} onChange={e=>setAnnTitle(e.target.value)} className="w-full border-2 p-3 md:p-4 rounded-xl bg-white font-bold text-sm md:text-base"/>
                      <textarea required placeholder="Message details..." value={annMsg} onChange={e=>setAnnMsg(e.target.value)} className="w-full border-2 p-3 md:p-4 rounded-xl bg-white font-medium select-text text-sm md:text-base" rows="3"></textarea>
                      
-                     {/* 🔴 NEW: TIMER SETTINGS IN ADMIN */}
+                     {/* 🔴 NEW: TIMER SETTINGS IN ADMIN WITH CUSTOM OPTION */}
                      <div className="flex flex-col md:flex-row gap-3 md:gap-4 bg-pink-50 p-3 md:p-4 rounded-xl border border-pink-100">
                          <div className="flex-1">
                              <label className="text-[10px] md:text-xs font-black text-pink-600 uppercase mb-1 block">Set Timer / Expiration</label>
@@ -3044,7 +3044,11 @@
                                  <option value="48">Expire in 2 Days</option>
                                  <option value="168">Expire in 7 Days</option>
                                  <option value="720">Expire in 30 Days</option>
+                                 <option value="custom">Custom Date & Time</option>
                              </select>
+                             {annHours === 'custom' && (
+                                 <input type="datetime-local" value={annCustomDate} onChange={e=>setAnnCustomDate(e.target.value)} required className="w-full mt-2 border-2 border-pink-200 p-2 rounded-lg font-bold text-sm outline-none text-gray-700 bg-white shadow-sm" />
+                             )}
                          </div>
                          <div className="flex-1 flex items-center mt-2 md:mt-0 pt-3 md:pt-4">
                              <label className="flex items-center gap-2 cursor-pointer font-black text-xs md:text-sm text-gray-700 hover:text-pink-600 transition">
