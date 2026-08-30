@@ -2530,42 +2530,61 @@
 
         const postAnnouncement = (e) => {
           e.preventDefault();
+          
+          let finalExpireAt = null;
+          let deleteExpire = false;
+
+          // Custom Date Check
+          if (annHours === 'custom' && annCustomDate) {
+              finalExpireAt = new Date(annCustomDate).getTime();
+          } else if (annHours === '-1') {
+              deleteExpire = true; // Permanent
+          } else if (annHours !== '0') {
+              finalExpireAt = Date.now() + (Number(annHours) * 60 * 60 * 1000);
+          }
+
           if(editAnnId) {
              const orig = announcements.find(a => a.id === editAnnId);
              if (orig) {
-                 const isChanged = (annTitle !== orig.title) || (annMsg !== orig.message) || (annShowTimer !== (orig.showTimer || false)) || (annHours !== '0');
+                 const isChanged = (annTitle !== orig.title) || (annMsg !== orig.message) || (annShowTimer !== (orig.showTimer || false)) || (annHours !== '0') || (annHours === 'custom' && annCustomDate !== '');
                  if (!isChanged) {
                      showToast("⚠️ No changes detected. Edit cancelled.");
-                     setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false);
+                     setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
                      return;
                  }
              }
 
              let updateData = { title: annTitle, message: annMsg, showTimer: annShowTimer };
-             if (annHours === '-1') {
-                 updateData.expireAt = firebase.firestore.FieldValue.delete(); // Permanent kar dega
-             } else if (annHours !== '0') {
-                 updateData.expireAt = Date.now() + (Number(annHours) * 60 * 60 * 1000); // Time add karega
+             if (deleteExpire) {
+                 updateData.expireAt = firebase.firestore.FieldValue.delete();
+             } else if (finalExpireAt) {
+                 updateData.expireAt = finalExpireAt;
              }
 
-             db.collection('announcements').doc(editAnnId).update(updateData)
-               .then(() => { showToast("✅ Notification Updated!"); setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); });
+             // 🔴 INSTANT UPDATE: Bina load huye direct popup aayega
+             db.collection('announcements').doc(editAnnId).update(updateData).catch(e=>console.log(e));
+             showToast("✅ Notification Updated Instantly!");
           } else {
              let newData = { title: annTitle, message: annMsg, showTimer: annShowTimer, date: new Date().toLocaleDateString('en-IN'), createdAt: Date.now() };
-             if (annHours !== '0' && annHours !== '-1') {
-                 newData.expireAt = Date.now() + (Number(annHours) * 60 * 60 * 1000);
+             if (finalExpireAt) {
+                 newData.expireAt = finalExpireAt;
              }
-             db.collection('announcements').add(newData).then(() => showToast("✅ Notification Posted Globally!"));
-             setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false);
+             // 🔴 INSTANT POST
+             db.collection('announcements').add(newData).catch(e=>console.log(e));
+             showToast("✅ Notification Posted Globally!");
           }
+          
+          // Form ko turant khali karega
+          setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
         };
 
         const startEditAnn = (ann) => {
           setEditAnnId(ann.id);
           setAnnTitle(ann.title);
           setAnnMsg(ann.message);
-          setAnnHours('0'); // Reset rakhega edit ke time
+          setAnnHours('0'); 
           setAnnShowTimer(ann.showTimer || false);
+          setAnnCustomDate('');
         };
 
         const handleTouchStart = (e) => {
