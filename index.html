@@ -2325,8 +2325,39 @@
               finalPriceOld = ""; 
           }
 
-                   if (editArtId && !isMediaModified) {
+          // 🔴 CHECK IF ANY CHANGES WERE MADE BEFORE UPDATING
+          if (editArtId) {
+              const originalArt = artworks.find(a => a.id === editArtId);
+              if (originalArt) {
+                  const isTextChanged = 
+                      uploadData.title !== originalArt.title || 
+                      uploadData.desc !== originalArt.desc || 
+                      finalPriceOld !== (originalArt.priceOriginalOld || "") || 
+                      finalPriceCurrent !== (originalArt.priceOriginal || "") || 
+                      (uploadData.priceA3 || "") !== (originalArt.priceA3 || "") || 
+                      (uploadData.priceA4 || "") !== (originalArt.priceA4 || "") || 
+                      (uploadData.priceA5 || "") !== (originalArt.priceA5 || "") || 
+                      uploadData.isSold !== (originalArt.isSold || false) || 
+                      Number(uploadData.fakeLikes || 0) !== Number(originalArt.fakeLikes || 0);
+
+                  // If no text or media is modified, cancel the edit process
+                  if (!isTextChanged && !isMediaModified) {
+                      showToast("⚠️ No changes detected. Edit mode cancelled.");
+                      
+                      setEditArtId(null); 
+                      setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
+                      setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); 
+                      setIsMediaModified(false);
+                      setUploadStatus("");
+                      
+                      return; 
+                  }
+              }
+          }
+
+          if (editArtId && !isMediaModified) {
               setUploadStatus("Updating Details & Likes...");
+
               
               const quickData = {
                   title: uploadData.title, desc: uploadData.desc, 
