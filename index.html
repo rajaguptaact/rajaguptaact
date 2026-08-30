@@ -1460,20 +1460,21 @@
                       {ann.date}
                   </div>
 
-                  <div className="mt-4">
-                      {/* 2. TITLE */}
-                      <h3 className="text-xl md:text-2xl font-black text-gray-900 mb-2">{ann.title}</h3>
-                      
-                      {/* 3. PREMIUM TIMER (Right below Title) */}
+                  <div className="mt-4 pt-1">
+                      {/* 2. PREMIUM TIMER (Now ABOVE Title) */}
                       {ann.showTimer && ann.expireAt && (
-                          <div className="block w-full">
+                          <div className="block w-full mb-1">
                               <LiveCountdown targetTime={ann.expireAt} />
                           </div>
                       )}
 
+                      {/* 3. TITLE */}
+                      <h3 className="text-xl md:text-2xl font-black text-gray-900 mb-2">{ann.title}</h3>
+
                       {/* 4. MESSAGE */}
                       <p className="text-gray-700 font-medium whitespace-pre-wrap text-sm md:text-base">{ann.message}</p>
                   </div>
+
 
                 </div>
               ))}
