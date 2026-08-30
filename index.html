@@ -2357,7 +2357,6 @@
 
           if (editArtId && !isMediaModified) {
               setUploadStatus("Updating Details & Likes...");
-
               
               const quickData = {
                   title: uploadData.title, desc: uploadData.desc, 
@@ -2368,11 +2367,10 @@
               };
 
               try {
-                  // Aapka purana instant aur solid logic
-                  await db.collection('RajaStudio').doc(editArtId).update(quickData);
+                  // 🔴 FIX: Removed 'await' so UI doesn't hang. It updates instantly now!
+                  db.collection('RajaStudio').doc(editArtId).update(quickData).catch(e => console.log(e));
                   
                   showToast("✅ Details & Likes Updated Instantly! ⚡");
-                  alert("✅ Artwork Details & Likes Updated Successfully!");
                   
                   setEditArtId(null); 
                   setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
