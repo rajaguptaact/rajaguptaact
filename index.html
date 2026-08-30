@@ -1068,34 +1068,35 @@
                 selectedSize: size,
                 price: Number(price),
                 priceOriginalOld: oldPrice ? Number(oldPrice) : null,
-                cartId: Date.now()
+                cartId: Date.now(),
+                qty: 1
             };
             
-                        setCart(prev => {
+            setCart(prev => {
                 const existingIndex = prev.findIndex(c => c.id === art.id && c.selectedSize === size);
                 if (existingIndex >= 0 && (!size || !size.includes('Original'))) {
                     const newCart = [...prev];
                     if ((newCart[existingIndex].qty || 1) < 5) {
-                        newCart[existingIndex].qty = (newCart[existingIndex].qty || 1) + 1;
-                        showToast("Item quantity updated in Cart!");
+                        newCart[existingIndex] = { ...newCart[existingIndex], qty: (newCart[existingIndex].qty || 1) + 1 };
+                        setTimeout(() => showToast("Item quantity updated in Cart!"), 0);
+                        try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
+                        return newCart;
                     } else {
-                        showToast("Maximum 5 quantity allowed per item.");
+                        setTimeout(() => showToast("⚠️ Maximum 5 quantity allowed per item."), 0);
+                        return prev;
                     }
-                    try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
-                    return newCart;
                 }
                 
-                lightCartItem.qty = 1;
                 const newCart = [lightCartItem, ...prev];
+                setTimeout(() => showToast("Artwork added to your Cart!"), 0);
                 try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
                 return newCart;
             });
-
             setLastAddedTime(Date.now());
-            showToast("Artwork added to your Cart!");
         };
         img.src = art.image;
       };
+
 
       const startCheckout = (items, type, extraData) => {
         if (type === 'Gallery Purchase') {
