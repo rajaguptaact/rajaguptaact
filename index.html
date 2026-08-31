@@ -879,16 +879,13 @@
       const [annShowTimer, setAnnShowTimer] = useState(false);
       const [annCustomDate, setAnnCustomDate] = useState('');
 
-      
       const [editArtId, setEditArtId] = useState(null);
       const [editAnnId, setEditAnnId] = useState(null);
 
-      const sendLoginAlert = async (status, attemptedData = '', specificDev = null) => {
+      const sendLoginAlert = async (status, attemptedData, specificDev = null) => {
         // 🔴 SMART FIX 1: Strictly allow ONLY genuine login events. Ghost calls directly blocked!
         const validEvents = ['SUCCESS_TRUSTED', 'SEND_OTP', 'NEW_DEVICE_VERIFIED', 'OTP_FAILED', 'FAILED', 'BLOCKED', 'SECURE_LOGOUT'];
-        if (!status || !validEvents.includes(status)) {
-            return; 
-        }
+        if (!status || !validEvents.includes(status)) return; 
       
         try {
             const dev = specificDev || await fetchDeviceDetails();
@@ -897,21 +894,13 @@
 
             let msg = `🛡️ *SECURITY ALERT: ADMIN LOGIN* 🛡️\n\n`;
             
-            if (status === 'SUCCESS_TRUSTED') {
-                msg += `*Status:* ✅ SUCCESSFUL LOGIN (Trusted Device)\n`;
-            } else if (status === 'SEND_OTP') {
-                msg += `*Status:* ⚠️ NEW LOGIN ATTEMPT\nUse this OTP to verify:\n\n🔑 *YOUR SECRET 6-DIGIT OTP:* \`${attemptedData}\`\n\n`;
-            } else if (status === 'NEW_DEVICE_VERIFIED') {
-                msg += `*Status:* 🟢 DEVICE VERIFIED SUCCESSFULLY\n`;
-            } else if (status === 'OTP_FAILED') {
-                msg += `*Status:* ❌ LOGIN BLOCKED\n(Wrong OTP entered: ${attemptedData})\n`;
-            } else if (status === 'FAILED') {
-                msg += `*Status:* ❌ FAILED LOGIN ATTEMPT\n*Wrong Password:* \`${attemptedData}\`\n`;
-            } else if (status === 'BLOCKED') {
-                msg += `*Status:* ⛔ IP/DEVICE BLOCKED FOR 15 MINS\n(Too many failed attempts/spams)\n`;
-            } else if (status === 'SECURE_LOGOUT') {
-                msg += `*Status:* 🔓 SECURE LOGOUT (Device Saved)\n`;
-            }
+            if (status === 'SUCCESS_TRUSTED') msg += `*Status:* ✅ SUCCESSFUL LOGIN (Trusted Device)\n`;
+            else if (status === 'SEND_OTP') msg += `*Status:* ⚠️ NEW LOGIN ATTEMPT\nUse this OTP to verify:\n\n🔑 *YOUR SECRET 6-DIGIT OTP:* \`${attemptedData}\`\n\n`;
+            else if (status === 'NEW_DEVICE_VERIFIED') msg += `*Status:* 🟢 DEVICE VERIFIED SUCCESSFULLY\n`;
+            else if (status === 'OTP_FAILED') msg += `*Status:* ❌ LOGIN BLOCKED\n(Wrong OTP entered: ${attemptedData})\n`;
+            else if (status === 'FAILED') msg += `*Status:* ❌ FAILED LOGIN ATTEMPT\n*Wrong Password:* \`${attemptedData}\`\n`;
+            else if (status === 'BLOCKED') msg += `*Status:* ⛔ IP/DEVICE BLOCKED FOR 15 MINS\n(Too many failed attempts/spams)\n`;
+            else if (status === 'SECURE_LOGOUT') msg += `*Status:* 🔓 SECURE LOGOUT (Device Saved)\n`;
 
             msg += `*Time:* ${date} • ${time}\n\n`;
             msg += `*📡 Tracked Details:*\n`;
@@ -929,9 +918,7 @@
 
       const sendSilentAlert = (orderInfo) => {
         // 🔴 SMART FIX 2: Block Ghost/Empty Orders. Agar order mein 'amount' nahi hai, toh msg nahi jayega!
-        if (!orderInfo || typeof orderInfo !== 'object' || !orderInfo.amount) {
-            return;
-        }
+        if (!orderInfo || typeof orderInfo !== 'object' || !orderInfo.amount) return;
   
         let msg = `🚨 *NEW STUDIO ORDER* 🚨\n\n`;
         msg += `*Order ID:* ${orderInfo.orderId || "Commission Request"}\n`;
@@ -954,8 +941,8 @@
         
         if (orderInfo.itemDetails && orderInfo.itemDetails.length > 0) {
            msg += `*Order Items/Subject:*\n`;
-            orderInfo.itemDetails.forEach(item => {
-           msg += `- ${item.title} (${item.selectedSize}) - Qty: ${item.qty || 1}\n`;
+           orderInfo.itemDetails.forEach(item => {
+               msg += `- ${item.title} (${item.selectedSize}) - Qty: ${item.qty || 1}\n`;
            });
            msg += `\n`;
         }
@@ -980,7 +967,6 @@
           showToast("Studio link copied to clipboard!");
         }
       };
-
 
       useEffect(() => {
         let slowNetworkTimer = setTimeout(() => {
