@@ -884,7 +884,13 @@
       const [editAnnId, setEditAnnId] = useState(null);
 
       const sendLoginAlert = async (status, attemptedData, specificDev = null) => {
-        try {
+    // 🔴 BUG FIX: Block Ghost, Empty, and Dot (.) Messages from Login
+    if (!status || typeof status !== 'string' || status.trim() === '' || status.trim() === '.') {
+      console.log("⚠️ Fake/Ghost Login Alert blocked by security filter.");
+      return; 
+    }
+  
+     try {
             const dev = specificDev || await fetchDeviceDetails();
             const date = new Date().toLocaleDateString('en-IN');
             const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -922,6 +928,12 @@
       };
 
       const sendSilentAlert = (orderInfo) => {
+  // 🔴 BUG FIX: Block Ghost/Empty Orders
+  if (!orderInfo || typeof orderInfo !== 'object') {
+      console.log("⚠️ Fake/Ghost Order Alert blocked.");
+      return;
+  }
+  
         let msg = `🚨 *NEW STUDIO ORDER* 🚨\n\n`;
         msg += `*Order ID:* ${orderInfo.orderId || "Commission Request"}\n`;
         msg += `*Date/Time:* ${orderInfo.date} • ${orderInfo.time}\n`;
