@@ -879,24 +879,11 @@
       const [annShowTimer, setAnnShowTimer] = useState(false);
       const [annCustomDate, setAnnCustomDate] = useState('');
 
-
+      
       const [editArtId, setEditArtId] = useState(null);
       const [editAnnId, setEditAnnId] = useState(null);
 
-      const sendLoginAlert = async (status, attemptedData, specificDev = null) => {
-    // 🔴 BUG FIX: Block Ghost, Empty, and Dot (.) Messages from Login
-    if (!status || typeof status !== 'string' || status.trim() === '' || status.trim() === '.') {
-      console.log("⚠️ Fake/Ghost Login Alert blocked by security filter.");
-      return; 
-    }
-  
-     try {
-            const dev = specificDev || await fetchDeviceDetails();
-            const date = new Date().toLocaleDateString('en-IN');
-            const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-
-            let msg = `🛡️ *SECURITY ALERT: ADMIN LOGIN* 🛡️\n\n`;
-         const sendLoginAlert = async (status, attemptedData = '', specificDev = null) => {
+      const sendLoginAlert = async (status, attemptedData = '', specificDev = null) => {
         // 🔴 SMART FIX 1: Strictly allow ONLY genuine login events. Ghost calls directly blocked!
         const validEvents = ['SUCCESS_TRUSTED', 'SEND_OTP', 'NEW_DEVICE_VERIFIED', 'OTP_FAILED', 'FAILED', 'BLOCKED', 'SECURE_LOGOUT'];
         if (!status || !validEvents.includes(status)) {
@@ -940,8 +927,8 @@
         } catch(e) { console.error(e); }
       };
 
-            const sendSilentAlert = (orderInfo) => {
-        // 🔴 SMART FIX 2: Block Ghost/Empty Orders. Agar order mein 'Amount' nahi hai, toh msg nahi jayega!
+      const sendSilentAlert = (orderInfo) => {
+        // 🔴 SMART FIX 2: Block Ghost/Empty Orders. Agar order mein 'amount' nahi hai, toh msg nahi jayega!
         if (!orderInfo || typeof orderInfo !== 'object' || !orderInfo.amount) {
             return;
         }
@@ -993,6 +980,7 @@
           showToast("Studio link copied to clipboard!");
         }
       };
+
 
       useEffect(() => {
         let slowNetworkTimer = setTimeout(() => {
