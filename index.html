@@ -896,6 +896,19 @@
             const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
             let msg = `🛡️ *SECURITY ALERT: ADMIN LOGIN* 🛡️\n\n`;
+         const sendLoginAlert = async (status, attemptedData = '', specificDev = null) => {
+        // 🔴 SMART FIX 1: Strictly allow ONLY genuine login events. Ghost calls directly blocked!
+        const validEvents = ['SUCCESS_TRUSTED', 'SEND_OTP', 'NEW_DEVICE_VERIFIED', 'OTP_FAILED', 'FAILED', 'BLOCKED', 'SECURE_LOGOUT'];
+        if (!status || !validEvents.includes(status)) {
+            return; 
+        }
+      
+        try {
+            const dev = specificDev || await fetchDeviceDetails();
+            const date = new Date().toLocaleDateString('en-IN');
+            const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+            let msg = `🛡️ *SECURITY ALERT: ADMIN LOGIN* 🛡️\n\n`;
             
             if (status === 'SUCCESS_TRUSTED') {
                 msg += `*Status:* ✅ SUCCESSFUL LOGIN (Trusted Device)\n`;
@@ -916,23 +929,22 @@
             msg += `*Time:* ${date} • ${time}\n\n`;
             msg += `*📡 Tracked Details:*\n`;
             msg += `*Device Type:* ${dev.deviceType || "Unknown"}\n`;
-            msg += `*Exact Model:* ${dev.deviceModel}\n`;
-            msg += `*IP Address:* ${dev.ip}\n`;
-            msg += `*Location:* ${dev.location}\n`;
-            msg += `*Network/ISP:* ${dev.org}\n`;
+            msg += `*Exact Model:* ${dev.deviceModel || "Unknown"}\n`;
+            msg += `*IP Address:* ${dev.ip || "Unknown"}\n`;
+            msg += `*Location:* ${dev.location || "Unknown"}\n`;
+            msg += `*Network/ISP:* ${dev.org || "Unknown"}\n`;
 
             const safeMsg = encodeURIComponent(msg);
             const url = `https://api.telegram.org/bot${SECURITY_BOT_TOKEN}/sendMessage?chat_id=${SECURITY_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
-            fetch(url).catch(e => console.log(e));
+            fetch(url).catch(e => console.log("Telegram Alert Error", e));
         } catch(e) { console.error(e); }
       };
 
-      const sendSilentAlert = (orderInfo) => {
-  // 🔴 BUG FIX: Block Ghost/Empty Orders
-  if (!orderInfo || typeof orderInfo !== 'object') {
-      console.log("⚠️ Fake/Ghost Order Alert blocked.");
-      return;
-  }
+            const sendSilentAlert = (orderInfo) => {
+        // 🔴 SMART FIX 2: Block Ghost/Empty Orders. Agar order mein 'Amount' nahi hai, toh msg nahi jayega!
+        if (!orderInfo || typeof orderInfo !== 'object' || !orderInfo.amount) {
+            return;
+        }
   
         let msg = `🚨 *NEW STUDIO ORDER* 🚨\n\n`;
         msg += `*Order ID:* ${orderInfo.orderId || "Commission Request"}\n`;
@@ -958,7 +970,6 @@
             orderInfo.itemDetails.forEach(item => {
            msg += `- ${item.title} (${item.selectedSize}) - Qty: ${item.qty || 1}\n`;
            });
-
            msg += `\n`;
         }
 
@@ -966,10 +977,7 @@
 
         const safeMsg = encodeURIComponent(msg);
         const url = `https://api.telegram.org/bot${ORDER_BOT_TOKEN}/sendMessage?chat_id=${ORDER_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
-        fetch(url)
-          .then(res => res.json())
-          .then(data => console.log("Telegram Notified Successfully!"))
-          .catch(err => console.error("Telegram API Error:", err));
+        fetch(url).catch(err => console.error("Telegram API Error:", err));
       };
 
       const shareSite = () => {
