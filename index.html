@@ -3182,7 +3182,7 @@
         );
       };
 
-      const registerFail = async (type, data) => {
+      const registerFail = (type, data) => {
          let fails = Number(window.localStorage.getItem('raja_admin_fails') || 0) + 1;
          window.localStorage.setItem('raja_admin_fails', fails);
          
@@ -3190,12 +3190,12 @@
              const bTime = Date.now() + 15 * 60 * 1000; 
              setBlockUntil(bTime);
              window.localStorage.setItem('raja_admin_block', bTime);
-             await sendLoginAlert('BLOCKED', 'System Locked for 15 mins');
+             sendLoginAlert('BLOCKED', 'System Locked for 15 mins');
              setAdminStep(1);
              setPassword('');
              setLiveOTP('');
          } else {
-             await sendLoginAlert(type, data);
+             sendLoginAlert(type, data);
              if (type === 'FAILED') alert(`❌ Incorrect Password! Attempt ${fails}/3.`);
              else if (type === 'OTP_FAILED') alert(`❌ Incorrect OTP! Attempt ${fails}/3.`);
          }
@@ -3217,9 +3217,9 @@
           } catch(err){}
           
           if (hasSession) {
-            setIsAdmin(true);
+            setIsAdmin(true); // 🔴 FAST LOGIN
             setPassword('');
-            await sendLoginAlert('SUCCESS_TRUSTED', password);
+            sendLoginAlert('SUCCESS_TRUSTED', 'Password Login'); 
           } else {
             let isPermanentlyTrusted = false;
             let permDevId = window.localStorage.getItem('raja_permanent_device_id');
@@ -3231,42 +3231,37 @@
             }
 
             if (isPermanentlyTrusted) {
-                setIsAdmin(true);
+                setIsAdmin(true); // 🔴 FAST LOGIN
                 setPassword('');
                 
                 fetchDeviceDetails().then(devDetails => {
                     try { 
                        db.collection('adminSessions').doc(permDevId).set({
-                           id: permDevId,
-                           ip: devDetails.ip,
-                           location: devDetails.location,
-                           deviceModel: devDetails.deviceModel,
-                           createdAt: Date.now()
+                           id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, createdAt: Date.now()
                        });
                        window.localStorage.setItem('raja_device_id', permDevId); 
                        window.localStorage.setItem('raja_admin_fails', '0'); 
                     } catch(err){}
-                    sendLoginAlert('SUCCESS_TRUSTED', 'Logged in via saved trusted device (Bypassed OTP)', devDetails);
+                    sendLoginAlert('SUCCESS_TRUSTED', 'Logged in via saved trusted device', devDetails);
                 });
             } else {
                 const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
                 setLiveOTP(newOTP);
                 setAdminStep(2); 
                 setResendTimer(30); 
-                await sendLoginAlert('SEND_OTP', newOTP);
+                sendLoginAlert('SEND_OTP', newOTP);
             }
           }
         } else {
-          await registerFail('FAILED', password);
+          registerFail('FAILED', password);
         }
       };
 
-      const handlePinSubmit = async () => {
+      const handlePinSubmit = () => {
         if (blockUntil > Date.now()) return;
 
         if (otpInput === liveOTP && liveOTP !== '') {
-           
-           setIsAdmin(true);
+           setIsAdmin(true); // 🔴 FAST LOGIN
            setOtpInput('');
            setPassword('');
            setLiveOTP('');
@@ -3292,11 +3287,11 @@
            });
         } else {
            setOtpInput('');
-           await registerFail('OTP_FAILED', otpInput);
+           registerFail('OTP_FAILED', otpInput);
         }
       };
 
-      const handleResendOTP = async () => {
+      const handleResendOTP = () => {
          if (resendTimer > 0) return;
          let fails = Number(window.localStorage.getItem('raja_admin_fails') || 0) + 1;
          window.localStorage.setItem('raja_admin_fails', fails);
@@ -3305,7 +3300,7 @@
              const bTime = Date.now() + 15 * 60 * 1000;
              setBlockUntil(bTime);
              window.localStorage.setItem('raja_admin_block', bTime);
-             await sendLoginAlert('BLOCKED', 'Spammed Resend OTP');
+             sendLoginAlert('BLOCKED', 'Spammed Resend OTP');
              setAdminStep(1);
              setPassword('');
              setLiveOTP('');
@@ -3313,7 +3308,7 @@
              const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
              setLiveOTP(newOTP);
              setResendTimer(30);
-             await sendLoginAlert('SEND_OTP', newOTP);
+             sendLoginAlert('SEND_OTP', newOTP);
              alert(`✅ New 6-Digit OTP Sent! (Attempt ${fails}/3)`);
          }
       };
