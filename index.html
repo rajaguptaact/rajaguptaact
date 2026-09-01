@@ -3243,55 +3243,23 @@
                          </div>
                       )}
                       
-                      {orders.length === 0 ? <p className="text-gray-500 font-bold bg-white p-4 md:p-6 rounded-2xl text-center shadow-sm text-sm md:text-base">No orders yet.</p> : (
-                                 <div className="space-y-4 md:space-y-6 max-h-[400px] md:max-h-[500px] overflow-y-auto pr-2">
-            {orders.filter(o => !o.isArchived).map(o => (
-              <div key={o.id} className="bg-white p-5 md:p-6 rounded-3xl shadow-md border-l-8 border-pink-500">
- 
-                              <div className="flex justify-between items-start mb-3 md:mb-4 border-b pb-3 md:pb-4">
-                                <div>
-                                   <p className="font-black text-base md:text-xl text-gray-900">{o.type === 'Commission' ? 'Commission Request' : (o.orderId || 'Gallery Order')}</p>
-                                   <p className="text-[10px] md:text-sm font-bold text-gray-500">{o.date} • {o.time}</p>
-                                </div>
-                                <span className="bg-pink-100 text-pink-800 text-[9px] md:text-xs font-black px-2 md:px-4 py-1 md:py-1.5 rounded-full uppercase tracking-wider">{o.type}</span>
-                              </div>
-                              <div className="mb-3 md:mb-4">
-                                <p className="font-black text-sm md:text-lg text-gray-800">{o.name} <span className="text-green-500 mx-1 md:mx-2">|</span> {o.country}</p>
-                                <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">Email: {o.email || "Not Provided"}</p>
-                                <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">WA: {o.phone}</p>
-                                {o.instagram ? <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">Insta: {o.instagram}</p> : null}
-                                <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">{o.address}</p>
-                                {o.city ? <p className="text-xs md:text-sm font-bold text-emerald-600 mt-0.5 md:mt-1">✓ Verified Location: {o.city}, {o.state} - {o.pin}</p> : <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">PIN/ZIP: {o.pin}</p>}
-                              </div>
-                               <div className="bg-gray-50 p-3 md:p-4 rounded-2xl border border-gray-100">
-                                {o.itemDetails ? o.itemDetails.map((item, i) => (
-                                   <div key={i} className="flex justify-between items-center text-xs md:text-sm font-bold border-b border-gray-200 pb-1.5 md:pb-2 mb-1.5 md:mb-2">
-                                     <span className="text-gray-800 mr-2">{item.title} <span className="text-pink-600">({item.selectedSize})</span></span>
-                                     {/* 🔴 FIX: Quantity Badge Added */}
-                                     <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md font-black text-[10px] md:text-xs whitespace-nowrap border border-purple-200 shadow-sm">Qty: {item.qty || 1}</span>
-                                   </div>
-                                )) : null}
+                              {orders.length === 0 ? <p className="text-gray-500 font-bold bg-white p-4 md:p-6 rounded-2xl text-center shadow-sm text-sm md:text-base">No orders yet.</p> : (
+                         <div className="space-y-4 md:space-y-6 max-h-[400px] md:max-h-[500px] overflow-y-auto pr-2">
+                            {orders.filter(o => !o.isArchived).map(o => (
+                               <AdminOrderCard key={o.id} o={o} onDelete={(orderToDelete) => {
+                                   if(window.confirm("Delete this single order?")) {
+                                       db.collection('orders').doc(orderToDelete.id).update({ isArchived: true });
 
-                                <div className="flex justify-between items-center text-sm md:text-lg font-black mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-300">
-                                  <span className="text-gray-700">{o.type === 'Commission' ? 'Budget / Amount' : 'Total Paid'}</span>
-                                  <span className="text-green-600 text-lg md:text-2xl">{o.displayAmount || '₹'+o.amount}</span>
-                                </div>
-                                <button onClick={() => { 
-                                    if(window.confirm("Delete this single order?")) {
-                                        db.collection('orders').doc(o.id).update({ isArchived: true });
-
-                                        const updatedLocal = myLocalOrders.filter(local => {
-                                            if (o.orderId && local.orderId) return local.orderId !== o.orderId;
-                                            return !(local.date === o.date && local.time === o.time && local.displayAmount === o.displayAmount);
-                                        });
-                                        setMyLocalOrders(updatedLocal);
-                                        try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(updatedLocal)); } catch(e){}
-                                    } 
-                                }} className="mt-3 md:mt-4 w-full bg-rose-50 text-rose-600 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm cursor-pointer hover:bg-rose-100 transition">Delete Single Order</button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                                       const updatedLocal = myLocalOrders.filter(local => {
+                                           if (orderToDelete.orderId && local.orderId) return local.orderId !== orderToDelete.orderId;
+                                           return !(local.date === orderToDelete.date && local.time === orderToDelete.time && local.displayAmount === orderToDelete.displayAmount);
+                                       });
+                                       setMyLocalOrders(updatedLocal);
+                                       try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(updatedLocal)); } catch(e){}
+                                   } 
+                               }} />
+                            ))}
+                         </div>
                       )}
                    </div>
                 </div>
@@ -3301,6 +3269,96 @@
         );
       };
 
+      // 🔴 NEW: ADMIN ORDER CARD COMPONENT (WITH VIP DETAILS TOGGLE & SAFE DELETE)
+      const AdminOrderCard = ({ o, onDelete }) => {
+          const [showDetails, setShowDetails] = useState(false);
+
+          let itemsTotal = 0;
+          if (o.itemDetails) {
+              itemsTotal = o.itemDetails.reduce((sum, item) => sum + ((Number(item.price) || 0) * (item.qty || 1)), 0);
+          }
+          let rawTotal = Number(o.amount) || 0;
+          if (!rawTotal && o.displayAmount) rawTotal = Number(o.displayAmount.replace(/[^\d]/g, ''));
+          let shipping = rawTotal > itemsTotal ? rawTotal - itemsTotal : 0;
+
+          return (
+            <div className="bg-white p-5 md:p-6 rounded-3xl shadow-md border-l-8 border-pink-500 relative">
+               {/* 🔴 NEW: Delete Button shifted to Top Right Corner (Safe Area) */}
+               <button onClick={() => onDelete(o)} className="absolute top-4 right-4 md:top-5 md:right-5 text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 p-2.5 rounded-xl transition shadow-sm border border-rose-100 flex items-center justify-center cursor-pointer" title="Delete Order">
+                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+               </button>
+
+               <div className="flex justify-between items-start mb-3 md:mb-4 border-b pb-3 md:pb-4 pr-12 md:pr-16">
+                 <div>
+                    <p className="font-black text-base md:text-xl text-gray-900">{o.type === 'Commission' ? 'Commission Request' : (o.orderId || 'Gallery Order')}</p>
+                    <p className="text-[10px] md:text-sm font-bold text-gray-500">{o.date} • {o.time}</p>
+                 </div>
+                 <span className="bg-pink-100 text-pink-800 text-[9px] md:text-xs font-black px-2 md:px-4 py-1 md:py-1.5 rounded-full uppercase tracking-wider shadow-sm">{o.type}</span>
+               </div>
+
+               <div className="mb-3 md:mb-4">
+                 <p className="font-black text-sm md:text-lg text-gray-800">{o.name} <span className="text-green-500 mx-1 md:mx-2">|</span> {o.country}</p>
+                 <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">Email: {o.email || "Not Provided"}</p>
+                 <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">WA: {o.phone}</p>
+                 {o.instagram ? <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">Insta: {o.instagram}</p> : null}
+                 <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">{o.address}</p>
+                 {o.city ? <p className="text-xs md:text-sm font-bold text-emerald-600 mt-0.5 md:mt-1">✓ Verified Location: {o.city}, {o.state} - {o.pin}</p> : <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">PIN/ZIP: {o.pin}</p>}
+               </div>
+
+               <div className="bg-gray-50 p-3 md:p-4 rounded-2xl border border-gray-100">
+                 {o.itemDetails ? o.itemDetails.map((item, i) => (
+                    <div key={i} className="flex justify-between items-center text-xs md:text-sm font-bold border-b border-gray-200 pb-1.5 md:pb-2 mb-1.5 md:mb-2 last:border-0 last:pb-0 last:mb-0">
+                      <div className="flex items-center gap-2">
+                          <span className="text-pink-500">•</span>
+                          <span className="text-gray-800 line-clamp-1">{item.title}</span> <span className="text-pink-600 whitespace-nowrap">({item.selectedSize})</span>
+                      </div>
+                      <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md font-black text-[10px] md:text-xs whitespace-nowrap border border-purple-200 shadow-sm">Qty: {item.qty || 1}</span>
+                    </div>
+                 )) : null}
+
+                 {/* 🔴 NEW: See Details VIP Toggle Button */}
+                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-300">
+                    <div>
+                       <span className="text-gray-500 text-[10px] md:text-xs font-black uppercase tracking-widest block mb-0.5">{o.type === 'Commission' ? 'Budget / Amount' : 'Total Paid'}</span>
+                       <span className="text-green-600 text-xl md:text-2xl font-black">{o.displayAmount || '₹'+o.amount}</span>
+                    </div>
+                    <button onClick={() => setShowDetails(!showDetails)} className={`px-4 py-2 rounded-xl font-black text-xs md:text-sm flex items-center gap-1.5 transition shadow-sm border cursor-pointer ${showDetails ? 'bg-pink-100 text-pink-700 border-pink-200' : 'bg-white text-pink-600 border-pink-100 hover:bg-pink-50'}`}>
+                        {showDetails ? "Hide Details" : "See Details"}
+                        <svg className={`w-4 h-4 transform transition-transform ${showDetails ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                 </div>
+               </div>
+
+               {/* 🔴 NEW: Slide Down Order Breakdown Box */}
+               {showDetails && (
+                  <div className="mt-3 bg-white border border-gray-200 rounded-2xl p-4 shadow-sm text-xs md:text-sm text-gray-700 font-bold space-y-2">
+                      <p className="text-pink-400 uppercase tracking-widest text-[9px] md:text-[10px] border-b border-gray-100 pb-1.5 mb-2 font-black">Order Breakdown</p>
+                      {o.itemDetails ? o.itemDetails.map((item, i) => (
+                          <div key={i} className="flex justify-between items-center">
+                              <span className="line-clamp-1 pr-4">{item.title} <span className="text-gray-400">(x{item.qty || 1})</span></span>
+                              <span className="whitespace-nowrap">{getPrice((item.price || 0) * (item.qty || 1))}</span>
+                          </div>
+                      )) : (
+                          <div className="flex justify-between items-center">
+                              <span>Custom Commission Artwork</span>
+                              <span>{o.displayAmount || '₹'+o.amount}</span>
+                          </div>
+                      )}
+                      {shipping > 0 && (
+                          <div className="flex justify-between items-center text-gray-500 pt-1">
+                              <span>Shipping & Handling</span>
+                              <span>+ {getPrice(shipping)}</span>
+                          </div>
+                      )}
+                      <div className="flex justify-between items-center border-t border-dashed border-gray-300 pt-2 mt-2 font-black text-gray-900 text-sm md:text-base">
+                          <span>Total Payable</span>
+                          <span className="text-green-600">{o.displayAmount || '₹'+o.amount}</span>
+                      </div>
+                  </div>
+              )}
+            </div>
+        );
+      };
       
       
          const registerFail = (type, data) => {
