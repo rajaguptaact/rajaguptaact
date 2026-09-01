@@ -3231,14 +3231,32 @@
                                 </div>
                                 <span className="bg-pink-100 text-pink-800 text-[9px] md:text-xs font-black px-2 md:px-4 py-1 md:py-1.5 rounded-full uppercase tracking-wider">{o.type}</span>
                               </div>
-                              <div className="mb-3 md:mb-4">
-                                <p className="font-black text-sm md:text-lg text-gray-800">{o.name} <span className="text-green-500 mx-1 md:mx-2">|</span> {o.country}</p>
-                                <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">Email: {o.email || "Not Provided"}</p>
-                                <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">WA: {o.phone}</p>
-                                {o.instagram ? <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">Insta: {o.instagram}</p> : null}
-                                <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">{o.address}</p>
-                                {o.city ? <p className="text-xs md:text-sm font-bold text-emerald-600 mt-0.5 md:mt-1">✓ Verified Location: {o.city}, {o.state} - {o.pin}</p> : <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">PIN/ZIP: {o.pin}</p>}
+                                                            <div className="mb-4 md:mb-5 bg-purple-50/50 p-3 md:p-4 rounded-2xl border border-purple-100 shadow-sm">
+                                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-purple-100">
+                                   <p className="font-black text-sm md:text-lg text-gray-900">👤 {o.name}</p>
+                                   <span className="bg-purple-200 text-purple-800 text-[10px] md:text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">{o.country}</span>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                   <p className="text-xs md:text-sm font-bold text-gray-800"><span className="text-gray-400 uppercase tracking-widest text-[9px] md:text-[10px] block mb-0.5">📧 Email:</span>{o.email || "Not Provided"}</p>
+                                   <p className="text-xs md:text-sm font-bold text-gray-800"><span className="text-gray-400 uppercase tracking-widest text-[9px] md:text-[10px] block mb-0.5">📞 WhatsApp:</span>{o.phone}</p>
+                                   {o.instagram && <p className="text-xs md:text-sm font-bold text-gray-800"><span className="text-gray-400 uppercase tracking-widest text-[9px] md:text-[10px] block mb-0.5">📸 Instagram:</span>{o.instagram}</p>}
+                                </div>
+                                
+                                <div className="mt-3 pt-3 border-t border-purple-100">
+                                   <p className="text-xs md:text-sm font-bold text-gray-800 leading-relaxed"><span className="text-gray-400 uppercase tracking-widest text-[9px] md:text-[10px] block mb-0.5">📍 Full Delivery Address:</span>{o.address}</p>
+                                   {o.city ? (
+                                       <p className="text-[10px] md:text-xs font-black text-emerald-700 mt-2 bg-emerald-100 inline-block px-2.5 py-1 rounded-md border border-emerald-200">
+                                           ✓ Verified City: {o.city}, {o.state} - {o.pin}
+                                       </p>
+                                   ) : (
+                                       <p className="text-[10px] md:text-xs font-black text-gray-600 mt-2 bg-gray-200 inline-block px-2.5 py-1 rounded-md border border-gray-300">
+                                           📮 ZIP/PIN Code: {o.pin}
+                                       </p>
+                                   )}
+                                </div>
                               </div>
+
                                <div className="bg-gray-50 p-3 md:p-4 rounded-2xl border border-gray-100">
                                 {o.itemDetails ? o.itemDetails.map((item, i) => (
                                    <div key={i} className="flex justify-between items-center text-xs md:text-sm font-bold border-b border-gray-200 pb-1.5 md:pb-2 mb-1.5 md:mb-2">
