@@ -3190,11 +3190,28 @@
                       )}
                       
                       {orders.length === 0 ? <p className="text-gray-500 font-bold bg-white p-4 md:p-6 rounded-2xl text-center shadow-sm text-sm md:text-base">No orders yet.</p> : (
-                                 <div className="space-y-4 md:space-y-6 max-h-[400px] md:max-h-[500px] overflow-y-auto pr-2">
+                      <div className="space-y-4 md:space-y-6 max-h-[400px] md:max-h-[500px] overflow-y-auto pr-2">
             {orders.filter(o => !o.isArchived).map(o => (
-              <div key={o.id} className="bg-white p-5 md:p-6 rounded-3xl shadow-md border-l-8 border-pink-500">
- 
-                              <div className="flex justify-between items-start mb-3 md:mb-4 border-b pb-3 md:pb-4">
+                            <div key={o.id} className="bg-white p-5 md:p-6 rounded-3xl shadow-md border-l-8 border-pink-500 relative">
+                              
+                              {/* ADMIN TRASH ICON (Top Right) */}
+                              <button onClick={() => { 
+                                  if(window.confirm("Delete this single order?")) {
+                                      db.collection('orders').doc(o.id).update({ isArchived: true });
+
+                                      const updatedLocal = myLocalOrders.filter(local => {
+                                          if (o.orderId && local.orderId) return local.orderId !== o.orderId;
+                                          return !(local.date === o.date && local.time === o.time && local.displayAmount === o.displayAmount);
+                                      });
+                                      setMyLocalOrders(updatedLocal);
+                                      try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(updatedLocal)); } catch(e){}
+                                  } 
+                              }} className="absolute top-4 right-4 md:top-5 md:right-5 text-gray-300 hover:text-rose-500 transition cursor-pointer p-1" title="Delete Single Order">
+                                  <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                              </button>
+
+                              <div className="flex justify-between items-start mb-3 md:mb-4 border-b pb-3 md:pb-4 pr-8">
+
                                 <div>
                                    <p className="font-black text-base md:text-xl text-gray-900">{o.type === 'Commission' ? 'Commission Request' : (o.orderId || 'Gallery Order')}</p>
                                    <p className="text-[10px] md:text-sm font-bold text-gray-500">{o.date} • {o.time}</p>
