@@ -3239,18 +3239,8 @@
                                   <span className="text-gray-700">{o.type === 'Commission' ? 'Budget / Amount' : 'Total Paid'}</span>
                                   <span className="text-green-600 text-lg md:text-2xl">{o.displayAmount || '₹'+o.amount}</span>
                                 </div>
-                                <button onClick={() => { 
-                                    if(window.confirm("Delete this single order?")) {
-                                        db.collection('orders').doc(o.id).update({ isArchived: true });
+                                 <OrderBill ord={o} />
 
-                                        const updatedLocal = myLocalOrders.filter(local => {
-                                            if (o.orderId && local.orderId) return local.orderId !== o.orderId;
-                                            return !(local.date === o.date && local.time === o.time && local.displayAmount === o.displayAmount);
-                                        });
-                                        setMyLocalOrders(updatedLocal);
-                                        try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(updatedLocal)); } catch(e){}
-                                    } 
-                                }} className="mt-3 md:mt-4 w-full bg-rose-50 text-rose-600 py-1.5 md:py-2 rounded-xl font-bold text-xs md:text-sm cursor-pointer hover:bg-rose-100 transition">Delete Single Order</button>
                               </div>
                             </div>
                           ))}
