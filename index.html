@@ -513,7 +513,7 @@
                             <>
                                 {ord.itemDetails?.map((item, i) => (
                                     <div key={i} className="flex justify-between text-gray-600 font-bold mb-1.5 border-b border-gray-50 pb-1.5">
-                                        <span className="truncate pr-2">• {item.title} <span className="text-purple-500">(x{item.qty || 1})</span></span>
+                                        <span className="truncate pr-2">• {item.title} <span className="text-pink-600 font-bold">({item.selectedSize})</span> <span className="text-purple-500">(x{item.qty || 1})</span></span>
                                         <span>{formatMoney((item.price || 0) * (item.qty || 1))}</span>
                                     </div>
                                 ))}
