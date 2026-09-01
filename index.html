@@ -3150,12 +3150,15 @@
                                 <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">{o.address}</p>
                                 {o.city ? <p className="text-xs md:text-sm font-bold text-emerald-600 mt-0.5 md:mt-1">✓ Verified Location: {o.city}, {o.state} - {o.pin}</p> : <p className="text-xs md:text-sm font-bold text-gray-600 mt-0.5 md:mt-1">PIN/ZIP: {o.pin}</p>}
                               </div>
-                              <div className="bg-gray-50 p-3 md:p-4 rounded-2xl border border-gray-100">
+                               <div className="bg-gray-50 p-3 md:p-4 rounded-2xl border border-gray-100">
                                 {o.itemDetails ? o.itemDetails.map((item, i) => (
-                                   <div key={i} className="flex justify-between text-xs md:text-sm font-bold border-b border-gray-200 pb-1.5 md:pb-2 mb-1.5 md:mb-2">
-                                     <span className="text-gray-800">{item.title} <span className="text-pink-600">({item.selectedSize})</span></span>
+                                   <div key={i} className="flex justify-between items-center text-xs md:text-sm font-bold border-b border-gray-200 pb-1.5 md:pb-2 mb-1.5 md:mb-2">
+                                     <span className="text-gray-800 mr-2">{item.title} <span className="text-pink-600">({item.selectedSize})</span></span>
+                                     {/* 🔴 FIX: Quantity Badge Added */}
+                                     <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md font-black text-[10px] md:text-xs whitespace-nowrap border border-purple-200 shadow-sm">Qty: {item.qty || 1}</span>
                                    </div>
                                 )) : null}
+
                                 <div className="flex justify-between items-center text-sm md:text-lg font-black mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-300">
                                   <span className="text-gray-700">{o.type === 'Commission' ? 'Budget / Amount' : 'Total Paid'}</span>
                                   <span className="text-green-600 text-lg md:text-2xl">{o.displayAmount || '₹'+o.amount}</span>
