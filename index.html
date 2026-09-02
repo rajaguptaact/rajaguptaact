@@ -3527,9 +3527,9 @@
 
 <button onClick={() => nav('cart')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center justify-between ${view === 'cart' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>
   <span>Cart</span>
-  {cart.length > 0 ? <span className="bg-pink-500 text-white text-xs px-2.5 py-1 rounded-full shadow-sm">{cart.length}</span> : null}
+  {isDataLoaded && cart.length > 0 ? <span className="bg-pink-500 text-white text-xs px-2.5 py-1 rounded-full shadow-sm">{cart.length}</span> : null}
 </button>
-
+                  
 <button onClick={() => nav('public_notifications')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center justify-between ${view === 'public_notifications' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>
   <span>Public Notifications</span>
   {/* 🔴 NEW: Logic to check if there is any active notification posted in the last 24 hours */}
