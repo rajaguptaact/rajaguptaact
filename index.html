@@ -883,8 +883,14 @@
             // 🔴 FIX: IP Caching & Better Model Tracker (Ab Unknown aur K) nahi aayega)
       let cachedDevInfo = null;
 
+            // 🔴 FIX: Spam clicks rokne ke liye state (Iski kami se white screen aayi thi)
+      const [isProcessingLogin, setIsProcessingLogin] = useState(false);
+
+      // 🔴 FIX: Fast 2-second API Tracker with Cache
+      let cachedDevInfo = null;
+
       const fetchDeviceDetails = async () => {
-         if (cachedDevInfo) return cachedDevInfo; // Agar ek baar fetch ho gaya, toh baar-baar API hit nahi karega
+         if (cachedDevInfo) return cachedDevInfo;
 
          let ip = "Unknown", location = "Unknown", org = "Unknown", deviceModel = "Unknown Device";
          let deviceType = "Desktop PC"; 
@@ -898,7 +904,7 @@
                  const match = ua.match(/Android.*?; (.*?)(?:Build|AppleWebKit|\))/i);
                  if (match && match[1]) {
                      deviceModel = match[1].replace(/wv|;/g, "").trim();
-                     if(deviceModel.length < 3) deviceModel = "Android Smartphone"; // "K)" jaisi problem ko theek karne ke liye
+                     if(deviceModel.length < 3) deviceModel = "Android Smartphone";
                  } else deviceModel = "Android Smartphone";
              } else if (/iPhone/.test(ua)) deviceModel = "Apple iPhone";
              else if (/iPad/.test(ua)) deviceModel = "Apple iPad";
@@ -908,7 +914,7 @@
 
          try {
              const controller = new AbortController();
-             const timeoutId = setTimeout(() => controller.abort(), 3500); 
+             const timeoutId = setTimeout(() => controller.abort(), 2000); 
              
              const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
              const geo = await res.json();
@@ -922,7 +928,7 @@
          } catch(e) {
              try {
                  const controller2 = new AbortController();
-                 const timeoutId2 = setTimeout(() => controller2.abort(), 3500);
+                 const timeoutId2 = setTimeout(() => controller2.abort(), 2000);
                  const res2 = await fetch('https://ipinfo.io/json', { signal: controller2.signal });
                  const geo2 = await res2.json();
                  clearTimeout(timeoutId2);
@@ -937,6 +943,7 @@
          cachedDevInfo = { ip, location, org, deviceModel, deviceType };
          return cachedDevInfo;
       };
+
 
 
       const [cart, setCart] = useState(() => {
