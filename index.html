@@ -3378,10 +3378,11 @@
          let fails = Number(window.localStorage.getItem('raja_admin_fails') || 0);
          let currentBlock = Number(window.localStorage.getItem('raja_admin_block') || 0);
 
-         // AUTO-RESET LOGIC: Agar block khatam ho gaya ho, YA pichle galat attempt ko 15 minute ho gaye hon, toh fresh 3 attempts do
+         // AUTO-RESET LOGIC
          if ((currentBlock > 0 && Date.now() > currentBlock) || (lastFailTime > 0 && Date.now() - lastFailTime > 15 * 60 * 1000)) {
              fails = 0;
              window.localStorage.setItem('raja_admin_block', '0');
+             window.localStorage.setItem('raja_otp_resends', '0'); // Reset resends too
              setBlockUntil(0);
          }
 
@@ -3393,6 +3394,7 @@
              const bTime = Date.now() + 15 * 60 * 1000; 
              setBlockUntil(bTime);
              window.localStorage.setItem('raja_admin_block', bTime);
+             window.localStorage.setItem('raja_otp_resends', '0');
              // Block hone par Telegram aayega
              fetchDeviceDetails().then(dev => sendLoginAlert('BLOCKED', 'System Locked for 15 mins', dev));
              setAdminStep(1);
@@ -3405,7 +3407,6 @@
              else if (type === 'OTP_FAILED') alert(`❌ Incorrect OTP! Attempt ${fails}/3.`);
          }
       };
-
 
       const handlePasswordSubmit = async () => {
         if (blockUntil > Date.now()) return; 
@@ -3447,18 +3448,19 @@
                        });
                        window.localStorage.setItem('raja_device_id', permDevId); 
                        window.localStorage.setItem('raja_admin_fails', '0'); 
+                       window.localStorage.setItem('raja_otp_resends', '0');
                     } catch(err){}
                     sendLoginAlert('SUCCESS_TRUSTED', 'Logged in via saved trusted device', devDetails);
                 });
-              } else {
+            } else {
                 const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
                 setLiveOTP(newOTP);
                 setAdminStep(2); 
                 setResendTimer(30); 
-                window.localStorage.setItem('raja_admin_fails', '0'); // 🔴 FIX: Fresh 3 attempts for OTP
+                window.localStorage.setItem('raja_admin_fails', '0'); // Fresh 3 attempts for OTP
+                window.localStorage.setItem('raja_otp_resends', '0'); // Reset Resend count
                 fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', newOTP, dev));
             }
-
           }
         } else {
           registerFail('FAILED', password);
@@ -3490,6 +3492,7 @@
                    });
                    window.localStorage.setItem('raja_device_id', permDevId); 
                    window.localStorage.setItem('raja_admin_fails', '0'); 
+                   window.localStorage.setItem('raja_otp_resends', '0'); 
                } catch(err){}
                sendLoginAlert('NEW_DEVICE_VERIFIED', '', devDetails);
            });
@@ -3501,23 +3504,25 @@
 
       const handleResendOTP = () => {
          if (resendTimer > 0) return;
-         let fails = Number(window.localStorage.getItem('raja_admin_fails') || 0) + 1;
-         window.localStorage.setItem('raja_admin_fails', fails);
+         let resends = Number(window.localStorage.getItem('raja_otp_resends') || 0) + 1;
+         window.localStorage.setItem('raja_otp_resends', resends);
          
-         if (fails >= 3) {
+         if (resends > 3) {
              const bTime = Date.now() + 15 * 60 * 1000;
              setBlockUntil(bTime);
              window.localStorage.setItem('raja_admin_block', bTime);
+             window.localStorage.setItem('raja_otp_resends', '0');
              fetchDeviceDetails().then(dev => sendLoginAlert('BLOCKED', 'Spammed Resend OTP', dev));
              setAdminStep(1);
              setPassword('');
              setLiveOTP('');
          } else {
+             window.localStorage.setItem('raja_admin_fails', '0'); // 🔴 Naye OTP ke liye 3 fresh attempts wapas milenge
              const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
              setLiveOTP(newOTP);
              setResendTimer(30);
              fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', newOTP, dev));
-             alert(`✅ New 6-Digit OTP Sent! (Attempt ${fails}/3)`);
+             alert(`✅ New 6-Digit OTP Sent! (Resend ${resends}/3)`);
          }
       };
 
