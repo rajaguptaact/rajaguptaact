@@ -865,24 +865,33 @@
         };
       }, []);
       
-      const fetchDeviceDetails = async () => {
+            const fetchDeviceDetails = async () => {
          let ip = "Unknown", location = "Unknown", org = "Unknown", deviceModel = "Unknown Device";
          let deviceType = "Desktop PC"; 
 
+         // Dual API Track (Agar ek fail hua toh dusra pakdega)
          try {
-                   const res = await fetch('https://ipinfo.io/json');
-      const geo = await res.json();
-      if (geo && geo.ip) {
-        ip = geo.ip;
-        let arr = [];
-        if (geo.city) arr.push(geo.city);
-        if (geo.region) arr.push(geo.region);
-        if (geo.country) arr.push(geo.country);
-        location = arr.length > 0 ? arr.join(", ") : "Unknown Location";
-        org = geo.org || "Unknown Network";
-      }
+             const res = await fetch('https://ipapi.co/json/');
+             const geo = await res.json();
+             if (geo && geo.ip) {
+                 ip = geo.ip;
+                 location = `${geo.city || ''}, ${geo.region || ''}, ${geo.country_name || ''}`.replace(/^, | ,|, $/g, '').trim();
+                 org = geo.org || "Unknown Network";
+             } else {
+                 throw new Error("Fallback required");
+             }
+         } catch(e) {
+             try {
+                 const res2 = await fetch('https://ipinfo.io/json');
+                 const geo2 = await res2.json();
+                 if (geo2 && geo2.ip) {
+                     ip = geo2.ip;
+                     location = `${geo2.city || ''}, ${geo2.region || ''}, ${geo2.country || ''}`.replace(/^, | ,|, $/g, '').trim();
+                     org = geo2.org || "Unknown Network";
+                 }
+             } catch(err) {}
+         }
 
-         } catch(e) {}
          
          try {
              const ua = navigator.userAgent;
