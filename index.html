@@ -527,12 +527,16 @@
                             </div>
                         ) : (
                             <>
-                                {ord.itemDetails?.map((item, i) => (
-                                    <div key={i} className="flex justify-between text-gray-600 font-bold mb-1.5 border-b border-gray-50 pb-1.5">
-                                        <span className="truncate pr-2">• {item.title} <span className="text-pink-600 font-bold">({item.selectedSize})</span> <span className="text-purple-500">(x{item.qty || 1})</span></span>
-                                        <span>{formatMoney((item.price || 0) * (item.qty || 1))}</span>
+                               {ord.itemDetails?.map((item, i) => (
+                                    <div key={i} className="flex justify-between items-start text-gray-600 font-bold mb-2 border-b border-gray-50 pb-2">
+                                        <div className="flex flex-col pr-2">
+                                            <span className="whitespace-normal leading-tight text-gray-700">• {item.title} <span className="text-purple-500 ml-1">(x{item.qty || 1})</span></span>
+                                            <span className="text-pink-600 font-black text-[9px] md:text-[10px] uppercase tracking-wider ml-3 mt-1">Size: {item.selectedSize}</span>
+                                        </div>
+                                        <span className="mt-0.5">{formatMoney((item.price || 0) * (item.qty || 1))}</span>
                                     </div>
                                 ))}
+
                             </>
                         )}
                         
