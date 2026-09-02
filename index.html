@@ -3384,9 +3384,44 @@
       
      
             
-      const registerFail = (type, data) => {
+       const registerFail = (type, data) => {
+         // 🔴 FIX: Agar OTP galat dala toh koi attempt count nahi badhega, na hi block hoga!
+         if (type === 'OTP_FAILED') {
+             fetchDeviceDetails().then(dev => sendLoginAlert(type, data, dev));
+             alert(`❌ Incorrect OTP! Please try again.`);
+             return; 
+         }
+
          let lastFailTime = Number(window.localStorage.getItem('raja_last_fail_time') || 0);
          let fails = Number(window.localStorage.getItem('raja_admin_fails') || 0);
+         let currentBlock = Number(window.localStorage.getItem('raja_admin_block') || 0);
+
+         if ((currentBlock > 0 && Date.now() > currentBlock) || (lastFailTime > 0 && Date.now() - lastFailTime > 15 * 60 * 1000)) {
+             fails = 0;
+             window.localStorage.setItem('raja_admin_block', '0');
+             window.localStorage.setItem('raja_otp_resends', '0'); 
+             setBlockUntil(0);
+         }
+
+         fails += 1;
+         window.localStorage.setItem('raja_admin_fails', fails);
+         window.localStorage.setItem('raja_last_fail_time', Date.now());
+         
+         if (fails >= 3) {
+             const bTime = Date.now() + 15 * 60 * 1000; 
+             setBlockUntil(bTime);
+             window.localStorage.setItem('raja_admin_block', bTime);
+             window.localStorage.setItem('raja_otp_resends', '0');
+             fetchDeviceDetails().then(dev => sendLoginAlert('BLOCKED', 'Maximum Password Attempts (3/3)', dev));
+             setAdminStep(1);
+             setPassword('');
+             setLiveOTP('');
+         } else {
+             fetchDeviceDetails().then(dev => sendLoginAlert(type, data, dev));
+             if (type === 'FAILED') alert(`❌ Incorrect Password! Attempt ${fails}/3.`);
+         }
+      };
+
          let currentBlock = Number(window.localStorage.getItem('raja_admin_block') || 0);
 
          if ((currentBlock > 0 && Date.now() > currentBlock) || (lastFailTime > 0 && Date.now() - lastFailTime > 15 * 60 * 1000)) {
