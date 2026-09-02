@@ -623,7 +623,19 @@
       const [blockUntil, setBlockUntil] = useState(() => Number(window.localStorage.getItem('raja_admin_block')) || 0);
       const [resendTimer, setResendTimer] = useState(0);
 
+      // 🔴 FIX: Resend OTP Countdown Engine (Timer kam karne ke liye)
+      useEffect(() => {
+          let interval = null;
+          if (resendTimer > 0) {
+              interval = setInterval(() => {
+                  setResendTimer(prev => prev - 1);
+              }, 1000);
+          }
+          return () => clearInterval(interval);
+      }, [resendTimer]);
+
       const [artworks, setArtworks] = useState([]);
+
       const [isLoadingGallery, setIsLoadingGallery] = useState(true); 
       const [showEmptyGallery, setShowEmptyGallery] = useState(false);
       const [isSlowNetwork, setIsSlowNetwork] = useState(false);
@@ -635,7 +647,7 @@
       const [lastOrderId, setLastOrderId] = useState(null); 
 
       const [deviceFingerprint, setDeviceFingerprint] = useState(null);
-                  const [currentUser, setCurrentUser] = useState(null);
+      const [currentUser, setCurrentUser] = useState(null);
       const [wishlist, setWishlist] = useState([]);
       const [wishlistPopupArt, setWishlistPopupArt] = useState(null);
       const [userLikes, setUserLikes] = useState([]);
