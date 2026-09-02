@@ -3361,24 +3361,39 @@
 
       
       
-         const registerFail = (type, data) => {
-         let fails = Number(window.localStorage.getItem('raja_admin_fails') || 0) + 1;
+      const registerFail = (type, data) => {
+         let lastFailTime = Number(window.localStorage.getItem('raja_last_fail_time') || 0);
+         let fails = Number(window.localStorage.getItem('raja_admin_fails') || 0);
+         let currentBlock = Number(window.localStorage.getItem('raja_admin_block') || 0);
+
+         // AUTO-RESET LOGIC: Agar block khatam ho gaya ho, YA pichle galat attempt ko 15 minute ho gaye hon, toh fresh 3 attempts do
+         if ((currentBlock > 0 && Date.now() > currentBlock) || (lastFailTime > 0 && Date.now() - lastFailTime > 15 * 60 * 1000)) {
+             fails = 0;
+             window.localStorage.setItem('raja_admin_block', '0');
+             setBlockUntil(0);
+         }
+
+         fails += 1;
          window.localStorage.setItem('raja_admin_fails', fails);
+         window.localStorage.setItem('raja_last_fail_time', Date.now());
          
          if (fails >= 3) {
              const bTime = Date.now() + 15 * 60 * 1000; 
              setBlockUntil(bTime);
              window.localStorage.setItem('raja_admin_block', bTime);
+             // Block hone par Telegram aayega
              fetchDeviceDetails().then(dev => sendLoginAlert('BLOCKED', 'System Locked for 15 mins', dev));
              setAdminStep(1);
              setPassword('');
              setLiveOTP('');
          } else {
+             // 1st ya 2nd fail par bhi Telegram aayega
              fetchDeviceDetails().then(dev => sendLoginAlert(type, data, dev));
              if (type === 'FAILED') alert(`❌ Incorrect Password! Attempt ${fails}/3.`);
              else if (type === 'OTP_FAILED') alert(`❌ Incorrect OTP! Attempt ${fails}/3.`);
          }
       };
+
 
       const handlePasswordSubmit = async () => {
         if (blockUntil > Date.now()) return; 
