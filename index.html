@@ -1984,12 +1984,13 @@
              db.collection('orders').add(finalPayload);
              sendSilentAlert(finalPayload); 
              
-             addLocalOrder({
+                 addLocalOrder({
                  date: finalPayload.date,
                  time: finalPayload.time,
                  type: finalPayload.type,
                  displayAmount: finalPayload.displayAmount,
-                 title: finalPayload.itemDetails[0].title
+                 title: finalPayload.itemDetails[0].title,
+                 itemDetails: finalPayload.itemDetails
              });
 
              setCommissionInput({ subject: '', size: 'A4 Colour Pencil', budget: '', instagram: '' });
