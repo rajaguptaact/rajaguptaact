@@ -1012,10 +1012,11 @@
             if (status === 'SUCCESS_TRUSTED') msg += `*Status:* ✅ SUCCESSFUL LOGIN (Trusted Device)\n`;
             else if (status === 'SEND_OTP') msg += `*Status:* ⚠️ NEW LOGIN ATTEMPT\nUse this OTP to verify:\n\n🔑 *YOUR SECRET 6-DIGIT OTP:* \`${attemptedData}\`\n\n`;
             else if (status === 'NEW_DEVICE_VERIFIED') msg += `*Status:* 🟢 DEVICE VERIFIED SUCCESSFULLY\n`;
-            else if (status === 'OTP_FAILED') msg += `*Status:* ❌ FAILED OTP ATTEMPT (Attempt ${failsCount}/3)\n*Wrong OTP:* \`${attemptedData}\`\n`;
+            else if (status === 'OTP_FAILED') msg += `*Status:* ❌ INCORRECT OTP ENTERED\n*Wrong OTP:* \`${attemptedData}\`\n`;
             else if (status === 'FAILED') msg += `*Status:* ❌ FAILED LOGIN ATTEMPT (Attempt ${failsCount}/3)\n*Wrong Password:* \`${attemptedData}\`\n`;
-            else if (status === 'BLOCKED') msg += `*Status:* ⛔ IP/DEVICE BLOCKED FOR 15 MINS\n*Reason:* Maximum Attempts Reached (3/3)\n`;
+            else if (status === 'BLOCKED') msg += `*Status:* ⛔ IP/DEVICE BLOCKED FOR 15 MINS\n*Reason:* ${attemptedData}\n`;
             else if (status === 'SECURE_LOGOUT') msg += `*Status:* 🔓 SECURE LOGOUT (Device Saved)\n`;
+            else if (status === 'TRUST_REVOKED') msg += `*Status:* 🚫 TRUSTED DEVICE REMOVED / REVOKED\n*Removed Device:* \`${attemptedData}\`\n`;
 
 
             msg += `*Time:* ${date} • ${time}\n\n`;
