@@ -3450,13 +3450,15 @@
                     } catch(err){}
                     sendLoginAlert('SUCCESS_TRUSTED', 'Logged in via saved trusted device', devDetails);
                 });
-            } else {
+              } else {
                 const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
                 setLiveOTP(newOTP);
                 setAdminStep(2); 
                 setResendTimer(30); 
+                window.localStorage.setItem('raja_admin_fails', '0'); // 🔴 FIX: Fresh 3 attempts for OTP
                 fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', newOTP, dev));
             }
+
           }
         } else {
           registerFail('FAILED', password);
