@@ -1604,14 +1604,18 @@
                  myLocalOrders.map((ord, idx) => (
                    <div key={idx} className="glass-panel p-5 md:p-6 rounded-3xl shadow-lg border-l-8 border-purple-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-xl transition-shadow bg-white/70 relative">
                      
-                     {/* TRASH ICON (Top Right) */}
+                         {/* TRASH ICON (Top Right) */}
                      <button onClick={() => {
                          if(window.confirm("Delete this single order from your device history?")) {
                              const updated = myLocalOrders.filter((_, i) => i !== idx);
                              setMyLocalOrders(updated);
                              try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(updated)); } catch(e){}
+                             if (deviceFingerprint) {
+                                 db.collection('UserOrders').doc(deviceFingerprint).set({ orders: updated }, { merge: true }).catch(e=>{});
+                             }
                          }
                       }} className="absolute top-4 right-4 md:top-6 md:right-6 text-rose-500 hover:text-rose-700 transition cursor-pointer p-1 z-10" title="Delete from History">
+
 
                          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                      </button>
