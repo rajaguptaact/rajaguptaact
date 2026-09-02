@@ -3396,8 +3396,8 @@
      
             
        
-                 // 🔴 FIX: Saara bikhra hua code saaf karke ekdum clean system
-      const registerFail = (type, data) => {
+       const registerFail = (type, data) => {
+         // 🔴 FIX: Agar OTP galat dala toh koi attempt count nahi badhega, na hi block hoga!
          if (type === 'OTP_FAILED') {
              fetchDeviceDetails().then(dev => sendLoginAlert(type, data, dev));
              alert(`❌ Incorrect OTP! Please try again.`);
