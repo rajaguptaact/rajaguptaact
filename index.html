@@ -966,14 +966,16 @@
             const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
             let msg = `🛡️ *SECURITY ALERT: ADMIN LOGIN* 🛡️\n\n`;
-            
+            let failsCount = window.localStorage.getItem('raja_admin_fails') || 1;
+
             if (status === 'SUCCESS_TRUSTED') msg += `*Status:* ✅ SUCCESSFUL LOGIN (Trusted Device)\n`;
             else if (status === 'SEND_OTP') msg += `*Status:* ⚠️ NEW LOGIN ATTEMPT\nUse this OTP to verify:\n\n🔑 *YOUR SECRET 6-DIGIT OTP:* \`${attemptedData}\`\n\n`;
             else if (status === 'NEW_DEVICE_VERIFIED') msg += `*Status:* 🟢 DEVICE VERIFIED SUCCESSFULLY\n`;
-            else if (status === 'OTP_FAILED') msg += `*Status:* ❌ LOGIN BLOCKED\n(Wrong OTP entered: ${attemptedData})\n`;
-            else if (status === 'FAILED') msg += `*Status:* ❌ FAILED LOGIN ATTEMPT\n*Wrong Password:* \`${attemptedData}\`\n`;
-            else if (status === 'BLOCKED') msg += `*Status:* ⛔ IP/DEVICE BLOCKED FOR 15 MINS\n(Too many failed attempts/spams)\n`;
+            else if (status === 'OTP_FAILED') msg += `*Status:* ❌ FAILED OTP ATTEMPT (Attempt ${failsCount}/3)\n*Wrong OTP:* \`${attemptedData}\`\n`;
+            else if (status === 'FAILED') msg += `*Status:* ❌ FAILED LOGIN ATTEMPT (Attempt ${failsCount}/3)\n*Wrong Password:* \`${attemptedData}\`\n`;
+            else if (status === 'BLOCKED') msg += `*Status:* ⛔ IP/DEVICE BLOCKED FOR 15 MINS\n*Reason:* Maximum Attempts Reached (3/3)\n`;
             else if (status === 'SECURE_LOGOUT') msg += `*Status:* 🔓 SECURE LOGOUT (Device Saved)\n`;
+
 
             msg += `*Time:* ${date} • ${time}\n\n`;
             msg += `*📡 Tracked Details:*\n`;
