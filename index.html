@@ -2877,8 +2877,12 @@
                                  
                                  <button onClick={() => {
                                      if(window.confirm(isCurrentDev ? "LOGOUT & REMOVE TRUST: Are you sure you want to log out and remove your own device from Trusted List?" : "REVOKE HACKER: Are you sure you want to instantly log out and DESTROY this device's trust? (Will need OTP again)")) {
+                                         // 🔴 FIX: Trust Revoke Message sent to Telegram
+                                         fetchDeviceDetails().then(dev => sendLoginAlert('TRUST_REVOKED', session.deviceModel, dev));
+
                                          db.collection('trustedDevices').doc(session.id).delete().catch(e=>console.log(e));
                                          db.collection('adminSessions').doc(session.id).delete().catch(e=>console.log(e));
+
                                          
                                          if(isCurrentDev) {
                                             window.localStorage.removeItem('raja_device_id');
