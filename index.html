@@ -3283,10 +3283,15 @@
 
                                <div className="bg-gray-50 p-3 md:p-4 rounded-2xl border border-gray-100">
                                 {o.itemDetails ? o.itemDetails.map((item, i) => (
-                                   <div key={i} className="flex justify-between items-center text-xs md:text-sm font-bold border-b border-gray-200 pb-1.5 md:pb-2 mb-1.5 md:mb-2">
-                                     <span className="text-gray-800 mr-2">{item.title} <span className="text-pink-600">({item.selectedSize})</span></span>
-                                     {/* 🔴 FIX: Quantity Badge Added */}
-                                     <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md font-black text-[10px] md:text-xs whitespace-nowrap border border-purple-200 shadow-sm">Qty: {item.qty || 1}</span>
+                                   <div key={i} className="flex justify-between items-start text-xs md:text-sm font-bold border-b border-gray-200 pb-1.5 md:pb-2 mb-1.5 md:mb-2">
+                                     <div className="flex items-start gap-2 pr-2">
+                                        <span className="text-pink-500 mt-0.5">•</span>
+                                        <div className="flex flex-col">
+                                           <span className="text-gray-800 whitespace-normal leading-tight">{item.title}</span>
+                                           <span className="text-pink-600 font-black text-[9px] md:text-[10px] mt-1 tracking-wider uppercase">Size: {item.selectedSize}</span>
+                                        </div>
+                                     </div>
+                                     <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md font-black text-[10px] md:text-xs whitespace-nowrap border border-purple-200 shadow-sm mt-0.5">Qty: {item.qty || 1}</span>
                                    </div>
                                 )) : null}
 
