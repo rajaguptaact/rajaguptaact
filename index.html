@@ -877,41 +877,18 @@
         };
       }, []);
       
-            const fetchDeviceDetails = async () => {
+                  // 🔴 FIX: Spam clicks rokne ke liye state
+      const [isProcessingLogin, setIsProcessingLogin] = useState(false);
+
+      // 🔴 FIX: Fast 2-second Dual API Tracker (Ab delay nahi hoga)
+      const fetchDeviceDetails = async () => {
          let ip = "Unknown", location = "Unknown", org = "Unknown", deviceModel = "Unknown Device";
          let deviceType = "Desktop PC"; 
 
-         // Dual API Track (Agar ek fail hua toh dusra pakdega)
-         try {
-             const res = await fetch('https://ipapi.co/json/');
-             const geo = await res.json();
-             if (geo && geo.ip) {
-                 ip = geo.ip;
-                 location = `${geo.city || ''}, ${geo.region || ''}, ${geo.country_name || ''}`.replace(/^, | ,|, $/g, '').trim();
-                 org = geo.org || "Unknown Network";
-             } else {
-                 throw new Error("Fallback required");
-             }
-         } catch(e) {
-             try {
-                 const res2 = await fetch('https://ipinfo.io/json');
-                 const geo2 = await res2.json();
-                 if (geo2 && geo2.ip) {
-                     ip = geo2.ip;
-                     location = `${geo2.city || ''}, ${geo2.region || ''}, ${geo2.country || ''}`.replace(/^, | ,|, $/g, '').trim();
-                     org = geo2.org || "Unknown Network";
-                 }
-             } catch(err) {}
-         }
-
-         
          try {
              const ua = navigator.userAgent;
-             if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
-                 deviceType = "Mobile Phone";
-             } else if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
-                 deviceType = "Tablet";
-             }
+             if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) deviceType = "Mobile Phone";
+             else if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) deviceType = "Tablet";
 
              if (/android/i.test(ua)) {
                  const match = ua.match(/Android.*?; (.*?)\s+(Build|AppleWebKit)/i);
@@ -921,12 +898,35 @@
              else if (/iPad/.test(ua)) deviceModel = "Apple iPad";
              else if (/Windows/.test(ua)) deviceModel = "Windows PC";
              else if (/Mac OS/.test(ua)) deviceModel = "Mac Computer";
-             
-             if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
-                 const hints = await navigator.userAgentData.getHighEntropyValues(['model']);
-                 if (hints.model) deviceModel = hints.model + " (Verified)";
-             }
          } catch(e) {}
+
+         try {
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 sec se zyada wait nahi karega
+             
+             const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+             const geo = await res.json();
+             clearTimeout(timeoutId);
+             
+             if (geo && geo.ip) {
+                 ip = geo.ip;
+                 location = `${geo.city || ''}, ${geo.region || ''}, ${geo.country_name || ''}`.replace(/^, | ,|, $/g, '').trim();
+                 org = geo.org || "Unknown Network";
+             } else throw new Error("Fallback");
+         } catch(e) {
+             try {
+                 const controller2 = new AbortController();
+                 const timeoutId2 = setTimeout(() => controller2.abort(), 2000);
+                 const res2 = await fetch('https://ipinfo.io/json', { signal: controller2.signal });
+                 const geo2 = await res2.json();
+                 clearTimeout(timeoutId2);
+                 if (geo2 && geo2.ip) {
+                     ip = geo2.ip;
+                     location = `${geo2.city || ''}, ${geo2.region || ''}, ${geo2.country || ''}`.replace(/^, | ,|, $/g, '').trim();
+                     org = geo2.org || "Unknown Network";
+                 }
+             } catch(err) {}
+         }
          return { ip, location, org, deviceModel, deviceType };
       };
 
