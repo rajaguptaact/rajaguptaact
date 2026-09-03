@@ -1079,7 +1079,7 @@
             else if (status === 'FAILED') msg += `*Status:* ❌ FAILED LOGIN ATTEMPT (Attempt ${failsCount}/3)\n*Wrong Password:* \`${attemptedData}\`\n`;
             else if (status === 'BLOCKED') msg += `*Status:* ⛔ IP/DEVICE BLOCKED FOR 15 MINS\n*Reason:* ${attemptedData}\n`;
             else if (status === 'SECURE_LOGOUT') msg += `*Status:* 🔓 SECURE LOGOUT (Device Saved)\n`;
-            else if (status === 'TRUST_REVOKED') msg += `*Status:* 🚫 TRUSTED DEVICE REMOVED / REVOKED\n*Removed Device:* \`${attemptedData}\`\n`;
+            else if (status === 'TRUST_REVOKED') msg += `*Status:* 🚫 HACKER KICKED OUT (Trust Revoked)\n*Removed Device:* \`${attemptedData}\`\n*Action:* Hacker was forcefully logged out by Admin.\n`;
 
 
             msg += `*Time:* ${date} • ${time}\n\n`;
