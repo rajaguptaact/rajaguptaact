@@ -3575,8 +3575,9 @@
                 setPassword('');
                 fetchDeviceDetails().then(devDetails => {
                     try { 
+                       // 🔴 BUG FIX: Ensure we use the SAME permDevId for the session, avoiding duplicates
                        db.collection('adminSessions').doc(permDevId).set({
-                           id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, createdAt: Date.now()
+                           id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, createdAt: Date.now(), lastSeen: Date.now()
                        });
                        window.localStorage.setItem('raja_device_id', permDevId); 
                        window.localStorage.setItem('raja_admin_fails', '0'); 
@@ -3600,7 +3601,7 @@
         }
         setIsProcessingLogin(false); 
       };
-
+        
       const handlePinSubmit = () => {
         if (blockUntil > Date.now() || isProcessingLogin) return;
         setIsProcessingLogin(true); 
