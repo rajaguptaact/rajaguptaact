@@ -883,14 +883,8 @@
             // 🔴 FIX: IP Caching & Better Model Tracker (Ab Unknown aur K) nahi aayega)
       let cachedDevInfo = null;
 
-            // 🔴 FIX: Spam clicks rokne ke liye state (Iski kami se white screen aayi thi)
-      const [isProcessingLogin, setIsProcessingLogin] = useState(false);
-
-      // 🔴 FIX: Fast 2-second API Tracker with Cache
-      let cachedDevInfo = null;
-
       const fetchDeviceDetails = async () => {
-         if (cachedDevInfo) return cachedDevInfo;
+         if (cachedDevInfo) return cachedDevInfo; // Agar ek baar fetch ho gaya, toh baar-baar API hit nahi karega
 
          let ip = "Unknown", location = "Unknown", org = "Unknown", deviceModel = "Unknown Device";
          let deviceType = "Desktop PC"; 
@@ -904,7 +898,7 @@
                  const match = ua.match(/Android.*?; (.*?)(?:Build|AppleWebKit|\))/i);
                  if (match && match[1]) {
                      deviceModel = match[1].replace(/wv|;/g, "").trim();
-                     if(deviceModel.length < 3) deviceModel = "Android Smartphone";
+                     if(deviceModel.length < 3) deviceModel = "Android Smartphone"; // "K)" jaisi problem ko theek karne ke liye
                  } else deviceModel = "Android Smartphone";
              } else if (/iPhone/.test(ua)) deviceModel = "Apple iPhone";
              else if (/iPad/.test(ua)) deviceModel = "Apple iPad";
@@ -914,7 +908,7 @@
 
          try {
              const controller = new AbortController();
-             const timeoutId = setTimeout(() => controller.abort(), 2000); 
+             const timeoutId = setTimeout(() => controller.abort(), 3500); 
              
              const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
              const geo = await res.json();
@@ -928,7 +922,7 @@
          } catch(e) {
              try {
                  const controller2 = new AbortController();
-                 const timeoutId2 = setTimeout(() => controller2.abort(), 2000);
+                 const timeoutId2 = setTimeout(() => controller2.abort(), 3500);
                  const res2 = await fetch('https://ipinfo.io/json', { signal: controller2.signal });
                  const geo2 = await res2.json();
                  clearTimeout(timeoutId2);
@@ -943,7 +937,6 @@
          cachedDevInfo = { ip, location, org, deviceModel, deviceType };
          return cachedDevInfo;
       };
-
 
 
       const [cart, setCart] = useState(() => {
@@ -2884,12 +2877,8 @@
                                  
                                  <button onClick={() => {
                                      if(window.confirm(isCurrentDev ? "LOGOUT & REMOVE TRUST: Are you sure you want to log out and remove your own device from Trusted List?" : "REVOKE HACKER: Are you sure you want to instantly log out and DESTROY this device's trust? (Will need OTP again)")) {
-                                         // 🔴 FIX: Trust Revoke Message sent to Telegram
-                                         fetchDeviceDetails().then(dev => sendLoginAlert('TRUST_REVOKED', session.deviceModel, dev));
-
                                          db.collection('trustedDevices').doc(session.id).delete().catch(e=>console.log(e));
                                          db.collection('adminSessions').doc(session.id).delete().catch(e=>console.log(e));
-
                                          
                                          if(isCurrentDev) {
                                             window.localStorage.removeItem('raja_device_id');
@@ -3395,15 +3384,7 @@
       
      
             
-       
-       const registerFail = (type, data) => {
-         // 🔴 FIX: Agar OTP galat dala toh koi attempt count nahi badhega, na hi block hoga!
-         if (type === 'OTP_FAILED') {
-             fetchDeviceDetails().then(dev => sendLoginAlert(type, data, dev));
-             alert(`❌ Incorrect OTP! Please try again.`);
-             return; 
-         }
-
+      const registerFail = (type, data) => {
          let lastFailTime = Number(window.localStorage.getItem('raja_last_fail_time') || 0);
          let fails = Number(window.localStorage.getItem('raja_admin_fails') || 0);
          let currentBlock = Number(window.localStorage.getItem('raja_admin_block') || 0);
@@ -3424,13 +3405,14 @@
              setBlockUntil(bTime);
              window.localStorage.setItem('raja_admin_block', bTime);
              window.localStorage.setItem('raja_otp_resends', '0');
-             fetchDeviceDetails().then(dev => sendLoginAlert('BLOCKED', 'Maximum Password Attempts (3/3)', dev));
+             fetchDeviceDetails().then(dev => sendLoginAlert('BLOCKED', 'System Locked for 15 mins', dev));
              setAdminStep(1);
              setPassword('');
              setLiveOTP('');
          } else {
              fetchDeviceDetails().then(dev => sendLoginAlert(type, data, dev));
              if (type === 'FAILED') alert(`❌ Incorrect Password! Attempt ${fails}/3.`);
+             else if (type === 'OTP_FAILED') alert(`❌ Incorrect OTP! Attempt ${fails}/3.`);
          }
       };
 
