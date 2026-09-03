@@ -3426,6 +3426,26 @@
       
      
             
+            // 🚀 FIX: CLOUD-BASED BLOCK LISTENER (Browser ka cache clear karne par bhi block nahi hatega)
+      useEffect(() => {
+          if (deviceFingerprint) {
+              const unsubBlock = db.collection('BlockedHackers').doc(deviceFingerprint).onSnapshot(doc => {
+                  if (doc.exists) {
+                      const bTime = doc.data().blockedUntil;
+                      if (bTime > Date.now()) {
+                          setBlockUntil(bTime);
+                          setIsAdmin(false); // Agar hacker andar hai toh usko turant bahar phek dega
+                      } else {
+                          // Time pura hone par cloud se unblock kar dega
+                          db.collection('BlockedHackers').doc(deviceFingerprint).delete().catch(e=>{});
+                          setBlockUntil(0);
+                      }
+                  }
+              });
+              return () => unsubBlock();
+          }
+      }, [deviceFingerprint]);
+
       const registerFail = (type, data) => {
          let lastFailTime = Number(window.localStorage.getItem('raja_last_fail_time') || 0);
          let fails = Number(window.localStorage.getItem('raja_admin_fails') || 0);
@@ -3447,14 +3467,23 @@
              setBlockUntil(bTime);
              window.localStorage.setItem('raja_admin_block', bTime);
              window.localStorage.setItem('raja_otp_resends', '0');
-             fetchDeviceDetails().then(dev => sendLoginAlert('BLOCKED', 'System Locked for 15 mins', dev));
+             
+             // 🚀 FIX: SAVING BLOCK TO CLOUD FIREBASE
+             fetchDeviceDetails().then(dev => {
+                 if (deviceFingerprint) {
+                     db.collection('BlockedHackers').doc(deviceFingerprint).set({
+                         ip: dev.ip, deviceModel: dev.deviceModel, blockedUntil: bTime, reason: data
+                     }).catch(e=>{});
+                 }
+                 sendLoginAlert('BLOCKED', 'System Locked for 15 mins (Cloud Block Active)', dev);
+             });
+             
              setAdminStep(1);
              setPassword('');
              setLiveOTP('');
          } else {
              fetchDeviceDetails().then(dev => sendLoginAlert(type, data, dev));
              if (type === 'FAILED') alert(`❌ Incorrect Password! Attempt ${fails}/3.`);
-             else if (type === 'OTP_FAILED') alert(`❌ Incorrect OTP! Attempt ${fails}/3.`);
          }
       };
 
