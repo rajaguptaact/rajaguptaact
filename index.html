@@ -1137,13 +1137,36 @@
       }, []);
       
       useEffect(() => {
+        let unsubSess = () => {};
+        let unsubLive = () => {};
+        
         if (isAdmin) {
-           const unsubSess = db.collection("trustedDevices").onSnapshot(snap => {
+           unsubSess = db.collection("trustedDevices").onSnapshot(snap => {
                setActiveSessions(snap.docs.map(doc => doc.data()).sort((a,b) => b.createdAt - a.createdAt));
            });
-           return () => unsubSess();
+
+           // 🚀 FIX: REAL-TIME AUTO-LOGOUT (Hacker ko screen se bahar fekna)
+           const currentDevId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
+           if (currentDevId) {
+               unsubLive = db.collection("trustedDevices").doc(currentDevId).onSnapshot(doc => {
+                   if (!doc.exists) {
+                       // Database se device udate hi, yahan auto-logout trigger ho jayega!
+                       setIsAdmin(false);
+                       setAdminStep(1);
+                       window.localStorage.removeItem('raja_device_id');
+                       window.localStorage.removeItem('raja_permanent_device_id');
+                       alert("🚨 SECURITY ALERT: Your access has been revoked by the Master Admin. You have been logged out.");
+                       window.location.reload();
+                   } else {
+                       // 🚀 FIX: LIVE 'LAST SEEN' UPDATER (Jab bhi panel chalayega, time update hoga)
+                       db.collection("trustedDevices").doc(currentDevId).update({ lastSeen: Date.now() }).catch(e=>{});
+                   }
+               });
+           }
         }
-      }, [isAdmin]);
+        return () => { unsubSess(); unsubLive(); };
+      }, [isAdmin, view]); // View badalne par bhi last seen live update hoga
+
 
       useEffect(() => { 
         try {
