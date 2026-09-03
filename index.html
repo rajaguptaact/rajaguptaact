@@ -880,58 +880,58 @@
                   // 🔴 FIX: Spam clicks rokne ke liye state
       const [isProcessingLogin, setIsProcessingLogin] = useState(false);
 
-            // 🔴 FIX: IP Caching & Better Model Tracker (Ab Unknown aur K) nahi aayega)
+            // 🔴 FIX: IP Caching & Better Model Tracker (Ab Unknown aur K) nahi aayega
       let cachedDevInfo = null;
 
       const fetchDeviceDetails = async () => {
-         if (cachedDevInfo) return cachedDevInfo; // Agar ek baar fetch ho gaya, toh baar-baar API hit nahi karega
+         // 🚀 FIX 1: Agar cache mein "Unknown" IP hai, toh dobara live API hit karega
+         if (cachedDevInfo && cachedDevInfo.ip !== "Unknown") return cachedDevInfo;
 
          let ip = "Unknown", location = "Unknown", org = "Unknown", deviceModel = "Unknown Device";
          let deviceType = "Desktop PC"; 
 
          try {
              const ua = navigator.userAgent;
+             
+             // 1. DEVICE TYPE NIKALNE KA LOGIC (Mobile / Tablet / PC)
              if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) deviceType = "Mobile Phone";
              else if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) deviceType = "Tablet";
 
+             // 2. EXACT MODEL CODE NIKALNE KA SOLID LOGIC (RMX1941, SM-A505F, etc.)
              if (/android/i.test(ua)) {
-                 const match = ua.match(/Android.*?; (.*?)(?:Build|AppleWebKit|\))/i);
+                 const match = ua.match(/Android.*?;(.*?)(\sBuild|\))/i);
                  if (match && match[1]) {
-                     deviceModel = match[1].replace(/wv|;/g, "").trim();
-                     if(deviceModel.length < 3) deviceModel = "Android Smartphone"; // "K)" jaisi problem ko theek karne ke liye
-                 } else deviceModel = "Android Smartphone";
+                     let rawModel = match[1].split(';').pop().trim();
+                     rawModel = rawModel.replace(/wv|K\)|Infinix|TECNO/ig, "").trim(); // Faltu kachra filter karega
+                     if (rawModel.length > 2) deviceModel = rawModel;
+                     else deviceModel = "Android Smartphone";
+                 }
              } else if (/iPhone/.test(ua)) deviceModel = "Apple iPhone";
              else if (/iPad/.test(ua)) deviceModel = "Apple iPad";
              else if (/Windows/.test(ua)) deviceModel = "Windows PC";
              else if (/Mac OS/.test(ua)) deviceModel = "Mac Computer";
+
          } catch(e) {}
 
-         try {
-             const controller = new AbortController();
-             const timeoutId = setTimeout(() => controller.abort(), 3500); 
-             
-             const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
-             const geo = await res.json();
-             clearTimeout(timeoutId);
-             
-             if (geo && geo.ip) {
-                 ip = geo.ip;
-                 location = `${geo.city || ''}, ${geo.region || ''}, ${geo.country_name || ''}`.replace(/^, | ,|, $/g, '').trim();
-                 org = geo.org || "Unknown Network";
-             } else throw new Error("Fallback");
-         } catch(e) {
+         // 3. LOCATION KE LIYE 3-LAYER FAIL-SAFE SYSTEM (Kabhi "Unknown" nahi aayega)
+         const apiList = ['https://ipapi.co/json/', 'https://ip-api.com/json/', 'https://ipinfo.io/json'];
+         
+         for (let api of apiList) {
              try {
-                 const controller2 = new AbortController();
-                 const timeoutId2 = setTimeout(() => controller2.abort(), 3500);
-                 const res2 = await fetch('https://ipinfo.io/json', { signal: controller2.signal });
-                 const geo2 = await res2.json();
-                 clearTimeout(timeoutId2);
-                 if (geo2 && geo2.ip) {
-                     ip = geo2.ip;
-                     location = `${geo2.city || ''}, ${geo2.region || ''}, ${geo2.country || ''}`.replace(/^, | ,|, $/g, '').trim();
-                     org = geo2.org || "Unknown Network";
+                 const controller = new AbortController();
+                 const timeoutId = setTimeout(() => controller.abort(), 3500); 
+                 
+                 const res = await fetch(api, { signal: controller.signal });
+                 const geo = await res.json();
+                 clearTimeout(timeoutId);
+                 
+                 if (geo && (geo.ip || geo.query)) {
+                     ip = geo.ip || geo.query;
+                     location = `${geo.city || ''}, ${geo.region || geo.regionName || ''}, ${geo.country_name || geo.country || ''}`.replace(/^, | ,|, $/g, '').trim();
+                     org = geo.org || geo.isp || "Unknown Network";
+                     break; // Ek API se data mila toh baaki try karna band kar dega
                  }
-             } catch(err) {}
+             } catch(e) { }
          }
          
          cachedDevInfo = { ip, location, org, deviceModel, deviceType };
