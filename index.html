@@ -891,11 +891,21 @@
          let deviceType = "Desktop PC"; 
 
          try {
+      let cachedDevInfo = null;
+
+      const fetchDeviceDetails = async () => {
+         // 🔴 BUG FIX: Agar cache mein Location "Unknown" hai toh usko ignore karega aur naya data layega
+         if (cachedDevInfo && cachedDevInfo.location !== "Unknown" && cachedDevInfo.location !== "") return cachedDevInfo;
+
+         let ip = "Unknown", location = "Unknown", org = "Unknown", deviceModel = "Unknown Device";
+         let deviceType = "Desktop PC"; 
+
+         try {
              const ua = navigator.userAgent;
              if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) deviceType = "Mobile Phone";
              else if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) deviceType = "Tablet";
 
-             // 1. ADVANCED MODEL SCANNER (Chrome ke hidden model name ko nikalne ki koshish)
+             // 1. ADVANCED MODEL SCANNER
              if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
                  try {
                      const uaData = await navigator.userAgentData.getHighEntropyValues(["model"]);
@@ -903,7 +913,6 @@
                  } catch(e) {}
              }
 
-             // Agar advanced scanner fail ho jaye toh purana fail-safe
              if (deviceModel === "Unknown Device" || deviceModel.length < 3) {
                  if (/android/i.test(ua)) {
                      const match = ua.match(/Android.*?;(.*?)(\sBuild|\))/i);
@@ -919,23 +928,58 @@
              }
          } catch(e) {}
 
-         // 2. STRICT IPv4 & BETTER LOCATION API
-         try {
-             const controller = new AbortController();
-             const timeoutId = setTimeout(() => controller.abort(), 4000); 
-             
-             // ipinfo.io generally chota IP (IPv4) aur better Indian state accuracy deta hai
-             const res = await fetch('https://ipinfo.io/json', { signal: controller.signal });
-             const geo = await res.json();
-             clearTimeout(timeoutId);
-             
-             if (geo && geo.ip) {
-                 ip = geo.ip;
-                 location = `${geo.city || ''}, ${geo.region || ''}, ${geo.country || ''}`.replace(/^, | ,|, $/g, '').trim();
-                 org = geo.org || "Unknown Network";
-             }
-         } catch(e) {
-             // Backup API agar ipinfo fail ho jaye
+         // 2. 🔴 100% ACCURATE & MULTI-FALLBACK LOCATION ENGINE
+         const fetchLocation = async () => {
+             // API 1: ipapi.co (Highly accurate for India)
+             try {
+                 const res1 = await fetch('https://ipapi.co/json/');
+                 const data1 = await res1.json();
+                 if (data1 && data1.city && !data1.error) {
+                     return { 
+                         ip: data1.ip, 
+                         loc: `${data1.city}, ${data1.region}, ${data1.country_name}`, 
+                         isp: data1.org 
+                     };
+                 }
+             } catch(e) {}
+
+             // API 2: ipwho.is (Strong Fallback agar pehla fail ho jaye)
+             try {
+                 const res2 = await fetch('https://ipwho.is/');
+                 const data2 = await res2.json();
+                 if (data2 && data2.success) {
+                     return { 
+                         ip: data2.ip, 
+                         loc: `${data2.city}, ${data2.region}, ${data2.country}`, 
+                         isp: data2.connection?.isp || data2.connection?.org 
+                     };
+                 }
+             } catch(e) {}
+
+             // API 3: ipinfo.io (Last resort)
+             try {
+                 const res3 = await fetch('https://ipinfo.io/json');
+                 const data3 = await res3.json();
+                 if (data3 && data3.ip) {
+                     return {
+                         ip: data3.ip,
+                         loc: `${data3.city || ''}, ${data3.region || ''}, ${data3.country || ''}`.replace(/^, | ,|, $/g, '').trim() || "Unknown",
+                         isp: data3.org || "Unknown Network"
+                     };
+                 }
+             } catch(e) {}
+
+             return null; // Agar teeno fail ho gaye (very rare)
+         };
+
+         const geoData = await fetchLocation();
+         
+         if (geoData) {
+             ip = geoData.ip || ip;
+             location = geoData.loc || location;
+             org = geoData.isp || org;
+         } else {
+             // Ultimate backup sirf IP nikalne ke liye
              try {
                  const res = await fetch('https://api.ipify.org?format=json');
                  const geo = await res.json();
