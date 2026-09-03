@@ -3626,22 +3626,28 @@
            window.localStorage.setItem('raja_otp_fails', '0');
 
            fetchDeviceDetails().then(devDetails => {
+               // 🔴 BUG FIX: Har naye phone ke OTP login par HAMESHA ek NAYI ID banegi!
                let permDevId = window.localStorage.getItem('raja_permanent_device_id');
+               // Agar phone mein ID nahi hai, toh ekdum nayi ID generate karo
                if (!permDevId) {
-                   permDevId = 'TRUSTED-' + Date.now() + '-' + Math.floor(Math.random()*1000);
+                   permDevId = 'TRUSTED-' + Date.now() + '-' + Math.floor(Math.random()*10000);
                    window.localStorage.setItem('raja_permanent_device_id', permDevId);
                }
+
                try { 
+                   // Dono database mein entry save karo (Trusted ke liye bhi aur Session ke liye bhi)
                    db.collection('trustedDevices').doc(permDevId).set({
-                       id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, createdAt: Date.now()
+                       id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, createdAt: Date.now(), lastSeen: Date.now()
                    });
                    db.collection('adminSessions').doc(permDevId).set({
-                       id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, createdAt: Date.now()
+                       id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, createdAt: Date.now(), lastSeen: Date.now()
                    });
+                   
                    window.localStorage.setItem('raja_device_id', permDevId); 
                    window.localStorage.setItem('raja_admin_fails', '0'); 
                    window.localStorage.setItem('raja_otp_resends', '0'); 
                } catch(err){}
+               
                sendLoginAlert('NEW_DEVICE_VERIFIED', '', devDetails);
            });
         } else {
@@ -3653,6 +3659,7 @@
         }
         setIsProcessingLogin(false);
       };
+        
 
       const handleResendOTP = () => {
          if (resendTimer > 0 || isProcessingLogin) return;
