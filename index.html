@@ -3422,6 +3422,7 @@
          }
       };
 
+            
       const handlePasswordSubmit = async () => {
         if (blockUntil > Date.now() || isProcessingLogin) return; 
         setIsProcessingLogin(true); 
@@ -3473,7 +3474,8 @@
                 setResendTimer(30); 
                 window.localStorage.setItem('raja_admin_fails', '0'); 
                 window.localStorage.setItem('raja_otp_resends', '0'); 
-                fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', newOTP, dev));
+                window.localStorage.setItem('raja_otp_fails', '0'); 
+                fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', `${newOTP}|1`, dev)); // Attempt 1 Sent
             }
           }
         } else {
@@ -3486,12 +3488,25 @@
         if (blockUntil > Date.now() || isProcessingLogin) return;
         setIsProcessingLogin(true); 
 
+        // 🚀 FIX: STRICT 6-DIGIT VALIDATION (No empty submission)
+        if (!otpInput || otpInput.trim() === '') {
+            alert("⚠️ Please enter the 6-digit OTP first.");
+            setIsProcessingLogin(false);
+            return;
+        }
+        if (otpInput.length !== 6 || !/^\d{6}$/.test(otpInput)) {
+            alert("⚠️ OTP must be exactly 6 digits.");
+            setIsProcessingLogin(false);
+            return;
+        }
+
         if (otpInput === liveOTP && liveOTP !== '') {
            setIsAdmin(true); 
            setOtpInput('');
            setPassword('');
            setLiveOTP('');
            setAdminStep(1);
+           window.localStorage.setItem('raja_otp_fails', '0');
 
            fetchDeviceDetails().then(devDetails => {
                let permDevId = window.localStorage.getItem('raja_permanent_device_id');
@@ -3513,8 +3528,13 @@
                sendLoginAlert('NEW_DEVICE_VERIFIED', '', devDetails);
            });
         } else {
+           // 🚀 FIX: INFINITE WRONG OTP TRIES (No blocking, just counting)
+           let otpFails = Number(window.localStorage.getItem('raja_otp_fails') || 0) + 1;
+           window.localStorage.setItem('raja_otp_fails', otpFails);
+           
+           fetchDeviceDetails().then(dev => sendLoginAlert('OTP_FAILED', `${otpInput}|${otpFails}`, dev));
+           alert(`❌ Incorrect OTP! (You can try again)`);
            setOtpInput('');
-           registerFail('OTP_FAILED', otpInput);
         }
         setIsProcessingLogin(false);
       };
@@ -3540,7 +3560,7 @@
              const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
              setLiveOTP(newOTP);
              setResendTimer(30);
-             fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', newOTP, dev));
+             fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', `${newOTP}|${resends}`, dev)); // Attempt 2 or 3
              alert(`✅ New 6-Digit OTP Sent! (Resend ${resends}/3)`);
          }
          setIsProcessingLogin(false);
