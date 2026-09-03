@@ -2937,37 +2937,44 @@
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                          {activeSessions.map(session => {
                             const isCurrentDev = session.id === window.localStorage.getItem('raja_permanent_device_id');
+                            
+                            // 🔴 WHITE-SCREEN PROTECTION (Zero Risk Logic)
+                            const model = session.deviceModel || "Unknown Device";
+                            const isMobile = model.includes("Phone") || model.includes("iPhone") || model.includes("Android");
+                            
                             return (
-                              <div key={session.id} className={`p-4 md:p-5 rounded-2xl border flex flex-col justify-between ${isCurrentDev ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-gray-200 shadow-md'}`}>
+                              <div key={session.id} className={`p-4 md:p-5 rounded-2xl border flex flex-col justify-between ${isCurrentDev ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-gray-200 shadow-md hover:border-rose-300 transition-colors'}`}>
                                  <div>
-                                    <div className="flex justify-between items-start mb-2">
-                                       <p className="font-black text-base md:text-lg text-gray-900 flex items-center gap-1 md:gap-2">
-                                          {session.deviceModel.includes("Phone") || session.deviceModel.includes("iPhone") ? "📱" : "💻"} 
-                                          {session.deviceModel}
+                                    <div className="flex justify-between items-start mb-2 border-b border-gray-100 pb-2">
+                                       <p className="font-black text-base md:text-lg text-gray-900 flex items-center gap-1 md:gap-2 line-clamp-1">
+                                          {isMobile ? "📱" : "💻"} 
+                                          {model}
                                        </p>
                                        {isCurrentDev && <span className="bg-blue-600 text-white text-[9px] md:text-[10px] font-black px-1.5 md:px-2 py-0.5 md:py-1 rounded uppercase tracking-wider">Current</span>}
                                     </div>
-                                    <p className="text-xs md:text-sm font-bold text-gray-600">IP: <span className="font-medium text-gray-800">{session.ip}</span></p>
+                                    <p className="text-xs md:text-sm font-bold text-gray-600">IP: <span className="font-medium text-gray-800">{session.ip || "Unknown"}</span></p>
                                     <p className="text-xs md:text-sm font-bold text-gray-600">Loc: <span className="font-medium text-gray-800">{session.location || "Unknown"}</span></p>
                                     <p className="text-[10px] md:text-xs font-medium text-gray-400 mt-2">
-                                        Saved Since: {new Date(session.createdAt).toLocaleString('en-IN')}
+                                        Saved Since: {session.createdAt ? new Date(session.createdAt).toLocaleString('en-IN') : "Unknown"}
                                     </p>
-                                    {/* 🚀 FIX: LAST SEEN LIVE DISPLAY */}
-                                    <p className="text-[10px] md:text-xs font-black text-purple-600 mt-0.5">
+                                    <p className={`text-[10px] md:text-xs font-black mt-0.5 ${isCurrentDev ? 'text-blue-600' : 'text-rose-600'}`}>
                                         Last Seen: {session.lastSeen ? new Date(session.lastSeen).toLocaleString('en-IN') : "Active Now"}
                                     </p>
                                  </div>
                                  
                                  <button onClick={() => {
-                                     if(window.confirm(isCurrentDev ? "LOGOUT & REMOVE TRUST: Are you sure you want to log out and remove your own device from Trusted List?" : "REVOKE HACKER: Are you sure you want to instantly log out and DESTROY this device's trust? (Will need OTP again)")) {
+                                     if(window.confirm(isCurrentDev ? "LOGOUT & REMOVE TRUST: Are you sure you want to log out and remove your own device from Trusted List?" : `KICK OUT HACKER: Destroy trust for ${model}? (They will be logged out instantly)`)) {
+                                         
+                                         // 1. Remove from Firebase
                                          db.collection('trustedDevices').doc(session.id).delete().catch(e=>console.log(e));
                                          db.collection('adminSessions').doc(session.id).delete().catch(e=>console.log(e));
                                          
-                                         // 🚀 FIX: TELEGRAM MESSAGE FOR REVOKE
-                                         sendLoginAlert('TRUST_REVOKED', session.id, {
-                                            ip: session.ip, location: session.location, deviceModel: session.deviceModel, deviceType: session.deviceType || "Unknown"
+                                         // 2. Telegram Alert with Hacker Details
+                                         sendLoginAlert('TRUST_REVOKED', model, {
+                                            ip: session.ip || "Unknown", location: session.location || "Unknown", deviceModel: model, deviceType: session.deviceType || "Unknown", org: session.org || "Unknown"
                                          });
 
+                                         // 3. Local Logout
                                          if(isCurrentDev) {
                                             window.localStorage.removeItem('raja_device_id');
                                             window.localStorage.removeItem('raja_permanent_device_id');
@@ -2976,15 +2983,15 @@
                                          }
                                      }
                                  }}
-
-                                   className={`mt-4 w-full py-2 rounded-xl font-black text-xs md:text-sm transition-all cursor-pointer ${isCurrentDev ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-300' : 'bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-200'}`}>
-                                    {isCurrentDev ? "Logout & Remove Trust" : "Revoke Access (Destroy Trust)"}
+                                   className={`mt-4 w-full py-2 rounded-xl font-black text-xs md:text-sm transition-all cursor-pointer shadow-sm border ${isCurrentDev ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-300' : 'bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border-rose-200'}`}>
+                                    {isCurrentDev ? "Logout & Remove Trust" : "Revoke Access (Kick Out Hacker)"}
                                  </button>
                               </div>
                             )
                          })}
                       </div>
                    )}
+ 
                </div>
             </div>
 
