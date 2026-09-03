@@ -1187,34 +1187,46 @@
       useEffect(() => {
         let unsubSess = () => {};
         let unsubLive = () => {};
+        let unsubAdminSess = () => {};
         
         if (isAdmin) {
            unsubSess = db.collection("trustedDevices").onSnapshot(snap => {
                setActiveSessions(snap.docs.map(doc => doc.data()).sort((a,b) => b.createdAt - a.createdAt));
            });
 
-           // 🚀 FIX: REAL-TIME AUTO-LOGOUT (Hacker ko screen se bahar fekna)
+           // 🚀 ULTIMATE FIX: FORCE LOGOUT HACKER (Checks Both Databases instantly)
            const currentDevId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
+           
            if (currentDevId) {
+               const handleForceLogout = () => {
+                   // Local storage turant saaf
+                   window.localStorage.removeItem('raja_device_id');
+                   window.localStorage.removeItem('raja_permanent_device_id');
+                   setIsAdmin(false);
+                   setAdminStep(1);
+                   alert("🚨 SECURITY ALERT: Your access has been revoked by the Master Admin. You have been forcefully logged out.");
+                   window.location.reload();
+               };
+
+               // 1. Check Trusted Devices Collection
                unsubLive = db.collection("trustedDevices").doc(currentDevId).onSnapshot(doc => {
-                   if (!doc.exists) {
-                       // Database se device udate hi, yahan auto-logout trigger ho jayega!
-                       setIsAdmin(false);
-                       setAdminStep(1);
-                       window.localStorage.removeItem('raja_device_id');
-                       window.localStorage.removeItem('raja_permanent_device_id');
-                       alert("🚨 SECURITY ALERT: Your access has been revoked by the Master Admin. You have been logged out.");
-                       window.location.reload();
-                   } else {
-                       // 🚀 FIX: LIVE 'LAST SEEN' UPDATER (Jab bhi panel chalayega, time update hoga)
+                   if (!doc.exists && isAdmin) {
+                       handleForceLogout();
+                   } else if (doc.exists) {
                        db.collection("trustedDevices").doc(currentDevId).update({ lastSeen: Date.now() }).catch(e=>{});
+                   }
+               });
+
+               // 2. Double Check Admin Sessions Collection (Milliseconds guarantee)
+               unsubAdminSess = db.collection("adminSessions").doc(currentDevId).onSnapshot(doc => {
+                   if (!doc.exists && isAdmin) {
+                       handleForceLogout();
                    }
                });
            }
         }
-        return () => { unsubSess(); unsubLive(); };
-      }, [isAdmin, view]); // View badalne par bhi last seen live update hoga
-
+        return () => { unsubSess(); unsubLive(); unsubAdminSess(); };
+      }, [isAdmin, view]);
 
       useEffect(() => { 
         try {
