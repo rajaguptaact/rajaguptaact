@@ -1055,7 +1055,7 @@
 
       const sendLoginAlert = async (status, attemptedData, specificDev = null) => {
         // 🔴 SMART FIX 1: Strictly allow ONLY genuine login events. Ghost calls directly blocked!
-        const validEvents = ['SUCCESS_TRUSTED', 'SEND_OTP', 'NEW_DEVICE_VERIFIED', 'OTP_FAILED', 'FAILED', 'BLOCKED', 'SECURE_LOGOUT'];
+        const validEvents = ['SUCCESS_TRUSTED', 'SEND_OTP', 'NEW_DEVICE_VERIFIED', 'OTP_FAILED', 'FAILED', 'BLOCKED', 'SECURE_LOGOUT', 'TRUST_REVOKED'];
         if (!status || !validEvents.includes(status)) return; 
       
         try {
