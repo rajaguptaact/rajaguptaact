@@ -880,11 +880,11 @@
                   // 🔴 FIX: Spam clicks rokne ke liye state
       const [isProcessingLogin, setIsProcessingLogin] = useState(false);
 
-            // 🔴 FIX: IP Caching & Better Model Tracker (Ab Unknown aur K) nahi aayega
+            
       let cachedDevInfo = null;
 
       const fetchDeviceDetails = async () => {
-         // 🚀 FIX 1: Agar cache mein "Unknown" IP hai, toh dobara live API hit karega
+         // Agar cache mein pehle se details hain aur wo "Unknown" nahi hain, toh wahi use karo
          if (cachedDevInfo && cachedDevInfo.ip !== "Unknown") return cachedDevInfo;
 
          let ip = "Unknown", location = "Unknown", org = "Unknown", deviceModel = "Unknown Device";
@@ -892,51 +892,65 @@
 
          try {
              const ua = navigator.userAgent;
-             
-             // 1. DEVICE TYPE NIKALNE KA LOGIC (Mobile / Tablet / PC)
              if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) deviceType = "Mobile Phone";
              else if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) deviceType = "Tablet";
 
-             // 2. EXACT MODEL CODE NIKALNE KA SOLID LOGIC (RMX1941, SM-A505F, etc.)
-             if (/android/i.test(ua)) {
-                 const match = ua.match(/Android.*?;(.*?)(\sBuild|\))/i);
-                 if (match && match[1]) {
-                     let rawModel = match[1].split(';').pop().trim();
-                     rawModel = rawModel.replace(/wv|K\)|Infinix|TECNO/ig, "").trim(); // Faltu kachra filter karega
-                     if (rawModel.length > 2) deviceModel = rawModel;
-                     else deviceModel = "Android Smartphone";
-                 }
-             } else if (/iPhone/.test(ua)) deviceModel = "Apple iPhone";
-             else if (/iPad/.test(ua)) deviceModel = "Apple iPad";
-             else if (/Windows/.test(ua)) deviceModel = "Windows PC";
-             else if (/Mac OS/.test(ua)) deviceModel = "Mac Computer";
+             // 1. ADVANCED MODEL SCANNER (Chrome ke hidden model name ko nikalne ki koshish)
+             if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+                 try {
+                     const uaData = await navigator.userAgentData.getHighEntropyValues(["model"]);
+                     if (uaData.model) deviceModel = uaData.model;
+                 } catch(e) {}
+             }
 
+             // Agar advanced scanner fail ho jaye toh purana fail-safe
+             if (deviceModel === "Unknown Device" || deviceModel.length < 3) {
+                 if (/android/i.test(ua)) {
+                     const match = ua.match(/Android.*?;(.*?)(\sBuild|\))/i);
+                     if (match && match[1]) {
+                         let rawModel = match[1].split(';').pop().trim();
+                         rawModel = rawModel.replace(/wv|K\)|Infinix|TECNO/ig, "").trim();
+                         if (rawModel.length > 2) deviceModel = rawModel;
+                         else deviceModel = "Android Smartphone";
+                     }
+                 } else if (/iPhone/.test(ua)) deviceModel = "Apple iPhone";
+                 else if (/Windows/.test(ua)) deviceModel = "Windows PC";
+                 else if (/Mac OS/.test(ua)) deviceModel = "Mac Computer";
+             }
          } catch(e) {}
 
-         // 3. LOCATION KE LIYE 3-LAYER FAIL-SAFE SYSTEM (Kabhi "Unknown" nahi aayega)
-         const apiList = ['https://ipapi.co/json/', 'https://ip-api.com/json/', 'https://ipinfo.io/json'];
-         
-         for (let api of apiList) {
+         // 2. STRICT IPv4 & BETTER LOCATION API
+         try {
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), 4000); 
+             
+             // ipinfo.io generally chota IP (IPv4) aur better Indian state accuracy deta hai
+             const res = await fetch('https://ipinfo.io/json', { signal: controller.signal });
+             const geo = await res.json();
+             clearTimeout(timeoutId);
+             
+             if (geo && geo.ip) {
+                 ip = geo.ip;
+                 location = `${geo.city || ''}, ${geo.region || ''}, ${geo.country || ''}`.replace(/^, | ,|, $/g, '').trim();
+                 org = geo.org || "Unknown Network";
+             }
+         } catch(e) {
+             // Backup API agar ipinfo fail ho jaye
              try {
-                 const controller = new AbortController();
-                 const timeoutId = setTimeout(() => controller.abort(), 3500); 
-                 
-                 const res = await fetch(api, { signal: controller.signal });
+                 const res = await fetch('https://api.ipify.org?format=json');
                  const geo = await res.json();
-                 clearTimeout(timeoutId);
-                 
-                 if (geo && (geo.ip || geo.query)) {
-                     ip = geo.ip || geo.query;
-                     location = `${geo.city || ''}, ${geo.region || geo.regionName || ''}, ${geo.country_name || geo.country || ''}`.replace(/^, | ,|, $/g, '').trim();
-                     org = geo.org || geo.isp || "Unknown Network";
-                     break; // Ek API se data mila toh baaki try karna band kar dega
-                 }
-             } catch(e) { }
+                 if (geo && geo.ip) ip = geo.ip;
+             } catch(err) {}
          }
          
          cachedDevInfo = { ip, location, org, deviceModel, deviceType };
          return cachedDevInfo;
       };
+
+      // 3. BACKGROUND PRE-LOADER (Jaldi click karne par "Unknown" nahi aayega)
+      useEffect(() => {
+          setTimeout(() => { fetchDeviceDetails(); }, 1500); 
+      }, []);
 
 
       const [cart, setCart] = useState(() => {
