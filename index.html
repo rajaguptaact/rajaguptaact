@@ -2941,9 +2941,9 @@
                         setAdminStep(1); 
                         const devId = window.localStorage.getItem('raja_device_id');
                         if(devId) {
-                            db.collection('adminSessions').doc(devId).delete().catch(e=>console.log(e));
+                            // 🔴 SOFT LOGOUT FIX: Delete nahi karenge warna Hacker trap trigger ho jayega, sirf lastSeen update karenge
+                            db.collection('adminSessions').doc(devId).update({ lastSeen: Date.now() }).catch(e=>console.log(e));
                         }
-                        try { window.localStorage.removeItem('raja_device_id'); } catch(e){}
                         
                         // 🔴 FIX: Background mein full detail nikal kar hi Logout message bhejega
                         fetchDeviceDetails().then(dev => {
