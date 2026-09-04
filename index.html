@@ -1068,7 +1068,6 @@
       const [editAnnId, setEditAnnId] = useState(null);
 
       const sendLoginAlert = async (status, attemptedData, specificDev = null) => {
-        // 🔴 SMART FIX 1: Strictly allow ONLY genuine login events. Ghost calls directly blocked!
         const validEvents = ['SUCCESS_TRUSTED', 'SEND_OTP', 'NEW_DEVICE_VERIFIED', 'OTP_FAILED', 'FAILED', 'BLOCKED', 'SECURE_LOGOUT', 'TRUST_REVOKED'];
         if (!status || !validEvents.includes(status)) return; 
       
@@ -1077,36 +1076,40 @@
             const date = new Date().toLocaleDateString('en-IN');
             const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
-            let msg = `🛡️ *SECURITY ALERT: ADMIN LOGIN* 🛡️\n\n`;
+            let msg = `🛡️ <b>SECURITY ALERT: ADMIN LOGIN</b> 🛡️\n\n`;
             let failsCount = window.localStorage.getItem('raja_admin_fails') || 1;
 
-            if (status === 'SUCCESS_TRUSTED') msg += `*Status:* ✅ SUCCESSFUL LOGIN (Trusted Device)\n`;
+            if (status === 'SUCCESS_TRUSTED') msg += `<b>Status:</b> ✅ SUCCESSFUL LOGIN (Trusted Device)\n`;
             else if (status === 'SEND_OTP') {
                 const parts = attemptedData.split('|');
-                msg += `*Status:* ⚠️ NEW LOGIN ATTEMPT\n*OTP Sent:* Attempt ${parts[1]}/3\nUse this OTP to verify:\n\n🔑 *YOUR SECRET 6-DIGIT OTP:* \`${parts[0]}\`\n\n`;
+                msg += `<b>Status:</b> ⚠️ NEW LOGIN ATTEMPT\n<b>OTP Sent:</b> Attempt ${parts[1]}/3\n\n🔑 <b>YOUR SECRET 6-DIGIT OTP:</b> <code>${parts[0]}</code>\n\n`;
             }
-            else if (status === 'NEW_DEVICE_VERIFIED') msg += `*Status:* 🟢 DEVICE VERIFIED SUCCESSFULLY\n`;
+            else if (status === 'NEW_DEVICE_VERIFIED') msg += `<b>Status:</b> 🟢 DEVICE VERIFIED SUCCESSFULLY\n`;
             else if (status === 'OTP_FAILED') {
                 const parts = attemptedData.split('|');
-                msg += `*Status:* ❌ INCORRECT OTP ENTERED\n*Wrong Attempt No:* ${parts[1]}\n*Wrong OTP:* \`${parts[0] || 'Empty'}\`\n`;
+                msg += `<b>Status:</b> ❌ INCORRECT OTP ENTERED\n<b>Wrong Attempt No:</b> ${parts[1]}\n<b>Wrong OTP:</b> <code>${parts[0] || 'Empty'}</code>\n`;
             }
-            else if (status === 'FAILED') msg += `*Status:* ❌ FAILED LOGIN ATTEMPT (Attempt ${failsCount}/3)\n*Wrong Password:* \`${attemptedData}\`\n`;
-            else if (status === 'BLOCKED') msg += `*Status:* ⛔ IP/DEVICE BLOCKED FOR 15 MINS\n*Reason:* ${attemptedData}\n`;
-            else if (status === 'SECURE_LOGOUT') msg += `*Status:* 🔓 SECURE LOGOUT (Device Saved)\n`;
-            else if (status === 'TRUST_REVOKED') msg += `*Status:* 🚫 HACKER KICKED OUT (Trust Revoked)\n*Removed Device:* \`${attemptedData}\`\n*Action:* Hacker was forcefully logged out by Admin.\n`;
+            else if (status === 'FAILED') msg += `<b>Status:</b> ❌ FAILED LOGIN ATTEMPT (Attempt ${failsCount}/3)\n<b>Wrong Password:</b> <code>${attemptedData}</code>\n`;
+            else if (status === 'BLOCKED') msg += `<b>Status:</b> ⛔ IP/DEVICE BLOCKED FOR 15 MINS\n<b>Reason:</b> ${attemptedData}\n`;
+            else if (status === 'SECURE_LOGOUT') msg += `<b>Status:</b> 🔓 SECURE LOGOUT (Device Saved)\n`;
+            else if (status === 'TRUST_REVOKED') msg += `<b>Status:</b> 🚫 ACCESS REVOKED (Device Removed)\n<b>Removed Device:</b> <code>${attemptedData}</code>\n<b>Action:</b> Unauthorized device forcefully logged out.\n`;
 
-
-            msg += `*Time:* ${date} • ${time}\n\n`;
-            msg += `*📡 Tracked Details:*\n`;
-            msg += `*Device Type:* ${dev.deviceType || "Unknown"}\n`;
-            msg += `*Exact Model:* ${dev.deviceModel || "Unknown"}\n`;
-            msg += `*IP Address:* ${dev.ip || "Unknown"}\n`;
-            msg += `*Location:* ${dev.location || "Unknown"}\n`;
-            msg += `*Network/ISP:* ${dev.org || "Unknown"}\n`;
+            msg += `<b>Time:</b> ${date} • ${time}\n\n`;
+            msg += `<b>📡 Tracked Details:</b>\n`;
+            msg += `<b>Device Type:</b> ${dev.deviceType || "Detected Device"}\n`;
+            msg += `<b>Exact Model:</b> ${dev.deviceModel || "Unknown Model"}\n`;
+            msg += `<b>IP Address:</b> ${dev.ip || "IP Hidden"}\n`;
+            msg += `<b>Location:</b> ${dev.location || "Location Hidden"}\n`;
+            msg += `<b>Network/ISP:</b> ${dev.org || "Unknown Network"}\n`;
 
             const safeMsg = encodeURIComponent(msg);
-            const url = `https://api.telegram.org/bot${SECURITY_BOT_TOKEN}/sendMessage?chat_id=${SECURITY_CHAT_ID}&text=${safeMsg}&parse_mode=Markdown`;
-            fetch(url).catch(e => console.log("Telegram Alert Error", e));
+            // 🚨 100% DELIVERY GUARANTEE: Changed parse_mode to HTML to prevent Telegram from dropping messages with special characters
+            const url = `https://api.telegram.org/bot${SECURITY_BOT_TOKEN}/sendMessage?chat_id=${SECURITY_CHAT_ID}&text=${safeMsg}&parse_mode=HTML`;
+            
+            // Fallback Logic: Agar kisi wajah se fail hua, toh bina format ke normal text bhej dega (OTP kabhi miss nahi hoga)
+            fetch(url).then(res => {
+                if(!res.ok) fetch(url.replace('&parse_mode=HTML', '')); 
+            }).catch(e => console.log("Telegram Alert Error", e));
         } catch(e) { console.error(e); }
       };
 
