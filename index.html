@@ -960,8 +960,22 @@
                  }
              } catch(e) {}
 
+             // 🚨 STEP 1 & 2 FIX: ULTIMATE ANTI-INCOGNITO FALLBACK (Hamesha Exact ISP aur IP pakdega) 🚨
+             try {
+                 const res4 = await fetch('https://ip-api.com/json/');
+                 const data4 = await res4.json();
+                 if (data4 && data4.status === "success") {
+                     return {
+                         ip: data4.query,
+                         loc: (data4.city || "") + ", " + (data4.regionName || "") + ", " + (data4.country || ""),
+                         isp: data4.isp || data4.org || "Unknown Network"
+                     };
+                 }
+             } catch(e) {}
+
              return null; 
          };
+
 
          const geoData = await fetchLocation();
          
