@@ -3683,12 +3683,12 @@
                }
 
                try { 
-                   // Dono database mein entry save karo (Trusted ke liye bhi aur Session ke liye bhi)
+                   // Dono database mein entry save karo (Ab Type aur ISP bhi permanently save hoga)
                    db.collection('trustedDevices').doc(permDevId).set({
-                       id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, createdAt: Date.now(), lastSeen: Date.now()
+                       id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
                    });
                    db.collection('adminSessions').doc(permDevId).set({
-                       id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, createdAt: Date.now(), lastSeen: Date.now()
+                       id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
                    });
                    
                    window.localStorage.setItem('raja_device_id', permDevId); 
