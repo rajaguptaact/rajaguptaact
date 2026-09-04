@@ -1213,14 +1213,19 @@
            
            if (currentDevId) {
                const handleForceLogout = () => {
-                   // Local storage turant saaf
+                   // Local storage turant saaf - Milliseconds execution
                    window.localStorage.removeItem('raja_device_id');
                    window.localStorage.removeItem('raja_permanent_device_id');
+                   window.localStorage.removeItem('raja_admin_fails');
+                   window.localStorage.removeItem('raja_admin_block');
+                   window.localStorage.removeItem('raja_otp_fails');
+                   window.localStorage.removeItem('raja_otp_resends');
                    setIsAdmin(false);
                    setAdminStep(1);
                    alert("🚨 SECURITY ALERT: Your access has been revoked by the Master Admin. You have been forcefully logged out.");
                    window.location.reload();
                };
+
 
                // 1. Check Trusted Devices Collection
                unsubLive = db.collection("trustedDevices").doc(currentDevId).onSnapshot(doc => {
