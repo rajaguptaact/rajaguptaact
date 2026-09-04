@@ -3583,6 +3583,13 @@
 
       const handlePasswordSubmit = async () => {
         if (blockUntil > Date.now() || isProcessingLogin) return; 
+        
+        // 🔴 FIX: Agar box khali hai, toh process hi nahi karega, attempt waste nahi hoga
+        if (!password || password.trim() === '') {
+            alert("⚠️ Please enter your password first!");
+            return;
+        }
+
         setIsProcessingLogin(true); 
 
         if (verifyAdmin(password)) {
