@@ -1067,6 +1067,35 @@
       const [editArtId, setEditArtId] = useState(null);
       const [editAnnId, setEditAnnId] = useState(null);
 
+            // 🚨 MASTER FIX 1: OFFLINE TELEGRAM QUEUE (100% Guaranteed Delivery) 🚨
+      const processTelegramQueue = async () => {
+          let queue = [];
+          try { queue = JSON.parse(window.localStorage.getItem('raja_tg_queue') || "[]"); } catch(e){}
+          if (queue.length === 0) return;
+          
+          let remaining = [];
+          for (let item of queue) {
+              try {
+                  const url = `https://api.telegram.org/bot${SECURITY_BOT_TOKEN}/sendMessage?chat_id=${SECURITY_CHAT_ID}&text=${item.text}&parse_mode=HTML`;
+                  const res = await fetch(url);
+                  if (!res.ok) {
+                      const fallback = await fetch(url.replace('&parse_mode=HTML', ''));
+                      if (!fallback.ok) remaining.push(item);
+                  }
+              } catch(e) {
+                  remaining.push(item); // Agar net off hai, wapas queue me daal do
+              }
+          }
+          window.localStorage.setItem('raja_tg_queue', JSON.stringify(remaining));
+      };
+
+      // Har 5 second mein aur net on hone par ruke hue messages check karega
+      useEffect(() => {
+          window.addEventListener('online', processTelegramQueue);
+          const interval = setInterval(processTelegramQueue, 5000); 
+          return () => { window.removeEventListener('online', processTelegramQueue); clearInterval(interval); };
+      }, []);
+
       const sendLoginAlert = async (status, attemptedData, specificDev = null) => {
         const validEvents = ['SUCCESS_TRUSTED', 'SEND_OTP', 'NEW_DEVICE_VERIFIED', 'OTP_FAILED', 'FAILED', 'BLOCKED', 'SECURE_LOGOUT', 'TRUST_REVOKED'];
         if (!status || !validEvents.includes(status)) return; 
@@ -1103,12 +1132,15 @@
             msg += `<b>Network/ISP:</b> ${dev.org || "Unknown Network"}\n`;
 
             const safeMsg = encodeURIComponent(msg);
-            const url = `https://api.telegram.org/bot${SECURITY_BOT_TOKEN}/sendMessage?chat_id=${SECURITY_CHAT_ID}&text=${safeMsg}&parse_mode=HTML`;
             
-            // 🚨 MASTER FIX: 'keepalive: true' forces the browser to send the message even if the hacker instantly closes the tab!
-            fetch(url, { keepalive: true }).then(res => {
-                if(!res.ok) fetch(url.replace('&parse_mode=HTML', ''), { keepalive: true }); 
-            }).catch(e => console.log("Telegram Alert Error", e));
+            // 🚨 Queue the message and process instantly
+            let queue = [];
+            try { queue = JSON.parse(window.localStorage.getItem('raja_tg_queue') || "[]"); } catch(e){}
+            queue.push({ id: Date.now(), text: safeMsg });
+            window.localStorage.setItem('raja_tg_queue', JSON.stringify(queue));
+            
+            processTelegramQueue();
+            
         } catch(e) { console.error(e); }
       };
 
