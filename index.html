@@ -1275,12 +1275,11 @@
         let unsubSess = () => {};
         let unsubLive = () => {};
         let unsubAdminSess = () => {};
+        let heartbeatInterval = null; // 🚨 Naya Heartbeat Timer
         
         if (isAdmin) {
-           // 🚨 MASTER FIX 2: Switched to 'adminSessions' for 100% Global Live Sync across all devices
            unsubSess = db.collection("adminSessions").onSnapshot(snap => {
                const sessions = snap.docs.map(doc => doc.data());
-               // Sort by Current Device First, then by latest active
                sessions.sort((a, b) => {
                    const currentId = window.localStorage.getItem('raja_permanent_device_id');
                    if (a.id === currentId) return -1;
@@ -1290,12 +1289,10 @@
                setActiveSessions(sessions);
            });
 
-           // 🚀 ULTIMATE FIX: FORCE LOGOUT HACKER (Checks Both Databases instantly)
            const currentDevId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
 
            if (currentDevId) {
                const handleForceLogout = () => {
-                   // Local storage turant saaf - Milliseconds execution
                    window.localStorage.removeItem('raja_device_id');
                    window.localStorage.removeItem('raja_permanent_device_id');
                    window.localStorage.removeItem('raja_admin_fails');
@@ -1308,25 +1305,40 @@
                    window.location.reload();
                };
 
-
-               // 1. Check Trusted Devices Collection
                unsubLive = db.collection("trustedDevices").doc(currentDevId).onSnapshot(doc => {
-                   if (!doc.exists && isAdmin) {
-                       handleForceLogout();
-                   } else if (doc.exists) {
-                       db.collection("trustedDevices").doc(currentDevId).update({ lastSeen: Date.now() }).catch(e=>{});
-                   }
+                   if (!doc.exists && isAdmin) handleForceLogout();
                });
 
-               // 2. Double Check Admin Sessions Collection (Milliseconds guarantee)
                unsubAdminSess = db.collection("adminSessions").doc(currentDevId).onSnapshot(doc => {
-                   if (!doc.exists && isAdmin) {
-                       handleForceLogout();
-                   }
+                   if (!doc.exists && isAdmin) handleForceLogout();
+               });
+
+               // 🚨 WHATSAPP STYLE HEARTBEAT ENGINE (Zinda hone ka saboot) 🚨
+               const updatePresence = () => {
+                   const now = Date.now();
+                   db.collection("adminSessions").doc(currentDevId).update({ lastSeen: now }).catch(e=>{});
+                   db.collection("trustedDevices").doc(currentDevId).update({ lastSeen: now }).catch(e=>{});
+               };
+               
+               updatePresence(); // Khulte hi turant update
+               heartbeatInterval = setInterval(updatePresence, 10000); // Har 10 second mein bataega "Main zinda hoon"
+
+               // 🚨 MILLISECOND OFFLINE DETECTOR (Jab tab close kare ya minimize kare) 🚨
+               const handleOffline = () => {
+                   db.collection("adminSessions").doc(currentDevId).update({ lastSeen: Date.now() }).catch(e=>{});
+               };
+
+               window.addEventListener('beforeunload', handleOffline);
+               document.addEventListener('visibilitychange', () => {
+                   if (document.visibilityState === 'hidden') handleOffline();
+                   else updatePresence();
                });
            }
         }
-        return () => { unsubSess(); unsubLive(); unsubAdminSess(); };
+        return () => { 
+            unsubSess(); unsubLive(); unsubAdminSess(); 
+            if (heartbeatInterval) clearInterval(heartbeatInterval); 
+        };
       }, [isAdmin, view]);
 
       useEffect(() => { 
