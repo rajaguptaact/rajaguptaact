@@ -3067,8 +3067,8 @@
                             const isMobile = model.includes("Phone") || model.includes("iPhone") || model.includes("Android");
                             
                             // 🚨 WHATSAPP WALA ASLI LOGIC (Math Calculation)
-                            // Agar aakhiri ping 25 second se kam pehle aaya hai, toh "Active Now", warna offline date/time
-                            const isActiveNow = (Date.now() - (session.lastSeen || 0)) < 25000;
+                            // Agar aakhiri ping 10 second se kam pehle aaya hai, toh "Active Now", warna offline date/time
+                            const isActiveNow = (Date.now() - (session.lastSeen || 0)) < 10000;
                             
                             return (
                               <div key={session.id} className={`p-3 md:p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 ${isCurrentDev ? 'bg-blue-50 border-blue-300 shadow-md ring-1 ring-blue-100' : 'bg-white border-gray-200 shadow-sm hover:border-gray-300 transition-colors'}`}>
