@@ -1067,26 +1067,35 @@
       const [editArtId, setEditArtId] = useState(null);
       const [editAnnId, setEditAnnId] = useState(null);
 
-            // 🚨 MASTER FIX 1: OFFLINE TELEGRAM QUEUE (100% Guaranteed Delivery) 🚨
+      // 🚨 MASTER FIX 1: OFFLINE TELEGRAM QUEUE (No Missing, No Double Messages) 🚨
       const processTelegramQueue = async () => {
           let queue = [];
           try { queue = JSON.parse(window.localStorage.getItem('raja_tg_queue') || "[]"); } catch(e){}
           if (queue.length === 0) return;
-          
-          let remaining = [];
+
+          // 🚨 PREVENT DOUBLE MESSAGES: Turant queue ko empty kar do taaki dusra loop same message wapas na uthaye
+          window.localStorage.setItem('raja_tg_queue', JSON.stringify([]));
+
+          let failed = [];
           for (let item of queue) {
               try {
                   const url = `https://api.telegram.org/bot${SECURITY_BOT_TOKEN}/sendMessage?chat_id=${SECURITY_CHAT_ID}&text=${item.text}&parse_mode=HTML`;
                   const res = await fetch(url);
                   if (!res.ok) {
                       const fallback = await fetch(url.replace('&parse_mode=HTML', ''));
-                      if (!fallback.ok) remaining.push(item);
+                      if (!fallback.ok) failed.push(item);
                   }
               } catch(e) {
-                  remaining.push(item); // Agar net off hai, wapas queue me daal do
+                  failed.push(item); 
               }
           }
-          window.localStorage.setItem('raja_tg_queue', JSON.stringify(remaining));
+
+          // Jo net na hone se fail huye, sirf unhe wapas line me lagao (Purane aur naye mix karke)
+          if (failed.length > 0) {
+              let currentQueue = [];
+              try { currentQueue = JSON.parse(window.localStorage.getItem('raja_tg_queue') || "[]"); } catch(e){}
+              window.localStorage.setItem('raja_tg_queue', JSON.stringify([...failed, ...currentQueue]));
+          }
       };
 
       // Har 5 second mein aur net on hone par ruke hue messages check karega
@@ -1101,7 +1110,29 @@
         if (!status || !validEvents.includes(status)) return; 
       
         try {
-            const dev = specificDev || await fetchDeviceDetails();
+            let dev = specificDev || await fetchDeviceDetails();
+            
+            // 🚨 SMART LIVE TRACKER FALLBACK: Agar Revoke me Device Type ya Network missing hai, toh IP se live nikal lo!
+            if (!dev.org || dev.org === "Unknown Network" || dev.org === "Unknown") {
+                if (dev.ip && dev.ip !== "IP Hidden" && dev.ip !== "Unknown") {
+                     try {
+                         const res = await fetch(`https://ip-api.com/json/${dev.ip}`);
+                         const data = await res.json();
+                         dev.org = data.isp || data.org || dev.org;
+                     } catch(e) {}
+                }
+            }
+            if (!dev.deviceType || dev.deviceType === "Detected Device" || dev.deviceType === "Unknown") {
+                const modelStr = dev.deviceModel || attemptedData || "";
+                if (modelStr.includes("Phone") || modelStr.includes("Android") || modelStr.includes("iPhone")) {
+                    dev.deviceType = "Mobile Phone";
+                } else if (modelStr.includes("Mac") || modelStr.includes("Windows") || modelStr.includes("PC")) {
+                    dev.deviceType = "Desktop PC";
+                } else {
+                    dev.deviceType = "Verified Device"; // Ultimate fallback if it's completely blank
+                }
+            }
+
             const date = new Date().toLocaleDateString('en-IN');
             const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
@@ -1125,11 +1156,11 @@
 
             msg += `<b>Time:</b> ${date} • ${time}\n\n`;
             msg += `<b>📡 Tracked Details:</b>\n`;
-            msg += `<b>Device Type:</b> ${dev.deviceType || "Detected Device"}\n`;
-            msg += `<b>Exact Model:</b> ${dev.deviceModel || "Unknown Model"}\n`;
-            msg += `<b>IP Address:</b> ${dev.ip || "IP Hidden"}\n`;
-            msg += `<b>Location:</b> ${dev.location || "Location Hidden"}\n`;
-            msg += `<b>Network/ISP:</b> ${dev.org || "Unknown Network"}\n`;
+            msg += `<b>Device Type:</b> ${dev.deviceType}\n`;
+            msg += `<b>Exact Model:</b> ${dev.deviceModel}\n`;
+            msg += `<b>IP Address:</b> ${dev.ip}\n`;
+            msg += `<b>Location:</b> ${dev.location}\n`;
+            msg += `<b>Network/ISP:</b> ${dev.org}\n`;
 
             const safeMsg = encodeURIComponent(msg);
             
