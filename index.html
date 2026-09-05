@@ -3682,7 +3682,6 @@
       const handlePasswordSubmit = async () => {
         if (blockUntil > Date.now() || isProcessingLogin) return; 
         
-        // 🔴 FIX: Agar box khali hai, toh process hi nahi karega, attempt waste nahi hoga
         if (!password || password.trim() === '') {
             alert("⚠️ Please enter your password first!");
             return;
@@ -3696,7 +3695,8 @@
           try { 
             currentDevId = window.localStorage.getItem('raja_device_id');
             if (currentDevId) {
-                const doc = await db.collection('adminSessions').doc(currentDevId).get();
+                // 🚨 STRICT SECURITY FIX: Cache bypass karke directly SERVER se checking hogi
+                const doc = await db.collection('adminSessions').doc(currentDevId).get({ source: 'server' });
                 if (doc.exists) hasSession = true;
                 else window.localStorage.removeItem('raja_device_id');
             }
@@ -3711,7 +3711,8 @@
             let permDevId = window.localStorage.getItem('raja_permanent_device_id');
             if (permDevId) {
                 try {
-                    const pDoc = await db.collection('trustedDevices').doc(permDevId).get();
+                    // 🚨 HACKER KICK FIX: Agar admin ne udhar delete kiya, toh yahan compulsory fail hoke OTP mangega
+                    const pDoc = await db.collection('trustedDevices').doc(permDevId).get({ source: 'server' });
                     if (pDoc.exists) isPermanentlyTrusted = true;
                 } catch(e) {}
             }
@@ -3721,12 +3722,10 @@
                 setPassword('');
                 fetchDeviceDetails().then(devDetails => {
                     try { 
-                       // 🔴 BUG FIX: Ensure we use the SAME permDevId for the session, avoiding duplicates
                        db.collection('adminSessions').doc(permDevId).set({
                            id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
                        });
                        
-                       // Sath hi Trusted list ko bhi silent update kar dete hain taaki purane devices me bhi Type/ISP aa jaye
                        db.collection('trustedDevices').doc(permDevId).update({
                            deviceType: devDetails.deviceType, org: devDetails.org, lastSeen: Date.now()
                        }).catch(e=>{});
