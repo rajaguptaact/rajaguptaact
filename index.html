@@ -3695,13 +3695,16 @@
           try { 
             currentDevId = window.localStorage.getItem('raja_device_id');
             if (currentDevId) {
-                // 🚨 STRICT SECURITY FIX: Cache bypass karke directly SERVER se checking hogi
+                // 🚨 STRICT SECURITY: Hacker cache bypass fix
                 const doc = await db.collection('adminSessions').doc(currentDevId).get({ source: 'server' });
                 if (doc.exists) hasSession = true;
                 else window.localStorage.removeItem('raja_device_id');
             }
           } catch(err){}
           
+          // 🚨 NAYA LOGIC: Login karte hi cache memory saaf, taaki current network ka FRESH data aaye
+          cachedDevInfo = null; 
+
           if (hasSession) {
             setIsAdmin(true); 
             setPassword('');
@@ -3709,9 +3712,9 @@
           } else {
             let isPermanentlyTrusted = false;
             let permDevId = window.localStorage.getItem('raja_permanent_device_id');
+            
             if (permDevId) {
                 try {
-                    // 🚨 HACKER KICK FIX: Agar admin ne udhar delete kiya, toh yahan compulsory fail hoke OTP mangega
                     const pDoc = await db.collection('trustedDevices').doc(permDevId).get({ source: 'server' });
                     if (pDoc.exists) isPermanentlyTrusted = true;
                 } catch(e) {}
@@ -3721,19 +3724,22 @@
                 setIsAdmin(true); 
                 setPassword('');
                 fetchDeviceDetails().then(devDetails => {
+                    // 🚨 EXACT SAME DATA SYNC: 'devDetails' hi Database mein jayega aur wahi Telegram ko jayega. 0% Mismatch.
                     try { 
                        db.collection('adminSessions').doc(permDevId).set({
                            id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
                        });
                        
+                       // 🚨 Network change hua hoga toh trusted list mein bhi update kar dega
                        db.collection('trustedDevices').doc(permDevId).update({
-                           deviceType: devDetails.deviceType, org: devDetails.org, lastSeen: Date.now()
-                       }).catch(e=>{});
+                           deviceType: devDetails.deviceType, org: devDetails.org, lastSeen: Date.now(), ip: devDetails.ip, location: devDetails.location
+                       }).catch(e=>{}); 
 
                        window.localStorage.setItem('raja_device_id', permDevId); 
                        window.localStorage.setItem('raja_admin_fails', '0'); 
                        window.localStorage.setItem('raja_otp_resends', '0');
                     } catch(err){}
+                    
                     sendLoginAlert('SUCCESS_TRUSTED', 'Logged in via saved trusted device', devDetails);
                 });
             } else {
@@ -3744,6 +3750,7 @@
                 window.localStorage.setItem('raja_admin_fails', '0'); 
                 window.localStorage.setItem('raja_otp_resends', '1'); 
                 window.localStorage.setItem('raja_otp_fails', '0'); 
+                
                 fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', `${newOTP}|1`, dev)); 
             }
           }
@@ -3752,7 +3759,7 @@
         }
         setIsProcessingLogin(false); 
       };
-        
+
       const handlePinSubmit = () => {
         if (blockUntil > Date.now() || isProcessingLogin) return;
         setIsProcessingLogin(true); 
@@ -3776,17 +3783,14 @@
            setAdminStep(1);
            window.localStorage.setItem('raja_otp_fails', '0');
 
+           // 🚨 OTP Verify karte time bhi purana cache saaf karo
+           cachedDevInfo = null; 
+
            fetchDeviceDetails().then(devDetails => {
-               // 🔴 BUG FIX: Har naye phone ke OTP login par HAMESHA ek NAYI ID banegi!
-               let permDevId = window.localStorage.getItem('raja_permanent_device_id');
-               // Agar phone mein ID nahi hai, toh ekdum nayi ID generate karo
-               if (!permDevId) {
-                   permDevId = 'TRUSTED-' + Date.now() + '-' + Math.floor(Math.random()*10000);
-                   window.localStorage.setItem('raja_permanent_device_id', permDevId);
-               }
+               let permDevId = 'TRUSTED-' + Date.now() + '-' + Math.floor(Math.random()*10000);
+               window.localStorage.setItem('raja_permanent_device_id', permDevId);
 
                try { 
-                   // Dono database mein entry save karo (Ab Type aur ISP bhi permanently save hoga)
                    db.collection('trustedDevices').doc(permDevId).set({
                        id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
                    });
