@@ -901,29 +901,48 @@
                  } catch(e) {}
              }
 
+             // 🚨 ADVANCED DEVICE MODEL EXTRACTOR (Bypass "K)" Garbage)
              if (deviceModel === "Unknown Device" || deviceModel.length < 3) {
                  if (/android/i.test(ua)) {
-                     const match = ua.match(/Android.*?;(.*?)(\sBuild|\))/i);
+                     const match = ua.match(/\bAndroid[^;]*;(.*?)(?:Build|\) AppleWebKit)/i);
                      if (match && match[1]) {
                          let rawModel = match[1].split(';').pop().trim();
-                         rawModel = rawModel.replace(/wv|K\)|Infinix|TECNO/ig, "").trim();
-                         if (rawModel.length > 2) deviceModel = rawModel;
+                         // Kachra characters aur brackets ko properly remove karega
+                         rawModel = rawModel.replace(/wv|K\)|HTML|like Mac OS X/ig, "").replace(/[^a-zA-Z0-9\s-]/g, "").trim();
+                         if (rawModel.length > 2 && rawModel.length < 30) deviceModel = rawModel;
                          else deviceModel = "Android Smartphone";
+                     } else {
+                         deviceModel = "Android Smartphone";
                      }
-                 } else if (/iPhone/.test(ua)) deviceModel = "Apple iPhone";
-                 else if (/Windows/.test(ua)) deviceModel = "Windows PC";
-                 else if (/Mac OS/.test(ua)) deviceModel = "Mac Computer";
+                 } else if (/iPhone/.test(ua)) {
+                     deviceModel = "Apple iPhone";
+                 } else if (/iPad/.test(ua)) {
+                     deviceModel = "Apple iPad";
+                 } else if (/Windows/.test(ua)) {
+                     deviceModel = "Windows PC";
+                 } else if (/Mac OS/.test(ua)) {
+                     deviceModel = "Mac Computer";
+                 }
              }
          } catch(e) {}
 
-         // 100% ACCURATE & MULTI-FALLBACK LOCATION ENGINE
+         // 🚨 100% FORCE IPv4 ENGINE (Lambe IPv6 ko humesha ke liye band karega)
          const fetchLocation = async () => {
+             // 1. Force Pure IPv4 Check
              try {
-                 const res1 = await fetch('https://ipapi.co/json/');
+                 const res4 = await fetch('https://api4.ipify.org?format=json');
+                 const data4 = await res4.json();
+                 if (data4 && data4.ip) ip = data4.ip; 
+             } catch(e) {}
+
+             // 2. Fetch details using forced IPv4
+             try {
+                 const queryUrl = ip !== "Unknown" ? `https://ipapi.co/${ip}/json/` : 'https://ipapi.co/json/';
+                 const res1 = await fetch(queryUrl);
                  const data1 = await res1.json();
                  if (data1 && data1.city && !data1.error) {
                      return { 
-                         ip: data1.ip, 
+                         ip: data1.ip || ip, 
                          loc: data1.city + ", " + data1.region + ", " + data1.country_name, 
                          isp: data1.org 
                      };
@@ -935,11 +954,9 @@
                  const data2 = await res2.json();
                  if (data2 && data2.success) {
                      let tempIsp = "Unknown Network";
-                     if (data2.connection) {
-                         tempIsp = data2.connection.isp || data2.connection.org || tempIsp;
-                     }
+                     if (data2.connection) tempIsp = data2.connection.isp || data2.connection.org || tempIsp;
                      return { 
-                         ip: data2.ip, 
+                         ip: /^(\d{1,3}\.){3}\d{1,3}$/.test(data2.ip) ? data2.ip : ip, 
                          loc: data2.city + ", " + data2.region + ", " + data2.country, 
                          isp: tempIsp 
                      };
@@ -951,24 +968,10 @@
                  const data3 = await res3.json();
                  if (data3 && data3.ip) {
                      let tempLoc = (data3.city || "") + ", " + (data3.region || "") + ", " + (data3.country || "");
-                     tempLoc = tempLoc.replace(/^, | ,|, $/g, '').trim() || "Unknown";
                      return {
-                         ip: data3.ip,
-                         loc: tempLoc,
+                         ip: /^(\d{1,3}\.){3}\d{1,3}$/.test(data3.ip) ? data3.ip : ip,
+                         loc: tempLoc.replace(/^, | ,|, $/g, '').trim() || "Unknown",
                          isp: data3.org || "Unknown Network"
-                     };
-                 }
-             } catch(e) {}
-
-             // 🚨 STEP 1 & 2 FIX: ULTIMATE ANTI-INCOGNITO FALLBACK (Hamesha Exact ISP aur IP pakdega) 🚨
-             try {
-                 const res4 = await fetch('https://ip-api.com/json/');
-                 const data4 = await res4.json();
-                 if (data4 && data4.status === "success") {
-                     return {
-                         ip: data4.query,
-                         loc: (data4.city || "") + ", " + (data4.regionName || "") + ", " + (data4.country || ""),
-                         isp: data4.isp || data4.org || "Unknown Network"
                      };
                  }
              } catch(e) {}
@@ -976,19 +979,24 @@
              return null; 
          };
 
-
          const geoData = await fetchLocation();
          
          if (geoData) {
              ip = geoData.ip || ip;
              location = geoData.loc || location;
              org = geoData.isp || org;
-         } else {
+         }
+         
+         // Final Security: Agar abhi bhi koi IP lamba aa gaya, toh usko truncate (cut) kar dega, screen par kachra nahi phelne dega
+         if (ip.includes(':') || ip.length > 15) {
              try {
-                 const res = await fetch('https://api.ipify.org?format=json');
-                 const geo = await res.json();
-                 if (geo && geo.ip) ip = geo.ip;
-             } catch(err) {}
+                 const backup = await fetch('https://api4.ipify.org?format=json');
+                 const bData = await backup.json();
+                 if (bData && bData.ip) ip = bData.ip;
+                 else ip = ip.substring(0, 15) + "..."; 
+             } catch(e) {
+                 ip = ip.substring(0, 15) + "...";
+             }
          }
          
          cachedDevInfo = { ip, location, org, deviceModel, deviceType };
