@@ -3009,13 +3009,7 @@
                <div className={`px-4 md:px-6 pb-6 md:pb-8 pt-2 ${isDevicesOpen ? 'block' : 'hidden'}`}>
                    {activeSessions.length === 0 ? <p className="text-gray-500 font-bold text-sm md:text-base">No active sessions found.</p> : (
                       <div className="flex flex-col gap-3">
-                         {activeSessions.sort((a, b) => {
-                             const aIsCurrent = a.id === window.localStorage.getItem('raja_permanent_device_id');
-                             const bIsCurrent = b.id === window.localStorage.getItem('raja_permanent_device_id');
-                             if (aIsCurrent) return -1;
-                             if (bIsCurrent) return 1;
-                             return b.lastSeen - a.lastSeen;
-                         }).map(session => {
+                         {activeSessions.map(session => {
                             const isCurrentDev = session.id === window.localStorage.getItem('raja_permanent_device_id');
                             
                             const model = session.deviceModel || "Unknown Device";
