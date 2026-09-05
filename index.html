@@ -3036,6 +3036,7 @@
               </div>
             </div>
             
+
             <div className="glass-panel rounded-3xl shadow-xl border-t-4 border-t-blue-500 mb-6 md:mb-10 overflow-hidden relative">
                <button type="button" onClick={() => setIsDevicesOpen(!isDevicesOpen)} className="w-full text-left p-5 md:p-8 focus:outline-none flex justify-between items-center cursor-pointer hover:bg-blue-50/50 transition">
                   <h3 className="text-lg md:text-2xl font-black text-gray-900 flex items-center gap-2 md:gap-3">
@@ -3057,27 +3058,31 @@
                             return (
                               <div key={session.id} className={`p-3 md:p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 ${isCurrentDev ? 'bg-blue-50 border-blue-300 shadow-md ring-1 ring-blue-100' : 'bg-white border-gray-200 shadow-sm hover:border-gray-300 transition-colors'}`}>
                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1.5">
+                                    <div className="flex items-center gap-2 mb-2">
                                        <p className="font-black text-sm md:text-base text-gray-900 flex items-center gap-1.5 line-clamp-1">
                                           {isMobile ? "📱" : "💻"} {model}
                                        </p>
                                        {isCurrentDev && <span className="bg-blue-600 text-white text-[9px] md:text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">Current</span>}
                                        {!isCurrentDev && <span className="bg-emerald-100 text-emerald-700 text-[8px] md:text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border border-emerald-200">Live Sync 🟢</span>}
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                    
+                                    {/* 🚨 FIX: IP aur Location Ab Alag-Alag Line Mein */}
+                                    <div className="flex flex-col gap-1 mb-2">
                                        <p className="text-[10px] md:text-xs font-bold text-gray-600">IP: <span className="font-medium text-gray-800">{session.ip || "IP Hidden"}</span></p>
                                        <p className="text-[10px] md:text-xs font-bold text-gray-600">Loc: <span className="font-medium text-gray-800">{session.location || "Location Hidden"}</span></p>
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 pt-1.5 border-t border-gray-100/50">
+
+                                    {/* 🚨 FIX: "Active Now" Logic */}
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 pt-2 border-t border-gray-100/50">
                                        <p className="text-[9px] md:text-[10px] font-medium text-gray-500">
                                            Saved: {session.createdAt ? new Date(session.createdAt).toLocaleDateString('en-IN') : "Unknown"}
                                        </p>
                                        <p className={`text-[9px] md:text-[10px] font-black ${isCurrentDev ? 'text-blue-600' : 'text-gray-500'}`}>
-                                           Last Seen: {session.lastSeen ? new Date(session.lastSeen).toLocaleString('en-IN', {hour: '2-digit', minute:'2-digit', day:'2-digit', month:'short'}) : "Active Now"}
+                                           Last Seen: {isCurrentDev ? "Active Now" : (session.lastSeen ? new Date(session.lastSeen).toLocaleString('en-IN', {hour: '2-digit', minute:'2-digit', day:'2-digit', month:'short'}) : "Active Now")}
                                        </p>
                                     </div>
                                  </div>
-                                 <div className="flex-shrink-0 w-full md:w-auto">
+                                 <div className="flex-shrink-0 w-full md:w-auto mt-2 md:mt-0">
                                      <button onClick={() => {
                                          if(window.confirm(isCurrentDev ? "LOGOUT: Are you sure you want to log out and remove this device?" : `REVOKE ACCESS: Remove trust for ${model}? (They will be logged out instantly)`)) {
                                              
@@ -3113,6 +3118,7 @@
                </div>
             </div>
 
+            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
               <div className="space-y-6 md:space-y-8">
 
