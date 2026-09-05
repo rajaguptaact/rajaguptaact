@@ -1238,13 +1238,22 @@
         let unsubAdminSess = () => {};
         
         if (isAdmin) {
-           unsubSess = db.collection("trustedDevices").onSnapshot(snap => {
-               setActiveSessions(snap.docs.map(doc => doc.data()).sort((a,b) => b.createdAt - a.createdAt));
+           // 🚨 MASTER FIX 2: Switched to 'adminSessions' for 100% Global Live Sync across all devices
+           unsubSess = db.collection("adminSessions").onSnapshot(snap => {
+               const sessions = snap.docs.map(doc => doc.data());
+               // Sort by Current Device First, then by latest active
+               sessions.sort((a, b) => {
+                   const currentId = window.localStorage.getItem('raja_permanent_device_id');
+                   if (a.id === currentId) return -1;
+                   if (b.id === currentId) return 1;
+                   return (b.lastSeen || b.createdAt) - (a.lastSeen || a.createdAt);
+               });
+               setActiveSessions(sessions);
            });
 
            // 🚀 ULTIMATE FIX: FORCE LOGOUT HACKER (Checks Both Databases instantly)
            const currentDevId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
-           
+
            if (currentDevId) {
                const handleForceLogout = () => {
                    // Local storage turant saaf - Milliseconds execution
