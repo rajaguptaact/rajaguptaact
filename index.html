@@ -1533,6 +1533,16 @@
                   const isDeleted = !isLoadingGallery && !liveArt; 
                   const isItemSoldOut = liveArt && item.selectedSize && item.selectedSize.includes('Original') && liveArt.isSold;
 
+                  // 🔴 FIX 1: Variables ko yahan set kar rahe hain taaki Syntax Error na aaye
+                  let cLive = item.price;
+                  let cOld = item.priceOriginalOld;
+                  if (liveArt) {
+                      if (item.selectedSize.includes('A3') && liveArt.priceA3) cLive = liveArt.priceA3;
+                      else if (item.selectedSize.includes('A4') && liveArt.priceA4) cLive = liveArt.priceA4;
+                      else if (item.selectedSize.includes('A5') && liveArt.priceA5) cLive = liveArt.priceA5;
+                      else { cLive = liveArt.priceOriginal || item.price; cOld = liveArt.priceOriginalOld || item.priceOriginalOld; }
+                  }
+
                   return (
                     <div key={i} className={`flex flex-col md:flex-row md:items-center justify-between glass-panel p-4 rounded-2xl shadow-sm border gap-4 md:gap-0 ${isDeleted ? 'border-gray-400 bg-gray-100 opacity-80' : isItemSoldOut ? 'border-red-300 bg-red-50' : 'border-white'}`}>
                       <div className="flex items-center gap-4">
