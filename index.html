@@ -2946,18 +2946,21 @@
                  updateData.expireAt = finalExpireAt;
              }
 
-             // 🔴 INSTANT UPDATE: Bina load huye direct popup aayega
-             db.collection('announcements').doc(editAnnId).update(updateData).catch(e=>console.log(e));
-             showToast("✅ Notification Updated Instantly!");
+             // 🔴 SECURE CLOUD SYNC: Har device par instantly jayega
+             db.collection('announcements').doc(editAnnId).update(updateData).then(() => {
+                 showToast("✅ Notification Updated Globally on all devices!");
+             });
           } else {
              let newData = { title: annTitle, message: annMsg, showTimer: annShowTimer, date: new Date().toLocaleDateString('en-IN'), createdAt: Date.now() };
              if (finalExpireAt) {
                  newData.expireAt = finalExpireAt;
              }
-             // 🔴 INSTANT POST
-             db.collection('announcements').add(newData).catch(e=>console.log(e));
-             showToast("✅ Notification Posted Globally!");
+             // 🔴 SECURE CLOUD SYNC
+             db.collection('announcements').add(newData).then(() => {
+                 showToast("✅ Notification Posted Globally on all devices!");
+             });
           }
+
           
           // Form ko turant khali karega
           setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
