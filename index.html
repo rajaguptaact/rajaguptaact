@@ -3641,7 +3641,7 @@
       };
 
       
-      // 🚀 FINAL STEP 3: CLOUD-BASED STRICT IP & FINGERPRINT BLOCKER (Incognito Bypass Impossible)
+            // 🚀 FINAL STEP 3: STRICT IP BLOCKER (Incognito Bypass Impossible)
       useEffect(() => {
           const verifyBlockStatus = async () => {
               if (deviceFingerprint) {
@@ -3652,12 +3652,13 @@
                       }
                   });
               }
-              // 🚨 ULTIMATE IP CHECK: Agar Hacker Cache Clear karke Device Fingerprint change kar le, tab bhi uska IP pakda jayega!
+              // 🚨 ULTIMATE IP CHECK: Exact IP Block Check (Defeats Incognito & Cache Clear)
               const dev = await fetchDeviceDetails();
-              if (dev && dev.ip && dev.ip !== "Unknown") {
-                  const snapshot = await db.collection('BlockedHackers').where('ip', '==', dev.ip).get();
-                  snapshot.forEach(doc => {
-                      if (doc.data().blockedUntil > Date.now()) {
+              if (dev && dev.ip && !dev.ip.includes("Unknown")) {
+                  // IP mein dots ko underscore banakar Database ID check karenge
+                  const safeIp = dev.ip.replace(/\./g, '_');
+                  db.collection('BlockedHackers').doc(safeIp).onSnapshot(doc => {
+                      if (doc.exists && doc.data().blockedUntil > Date.now()) {
                           setBlockUntil(doc.data().blockedUntil);
                           setIsAdmin(false);
                       }
@@ -3689,12 +3690,15 @@
              window.localStorage.setItem('raja_admin_block', bTime);
              window.localStorage.setItem('raja_otp_resends', '0');
              
-             // 🚀 FIX: SAVING BLOCK TO CLOUD FIREBASE
+             // 🚀 FIX: SAVING BLOCK TO CLOUD FIREBASE WITH IP (Unbreakable)
              fetchDeviceDetails().then(dev => {
+                 const bData = { ip: dev.ip, deviceModel: dev.deviceModel, blockedUntil: bTime, reason: data };
                  if (deviceFingerprint) {
-                     db.collection('BlockedHackers').doc(deviceFingerprint).set({
-                         ip: dev.ip, deviceModel: dev.deviceModel, blockedUntil: bTime, reason: data
-                     }).catch(e=>{});
+                     db.collection('BlockedHackers').doc(deviceFingerprint).set(bData).catch(e=>{});
+                 }
+                 if (dev && dev.ip && !dev.ip.includes("Unknown")) {
+                     const safeIp = dev.ip.replace(/\./g, '_');
+                     db.collection('BlockedHackers').doc(safeIp).set(bData).catch(e=>{});
                  }
                  sendLoginAlert('BLOCKED', 'System Locked for 15 mins (Cloud Block Active)', dev);
              });
