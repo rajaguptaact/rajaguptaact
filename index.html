@@ -1278,7 +1278,8 @@
         let heartbeatInterval = null; // 🚨 Naya Heartbeat Timer
         
         if (isAdmin) {
-           unsubSess = db.collection("adminSessions").onSnapshot(snap => {
+           // 🚨 FIX: "trustedDevices" ko listen karega taaki SAARE authorized devices list mein hamesha dikhein, aur koi hacker chhup na paye!
+           unsubSess = db.collection("trustedDevices").onSnapshot(snap => {
                const sessions = snap.docs.map(doc => doc.data());
                sessions.sort((a, b) => {
                    const currentId = window.localStorage.getItem('raja_permanent_device_id');
