@@ -935,26 +935,6 @@
 
          // 🚨 100% FORCE IPv4 ENGINE (Lambe IPv6 ko humesha ke liye band karega)
          const fetchLocation = async () => {
-             // 1. Force Pure IPv4 Check
-             try {
-                 const res4 = await fetch('https://api4.ipify.org?format=json');
-                 const data4 = await res4.json();
-                 if (data4 && data4.ip) ip = data4.ip; 
-             } catch(e) {}
-
-             // 2. Fetch details using forced IPv4
-             try {
-                 const queryUrl = ip !== "Unknown" ? `https://ipapi.co/${ip}/json/` : 'https://ipapi.co/json/';
-                 const res1 = await fetch(queryUrl);
-                 const data1 = await res1.json();
-                 if (data1 && data1.city && !data1.error) {
-                     return { 
-                         ip: data1.ip || ip, 
-                         loc: data1.city + ", " + data1.region + ", " + data1.country_name, 
-                         isp: data1.org 
-                     };
-         // 🚨 100% FORCE IPv4 ENGINE (Lambe IPv6 ko humesha ke liye band karega)
-         const fetchLocation = async () => {
              let forcedIp = "Unknown";
              try {
                  // Sabs pehle strictly pure chota IPv4 mangwayenge
