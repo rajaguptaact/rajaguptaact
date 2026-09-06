@@ -3626,24 +3626,30 @@
       };
 
       
-     
-                  // 🚀 FINAL STEP 3: CLOUD-BASED BLOCK LISTENER (Hacker cache clear karke bhi bypass nahi kar payega)
+      // 🚀 FINAL STEP 3: CLOUD-BASED STRICT IP & FINGERPRINT BLOCKER (Incognito Bypass Impossible)
       useEffect(() => {
-          if (deviceFingerprint) {
-              const unsubBlock = db.collection('BlockedHackers').doc(deviceFingerprint).onSnapshot(doc => {
-                  if (doc.exists) {
-                      const bTime = doc.data().blockedUntil;
-                      if (bTime > Date.now()) {
-                          setBlockUntil(bTime);
-                          setIsAdmin(false); // Agar hacker andar hai toh usko turant bahar phek dega
-                      } else {
-                          db.collection('BlockedHackers').doc(deviceFingerprint).delete().catch(e=>{});
-                          setBlockUntil(0);
+          const verifyBlockStatus = async () => {
+              if (deviceFingerprint) {
+                  db.collection('BlockedHackers').doc(deviceFingerprint).onSnapshot(doc => {
+                      if (doc.exists && doc.data().blockedUntil > Date.now()) {
+                          setBlockUntil(doc.data().blockedUntil);
+                          setIsAdmin(false); 
                       }
-                  }
-              });
-              return () => unsubBlock();
-          }
+                  });
+              }
+              // 🚨 ULTIMATE IP CHECK: Agar Hacker Cache Clear karke Device Fingerprint change kar le, tab bhi uska IP pakda jayega!
+              const dev = await fetchDeviceDetails();
+              if (dev && dev.ip && dev.ip !== "Unknown") {
+                  const snapshot = await db.collection('BlockedHackers').where('ip', '==', dev.ip).get();
+                  snapshot.forEach(doc => {
+                      if (doc.data().blockedUntil > Date.now()) {
+                          setBlockUntil(doc.data().blockedUntil);
+                          setIsAdmin(false);
+                      }
+                  });
+              }
+          };
+          verifyBlockStatus();
       }, [deviceFingerprint]);
 
       const registerFail = (type, data) => {
