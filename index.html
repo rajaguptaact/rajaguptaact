@@ -3104,11 +3104,10 @@
                             const isCurrentDev = session.id === window.localStorage.getItem('raja_permanent_device_id');
                             const model = session.deviceModel || "Unknown Device";
                             const isMobile = model.includes("Phone") || model.includes("iPhone") || model.includes("Android");
-                            
-                            // 🚨 WHATSAPP WALA ASLI LOGIC (Live Tick 1-second refresh)
-                            const currentLiveTime = Date.now() + (liveTick * 0); // Forces exact UI re-evaluation
-                            const isActiveNow = (currentLiveTime - (session.lastSeen || 0)) < 10000;
-                            
+
+                            // 🚨 WHATSAPP WALA ASLI LOGIC (Auto refresh via heartbeat)
+                            const isActiveNow = (Date.now() - (session.lastSeen || 0)) < 10000;
+                        
                             return (
                               <div key={session.id} className={`p-3 md:p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 ${isCurrentDev ? 'bg-blue-50 border-blue-300 shadow-md ring-1 ring-blue-100' : 'bg-white border-gray-200 shadow-sm hover:border-gray-300 transition-colors'}`}>
                                  <div className="flex-1">
