@@ -1448,7 +1448,18 @@
            }
         }
 
-        let total = items.reduce((sum, item) => sum + ((Number(item.price) || 0) * (item.qty || 1)), 0);
+        // 🔴 FIX: Amazon Style Live Price Sync during Checkout!
+        let total = items.reduce((sum, item) => {
+            const liveArt = artworks.find(a => a.id === item.id);
+            if (liveArt) {
+                let livePrice = liveArt.priceOriginal;
+                if (item.selectedSize.includes('A3') && liveArt.priceA3) livePrice = liveArt.priceA3;
+                else if (item.selectedSize.includes('A4') && liveArt.priceA4) livePrice = liveArt.priceA4;
+                else if (item.selectedSize.includes('A5') && liveArt.priceA5) livePrice = liveArt.priceA5;
+                return sum + (Number(livePrice) * (item.qty || 1));
+            }
+            return sum + ((Number(item.price) || 0) * (item.qty || 1));
+        }, 0);
         const initCountry = currency === 'USD' ? 'International' : 'India';
         const insta = (extraData && extraData.instagram) ? extraData.instagram : '';
         
