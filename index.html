@@ -882,8 +882,15 @@
 
             
       let cachedDevInfo = null;
+      let lastFetchTime = 0; // 🚨 NAYA: Time track karne ke liye
 
       const fetchDeviceDetails = async () => {
+         // 🚨 30-MINUTE TRACKER LOGIC: Agar 30 minute (1800000 ms) se zyada ho gaya hai, 
+         // toh purana IP delete kar do taaki system VPN ka NAYA IP live pakad sake!
+         if (Date.now() - lastFetchTime > 30 * 60 * 1000) {
+             cachedDevInfo = null;
+         }
+
          if (cachedDevInfo && cachedDevInfo.location !== "Unknown" && cachedDevInfo.location !== "") return cachedDevInfo;
 
          let ip = "Unknown", location = "Unknown", org = "Unknown", deviceModel = "Unknown Device";
