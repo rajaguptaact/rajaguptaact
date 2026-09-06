@@ -2524,6 +2524,13 @@
       };
 
       const AdminPanel = () => {
+        // 🚨 FIX: 1-Second Timer taaki "🟢 Active Now" bina page refresh kiye instantly update ho
+        const [liveTick, setLiveTick] = useState(0);
+        useEffect(() => {
+            const timer = setInterval(() => setLiveTick(t => t + 1), 1000);
+            return () => clearInterval(timer);
+        }, []);
+
         const handleBgSelect = (e) => {
             const file = e.target.files[0];
             if(file) {
