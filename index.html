@@ -985,15 +985,17 @@
              location = geoData.loc || location;
              org = geoData.isp || org;
          }
-         
+
          // 🚨 MAHA-FIX: Agar fir bhi IP lamba aaye (ABCD wala), toh usko hamesha ke liye kaat kar chota kar do!
          if (ip && ip.includes(':')) {
              ip = "IPv4 Secured Network"; 
          }
          
          cachedDevInfo = { ip, location, org, deviceModel, deviceType };
+         lastFetchTime = Date.now(); // 🚨 NAYA: Naya IP lene ke baad exact time save kar liya
          return cachedDevInfo;
       };
+
 
       // 3. BACKGROUND PRE-LOADER (Jaldi click karne par "Unknown" nahi aayega)
       useEffect(() => {
