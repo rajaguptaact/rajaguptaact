@@ -2777,7 +2777,7 @@
           }
 
           if (editArtId && !isMediaModified) {
-              setUploadStatus("Updating Details & Likes...");
+              setUploadStatus("Syncing Live Across All Devices... ⏳");
               
               const quickData = {
                   title: uploadData.title, desc: uploadData.desc, 
@@ -2788,8 +2788,9 @@
               };
 
               try {
-                  // 🔴 FIX: Removed 'await' so UI doesn't hang. It updates instantly now!
-                  db.collection('RajaStudio').doc(editArtId).update(quickData).catch(e => console.log(e));
+                  // 🔴 FIX: Added 'await' back to guarantee instant cloud sync for all devices (Local Cache Trap Fixed)
+                  await db.collection('RajaStudio').doc(editArtId).update(quickData);
+
                   
                   showToast("✅ Details & Likes Updated Instantly! ⚡");
                   
