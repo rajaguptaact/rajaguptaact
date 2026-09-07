@@ -782,55 +782,35 @@
       useEffect(() => {
         let isMounted = true;
         const initializeFingerprint = async () => {
-            // 1. Hardware Details
             const hardware = [
-                navigator.userAgent,
-                window.screen.width + 'x' + window.screen.height,
-                window.screen.colorDepth,
-                navigator.language,
-                new Date().getTimezoneOffset(),
-                navigator.hardwareConcurrency || 'unknown',
-                navigator.deviceMemory || 'unknown'
+                navigator.userAgent, window.screen.width + 'x' + window.screen.height,
+                window.screen.colorDepth, navigator.language, new Date().getTimezoneOffset(),
+                navigator.hardwareConcurrency || 'unknown', navigator.deviceMemory || 'unknown'
             ].join('|');
 
-            // 2. Advanced Canvas Fingerprint (GPU + OS Rendering Tracker)
             let canvasHash = "fallback";
             try {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.width = 200; canvas.height = 50;
-                ctx.textBaseline = "top";
-                ctx.font = "14px 'Arial'";
-                ctx.fillStyle = "#f60";
-                ctx.fillRect(125,1,62,20);
-                ctx.fillStyle = "#069";
-                ctx.fillText("RajaGuptaAct", 2, 15);
-                ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
-                ctx.fillText("RajaGuptaAct", 4, 17);
+                ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
+                ctx.fillStyle = "#f60"; ctx.fillRect(125,1,62,20);
+                ctx.fillStyle = "#069"; ctx.fillText("RajaGuptaAct", 2, 15);
+                ctx.fillStyle = "rgba(102, 204, 0, 0.7)"; ctx.fillText("RajaGuptaAct", 4, 17);
                 const dataUrl = canvas.toDataURL();
-                
                 let hash = 0;
-                for (let i = 0; i < dataUrl.length; i++) {
-                    hash = ((hash << 5) - hash) + dataUrl.charCodeAt(i);
-                    hash |= 0;
-                }
+                for (let i = 0; i < dataUrl.length; i++) { hash = ((hash << 5) - hash) + dataUrl.charCodeAt(i); hash |= 0; }
                 canvasHash = Math.abs(hash).toString(36);
             } catch(e) {}
 
-            // Combine for Ultimate ID (Impossible to bypass via Incognito)
             let finalHash = 0;
             const rawString = hardware + '|' + canvasHash;
-            for (let i = 0; i < rawString.length; i++) {
-                finalHash = ((finalHash << 5) - finalHash) + rawString.charCodeAt(i);
-                finalHash |= 0;
-            }
+            for (let i = 0; i < rawString.length; i++) { finalHash = ((finalHash << 5) - finalHash) + rawString.charCodeAt(i); finalHash |= 0; }
             
             const secureFp = 'HW_' + canvasHash + '_' + Math.abs(finalHash).toString(36);
             
             if (isMounted) {
                 setDeviceFingerprint(secureFp);
-                
-                // Cloud Cart Sync
                 const localCartStr = window.localStorage.getItem('raja_cart_live_v1');
                 let localCartItems = [];
                 try { if(localCartStr) localCartItems = JSON.parse(localCartStr); } catch(e){}
@@ -839,16 +819,16 @@
                     if (doc.exists && isMounted) {
                         const cloudCart = doc.data().items || [];
                         if (localCartItems.length === 0 && cloudCart.length > 0) {
-                            setCart(cloudCart);
-                            window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(cloudCart));
+                            setCart(cloudCart); window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(cloudCart));
                         }
                     }
-                }).catch(e => console.log("Cart Recovery Offline"));
+                }).catch(e => console.log("Cart Recovery Bypass"));
             }
         };
         initializeFingerprint();
         return () => { isMounted = false; };
       }, []);
+            
       
       const [myLocalOrders, setMyLocalOrders] = useState(() => {
           try {
