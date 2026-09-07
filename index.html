@@ -3587,32 +3587,35 @@
       };
 
       
-            // 🚀 FINAL STEP 3: STRICT IP BLOCKER (Incognito Bypass Impossible)
+      // 🚨 BACKGROUND SECURITY CHECK (Level 2: Page Load Verify)
       useEffect(() => {
           const verifyBlockStatus = async () => {
+              setIsCheckingSecurity(true); // Lock the Admin Panel UI
+              
               if (deviceFingerprint) {
+                  const hwDoc = await db.collection('BlockedHackers').doc(deviceFingerprint).get();
+                  if (hwDoc.exists && hwDoc.data().blockedUntil > Date.now()) { setBlockUntil(hwDoc.data().blockedUntil); setIsAdmin(false); }
+                  
                   db.collection('BlockedHackers').doc(deviceFingerprint).onSnapshot(doc => {
-                      if (doc.exists && doc.data().blockedUntil > Date.now()) {
-                          setBlockUntil(doc.data().blockedUntil);
-                          setIsAdmin(false); 
-                      }
+                      if (doc.exists && doc.data().blockedUntil > Date.now()) { setBlockUntil(doc.data().blockedUntil); setIsAdmin(false); }
                   });
               }
-              // 🚨 ULTIMATE IP CHECK: Exact IP Block Check (Defeats Incognito & Cache Clear)
+
               const dev = await fetchDeviceDetails();
               if (dev && dev.ip && !dev.ip.includes("Unknown")) {
-                  // IP mein dots ko underscore banakar Database ID check karenge
                   const safeIp = dev.ip.replace(/\./g, '_');
+                  const ipDoc = await db.collection('BlockedHackers').doc(safeIp).get();
+                  if (ipDoc.exists && ipDoc.data().blockedUntil > Date.now()) { setBlockUntil(ipDoc.data().blockedUntil); setIsAdmin(false); }
+                  
                   db.collection('BlockedHackers').doc(safeIp).onSnapshot(doc => {
-                      if (doc.exists && doc.data().blockedUntil > Date.now()) {
-                          setBlockUntil(doc.data().blockedUntil);
-                          setIsAdmin(false);
-                      }
+                      if (doc.exists && doc.data().blockedUntil > Date.now()) { setBlockUntil(doc.data().blockedUntil); setIsAdmin(false); }
                   });
               }
+              setIsCheckingSecurity(false); // Unlock the UI
           };
           verifyBlockStatus();
       }, [deviceFingerprint]);
+
 
       const registerFail = (type, data) => {
          let lastFailTime = Number(window.localStorage.getItem('raja_last_fail_time') || 0);
