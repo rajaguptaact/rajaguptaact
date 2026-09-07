@@ -3037,8 +3037,8 @@
                             const model = session.deviceModel || "Unknown Device";
                             const isMobile = model.includes("Phone") || model.includes("iPhone") || model.includes("Android");
 
-                            // 🚨 WHATSAPP WALA ASLI LOGIC (Auto refresh via heartbeat)
-                            const isActiveNow = (Date.now() - (session.lastSeen || 0)) < 15000; // 🚀 Time badha diya taaki achanak 'Last Seen' na aaye
+                            // 🚨 FIX: 90 Seconds Sleep Mode Bypass Threshold
+                            const isActiveNow = (Date.now() - (session.lastSeen || 0)) < 90000; 
                         
                             return (
                               <div key={session.id} className={`p-3 md:p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 ${isCurrentDev ? 'bg-blue-50 border-blue-300 shadow-md ring-1 ring-blue-100' : 'bg-white border-gray-200 shadow-sm hover:border-gray-300 transition-colors'}`}>
@@ -3048,7 +3048,7 @@
                                           {isMobile ? "📱" : "💻"} {model}
                                        </p>
                                        {isCurrentDev && <span className="bg-blue-600 text-white text-[9px] md:text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">Current</span>}
-                                       {isActiveNow && !isCurrentDev && <span className="bg-green-100 text-green-700 text-[8px] md:text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border border-green-200">Online 🟢</span>}
+                                       {/* 🚨 Removed Top Online Tag for Clean UI */}
                                     </div>
                                     
                                     <div className="flex flex-col gap-1 mb-2">
@@ -3060,9 +3060,9 @@
                                        <p className="text-[9px] md:text-[10px] font-medium text-gray-500">
                                            Saved: {session.createdAt ? new Date(session.createdAt).toLocaleDateString('en-IN') : "Unknown"}
                                        </p>
-                                       {/* 🚨 WHATSAPP STATUS UI */}
+                                       {/* 🚨 CLEAN BOTTOM UI (Active Now vs Online) */}
                                        <p className={`text-[9px] md:text-[10px] font-black ${isActiveNow ? 'text-green-600 animate-pulse' : 'text-gray-500'}`}>
-                                          {isActiveNow ? "🟢 Active Now" : `Last Seen: ${session.lastSeen ? new Date(session.lastSeen).toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) + " • " + new Date(session.lastSeen).toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'}) : "Offline"}`}
+                                          {isCurrentDev ? "🟢 Active Now" : (isActiveNow ? "🟢 Online" : `Last Seen: ${session.lastSeen ? new Date(session.lastSeen).toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) + " • " + new Date(session.lastSeen).toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'}) : "Offline"}`)}
                                        </p> 
                                     </div>
                                  </div>
@@ -3070,25 +3070,21 @@
                                      <button onClick={() => {
                                          if(window.confirm(isCurrentDev ? "LOGOUT: Are you sure you want to log out and remove this device?" : `REVOKE ACCESS: Remove trust for ${model}? (They will be logged out instantly)`)) {
                                              
-                                             // 🚨 FIX 4: INSTANT GHOST DEVICE REMOVAL (Millisecond UI Update)
+                                             // 🚨 INSTANT UI UPDATE (Ghost Device Fix)
                                              setActiveSessions(prev => prev.filter(s => s.id !== session.id));
                                              
                                              db.collection('trustedDevices').doc(session.id).delete().catch(e=>console.log(e));
                                              db.collection('adminSessions').doc(session.id).delete().catch(e=>console.log(e));
                                              
                                              sendLoginAlert('TRUST_REVOKED', model, {
-                                                ip: session.ip || "", 
-                                                location: session.location || "", 
-                                                deviceModel: model, 
-                                                deviceType: session.deviceType || "", 
-                                                org: session.org || ""
+                                                ip: session.ip || "", location: session.location || "", 
+                                                deviceModel: model, deviceType: session.deviceType || "", org: session.org || ""
                                              });
 
                                              if(isCurrentDev) {
                                                 window.localStorage.removeItem('raja_device_id');
                                                 window.localStorage.removeItem('raja_permanent_device_id');
-                                                setIsAdmin(false);
-                                                setAdminStep(1);
+                                                setIsAdmin(false); setAdminStep(1);
                                              }
                                          }
                                      }}
