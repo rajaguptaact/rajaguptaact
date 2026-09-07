@@ -883,15 +883,12 @@
       const [isProcessingLogin, setIsProcessingLogin] = useState(false);
 
             
-      // 🚨 FIX 2: STRICT IPv4 & 30-MINUTE CLOUD SYNC
+      // 🚨 FIX 2: STRICT IPv4, CACHE-BUSTER & EXACT MODEL EXTRACTOR
       let cachedDevInfo = null;
       let lastFetchTime = 0;
 
       const fetchDeviceDetails = async () => {
-         // 30-minute lock logic: Prevents glitches & syncs perfectly with Telegram
-         if (cachedDevInfo && (Date.now() - lastFetchTime < 30 * 60 * 1000)) {
-             return cachedDevInfo;
-         }
+         if (cachedDevInfo && (Date.now() - lastFetchTime < 30 * 60 * 1000)) return cachedDevInfo;
 
          let ip = "Unknown", location = "Unknown", org = "Unknown", deviceModel = "Unknown Device", deviceType = "Desktop PC"; 
 
@@ -900,11 +897,10 @@
              if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) deviceType = "Mobile Phone";
              else if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) deviceType = "Tablet";
 
-             // Advanced Device Extractor
              if (/android/i.test(ua)) {
-                 const match = ua.match(/\bAndroid[^;]*;(.*?)(?:Build|\) AppleWebKit)/i);
+                 const match = ua.match(/Android[^;]*;\s*([^;]+)\s+Build/i) || ua.match(/Android[^;]*;\s*([^;)]+)/i);
                  if (match && match[1]) {
-                     let rawModel = match[1].split(';').pop().trim().replace(/wv|K\)|HTML|like Mac OS X/ig, "").replace(/[^a-zA-Z0-9\s-]/g, "").trim();
+                     let rawModel = match[1].split(';').pop().replace(/wv|K\)|HTML|like Mac OS X/ig, "").replace(/[^a-zA-Z0-9\s-]/g, "").trim();
                      deviceModel = (rawModel.length > 2 && rawModel.length < 30) ? rawModel : "Android Smartphone";
                  } else deviceModel = "Android Smartphone";
              } else if (/iPhone/.test(ua)) deviceModel = "Apple iPhone";
@@ -913,26 +909,23 @@
              else if (/Mac OS/.test(ua)) deviceModel = "Mac Computer";
          } catch(e) {}
 
-         // 100% FORCE STRICT IPv4 (Kill Long IPv6)
          try {
-             const res4 = await fetch('https://api.ipify.org?format=json');
+             const res4 = await fetch(`https://api.ipify.org?format=json&_t=${Date.now()}`);
              const data4 = await res4.json();
              if (data4 && data4.ip && !data4.ip.includes(':')) ip = data4.ip; 
          } catch(e) {}
 
          try {
-             const queryUrl = (ip !== "Unknown") ? `https://ipapi.co/${ip}/json/` : 'https://ipapi.co/json/';
-             const resGeo = await fetch(queryUrl);
+             const resGeo = await fetch(`https://ipapi.co/${ip !== "Unknown" ? ip + '/' : ''}json/?_t=${Date.now()}`);
              const dataGeo = await resGeo.json();
              if (dataGeo && dataGeo.city && !dataGeo.error) {
-                 if (dataGeo.ip && !dataGeo.ip.includes(':')) ip = dataGeo.ip; // Safe Fallback
+                 if (dataGeo.ip && !dataGeo.ip.includes(':')) ip = dataGeo.ip;
                  location = dataGeo.city + ", " + dataGeo.region + ", " + dataGeo.country_name;
                  org = dataGeo.org || org;
              }
          } catch(e) {}
 
          if (ip.includes(':')) ip = "IPv4 Secured Network"; 
-         
          cachedDevInfo = { ip, location, org, deviceModel, deviceType };
          lastFetchTime = Date.now();
          return cachedDevInfo;
