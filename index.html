@@ -3098,6 +3098,9 @@
                                      <button onClick={() => {
                                          if(window.confirm(isCurrentDev ? "LOGOUT: Are you sure you want to log out and remove this device?" : `REVOKE ACCESS: Remove trust for ${model}? (They will be logged out instantly)`)) {
                                              
+                                             // 🚨 FIX 4: INSTANT GHOST DEVICE REMOVAL (Millisecond UI Update)
+                                             setActiveSessions(prev => prev.filter(s => s.id !== session.id));
+                                             
                                              db.collection('trustedDevices').doc(session.id).delete().catch(e=>console.log(e));
                                              db.collection('adminSessions').doc(session.id).delete().catch(e=>console.log(e));
                                              
