@@ -1233,16 +1233,20 @@
         let heartbeatInterval = null; // 🚨 Naya Heartbeat Timer
         
         if (isAdmin) {
-           // 🚨 FIX: "trustedDevices" ko listen karega taaki SAARE authorized devices list mein hamesha dikhein, aur koi hacker chhup na paye!
+           // 🚨 FIX 3: GLOBAL SYNC MULTI-DEVICE LIST (No Hidden Devices)
            unsubSess = db.collection("trustedDevices").onSnapshot(snap => {
-               const sessions = snap.docs.map(doc => doc.data());
+               const sessionsMap = new Map();
+               snap.docs.forEach(doc => {
+                   sessionsMap.set(doc.id, doc.data());
+               });
+               const sessions = Array.from(sessionsMap.values());
                sessions.sort((a, b) => {
                    const currentId = window.localStorage.getItem('raja_permanent_device_id');
                    if (a.id === currentId) return -1;
                    if (b.id === currentId) return 1;
                    return (b.lastSeen || b.createdAt) - (a.lastSeen || a.createdAt);
                });
-               setActiveSessions(sessions);
+               setActiveSessions([...sessions]); // Force Instant UI Update
            });
 
            const currentDevId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
