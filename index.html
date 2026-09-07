@@ -897,104 +897,65 @@
         };
       }, []);
       
-                  // 🔴 FIX: Spam clicks rokne ke liye state
+      // 🔴 FIX: Spam clicks rokne ke liye state
       const [isProcessingLogin, setIsProcessingLogin] = useState(false);
 
             
+      // 🚨 FIX 2: STRICT IPv4 & 30-MINUTE CLOUD SYNC
       let cachedDevInfo = null;
-      let lastFetchTime = 0; // 🚨 NAYA: Time track karne ke liye
+      let lastFetchTime = 0;
 
       const fetchDeviceDetails = async () => {
-         // 🚨 30-MINUTE TRACKER LOGIC: Agar 30 minute (1800000 ms) se zyada ho gaya hai, 
-         // toh purana IP delete kar do taaki system VPN ka NAYA IP live pakad sake!
-         if (Date.now() - lastFetchTime > 30 * 60 * 1000) {
-             cachedDevInfo = null;
+         // 30-minute lock logic: Prevents glitches & syncs perfectly with Telegram
+         if (cachedDevInfo && (Date.now() - lastFetchTime < 30 * 60 * 1000)) {
+             return cachedDevInfo;
          }
 
-         if (cachedDevInfo && cachedDevInfo.location !== "Unknown" && cachedDevInfo.location !== "") return cachedDevInfo;
-
-         let ip = "Unknown", location = "Unknown", org = "Unknown", deviceModel = "Unknown Device";
-         let deviceType = "Desktop PC"; 
+         let ip = "Unknown", location = "Unknown", org = "Unknown", deviceModel = "Unknown Device", deviceType = "Desktop PC"; 
 
          try {
              const ua = navigator.userAgent;
              if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) deviceType = "Mobile Phone";
              else if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) deviceType = "Tablet";
 
-             if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
-                 try {
-                     const uaData = await navigator.userAgentData.getHighEntropyValues(["model"]);
-                     if (uaData && uaData.model) deviceModel = uaData.model;
-                 } catch(e) {}
-             }
+             // Advanced Device Extractor
+             if (/android/i.test(ua)) {
+                 const match = ua.match(/\bAndroid[^;]*;(.*?)(?:Build|\) AppleWebKit)/i);
+                 if (match && match[1]) {
+                     let rawModel = match[1].split(';').pop().trim().replace(/wv|K\)|HTML|like Mac OS X/ig, "").replace(/[^a-zA-Z0-9\s-]/g, "").trim();
+                     deviceModel = (rawModel.length > 2 && rawModel.length < 30) ? rawModel : "Android Smartphone";
+                 } else deviceModel = "Android Smartphone";
+             } else if (/iPhone/.test(ua)) deviceModel = "Apple iPhone";
+             else if (/iPad/.test(ua)) deviceModel = "Apple iPad";
+             else if (/Windows/.test(ua)) deviceModel = "Windows PC";
+             else if (/Mac OS/.test(ua)) deviceModel = "Mac Computer";
+         } catch(e) {}
 
-             // 🚨 ADVANCED DEVICE MODEL EXTRACTOR (Bypass "K)" Garbage)
-             if (deviceModel === "Unknown Device" || deviceModel.length < 3) {
-                 if (/android/i.test(ua)) {
-                     const match = ua.match(/\bAndroid[^;]*;(.*?)(?:Build|\) AppleWebKit)/i);
-                     if (match && match[1]) {
-                         let rawModel = match[1].split(';').pop().trim();
-                         // Kachra characters aur brackets ko properly remove karega
-                         rawModel = rawModel.replace(/wv|K\)|HTML|like Mac OS X/ig, "").replace(/[^a-zA-Z0-9\s-]/g, "").trim();
-                         if (rawModel.length > 2 && rawModel.length < 30) deviceModel = rawModel;
-                         else deviceModel = "Android Smartphone";
-                     } else {
-                         deviceModel = "Android Smartphone";
-                     }
-                 } else if (/iPhone/.test(ua)) {
-                     deviceModel = "Apple iPhone";
-                 } else if (/iPad/.test(ua)) {
-                     deviceModel = "Apple iPad";
-                 } else if (/Windows/.test(ua)) {
-                     deviceModel = "Windows PC";
-                 } else if (/Mac OS/.test(ua)) {
-                     deviceModel = "Mac Computer";
-                 }
+         // 100% FORCE STRICT IPv4 (Kill Long IPv6)
+         try {
+             const res4 = await fetch('https://api.ipify.org?format=json');
+             const data4 = await res4.json();
+             if (data4 && data4.ip && !data4.ip.includes(':')) ip = data4.ip; 
+         } catch(e) {}
+
+         try {
+             const queryUrl = (ip !== "Unknown") ? `https://ipapi.co/${ip}/json/` : 'https://ipapi.co/json/';
+             const resGeo = await fetch(queryUrl);
+             const dataGeo = await resGeo.json();
+             if (dataGeo && dataGeo.city && !dataGeo.error) {
+                 if (dataGeo.ip && !dataGeo.ip.includes(':')) ip = dataGeo.ip; // Safe Fallback
+                 location = dataGeo.city + ", " + dataGeo.region + ", " + dataGeo.country_name;
+                 org = dataGeo.org || org;
              }
          } catch(e) {}
 
-         // 🚨 100% FORCE IPv4 ENGINE (Lambe IPv6 ko humesha ke liye band karega)
-         const fetchLocation = async () => {
-             let forcedIp = "Unknown";
-             try {
-                 // Sabs pehle strictly pure chota IPv4 mangwayenge
-                 const res4 = await fetch('https://api.ipify.org?format=json');
-                 const data4 = await res4.json();
-                 if (data4 && data4.ip && !data4.ip.includes(':')) forcedIp = data4.ip; 
-             } catch(e) {}
-
-             try {
-                 const queryUrl = forcedIp !== "Unknown" ? `https://ipapi.co/${forcedIp}/json/` : 'https://ipapi.co/json/';
-                 const res1 = await fetch(queryUrl);
-                 const data1 = await res1.json();
-                 if (data1 && data1.city && !data1.error) {
-                     return { 
-                         ip: forcedIp !== "Unknown" ? forcedIp : data1.ip, 
-                         loc: data1.city + ", " + data1.region + ", " + data1.country_name, 
-                         isp: data1.org 
-                     };
-                 }
-             } catch(e) {}
-             return null; 
-         };
-
-         const geoData = await fetchLocation();
-         
-         if (geoData) {
-             ip = geoData.ip || ip;
-             location = geoData.loc || location;
-             org = geoData.isp || org;
-         }
-
-         // 🚨 MAHA-FIX: Agar fir bhi IP lamba aaye (ABCD wala), toh usko hamesha ke liye kaat kar chota kar do!
-         if (ip && ip.includes(':')) {
-             ip = "IPv4 Secured Network"; 
-         }
+         if (ip.includes(':')) ip = "IPv4 Secured Network"; 
          
          cachedDevInfo = { ip, location, org, deviceModel, deviceType };
-         lastFetchTime = Date.now(); // 🚨 NAYA: Naya IP lene ke baad exact time save kar liya
+         lastFetchTime = Date.now();
          return cachedDevInfo;
       };
+      
 
 
       // 3. BACKGROUND PRE-LOADER (Jaldi click karne par "Unknown" nahi aayega)
