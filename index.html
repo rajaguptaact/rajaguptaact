@@ -3659,14 +3659,31 @@
       };
 
       const handlePasswordSubmit = async () => {
-        if (blockUntil > Date.now() || isProcessingLogin) return; 
+        if (isProcessingLogin) return; 
+        setIsProcessingLogin(true); 
+
+        // 🚨 LEVEL 3 SECURITY: Check Cloud DB BEFORE verifying password
+        try {
+            const dev = await fetchDeviceDetails();
+            const safeIp = dev.ip.replace(/\./g, '_');
+            
+            const hwDoc = await db.collection('BlockedHackers').doc(deviceFingerprint).get();
+            if (hwDoc.exists && hwDoc.data().blockedUntil > Date.now()) {
+                setBlockUntil(hwDoc.data().blockedUntil); setIsAdmin(false); setIsProcessingLogin(false); return;
+            }
+            
+            const ipDoc = await db.collection('BlockedHackers').doc(safeIp).get();
+            if (ipDoc.exists && ipDoc.data().blockedUntil > Date.now()) {
+                setBlockUntil(ipDoc.data().blockedUntil); setIsAdmin(false); setIsProcessingLogin(false); return;
+            }
+        } catch(e) {}
+
+        if (blockUntil > Date.now()) { setIsProcessingLogin(false); return; }
         
         if (!password || password.trim() === '') {
-            alert("⚠️ Please enter your password first!");
-            return;
+            alert("⚠️ Please enter your password first!"); setIsProcessingLogin(false); return;
         }
 
-        setIsProcessingLogin(true); 
 
         if (verifyAdmin(password)) {
           let hasSession = false;
