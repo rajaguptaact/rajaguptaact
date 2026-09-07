@@ -622,6 +622,8 @@
 
       const [blockUntil, setBlockUntil] = useState(() => Number(window.localStorage.getItem('raja_admin_block')) || 0);
       const [resendTimer, setResendTimer] = useState(0);
+      const [isCheckingSecurity, setIsCheckingSecurity] = useState(true); // 🚨 NAYA: Security Loader
+
 
       // 🔴 FIX: Resend OTP Countdown Engine (Timer kam karne ke liye)
       useEffect(() => {
