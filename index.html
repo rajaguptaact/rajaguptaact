@@ -3057,8 +3057,8 @@
                             const isMobile = model.includes("Phone") || model.includes("iPhone") || model.includes("Android");
 
                             // 🚨 INSTANT OFFLINE LOGIC: Tab close/hide hote hi millisecond mein offline dikhega
-                            const isActiveNow = session.isOnline !== false && (Date.now() - (session.lastSeen || 0)) < 90000; 
-                        
+                            const isActiveNow = session.isOnline === true && (Date.now() - (session.lastSeen || 0)) < 15000; 
+ 
                             return (
                               <div key={session.id} className={`p-3 md:p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 ${isCurrentDev ? 'bg-blue-50 border-blue-300 shadow-md ring-1 ring-blue-100' : 'bg-white border-gray-200 shadow-sm hover:border-gray-300 transition-colors'}`}>
                                  <div className="flex-1">
