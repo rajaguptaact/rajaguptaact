@@ -1461,9 +1461,9 @@
             const liveArt = artworks.find(a => a.id === item.id);
             if (liveArt) {
                 let livePrice = liveArt.priceOriginal || liveArt.priceOriginalOld || item.price;
-                if (item.selectedSize.includes('A3')) livePrice = liveArt.priceA3 || item.price;
-                else if (item.selectedSize.includes('A4')) livePrice = liveArt.priceA4 || item.price;
-                else if (item.selectedSize.includes('A5')) livePrice = liveArt.priceA5 || item.price;
+                if (item.selectedSize === 'Print A3') livePrice = liveArt.priceA3 || item.price;
+                else if (item.selectedSize === 'Print A4') livePrice = liveArt.priceA4 || item.price;
+                else if (item.selectedSize === 'Print A5') livePrice = liveArt.priceA5 || item.price;
                 return sum + (Number(livePrice) * (item.qty || 1));
             }
             return sum + ((Number(item.price) || 0) * (item.qty || 1));
