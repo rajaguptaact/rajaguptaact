@@ -1225,8 +1225,12 @@
            unsubSess = db.collection("trustedDevices").onSnapshot(snap => {
                const sessionsMap = new Map();
                snap.docs.forEach(doc => {
-                   sessionsMap.set(doc.id, doc.data());
+                   // Ghost Device Filter: Agar revoke ho gaya hai toh list mein nahi aayega
+                   if (doc.data().isRevoked !== true) {
+                       sessionsMap.set(doc.id, doc.data());
+                   }
                });
+
                const sessions = Array.from(sessionsMap.values());
                sessions.sort((a, b) => {
                    const currentId = window.localStorage.getItem('raja_permanent_device_id');
