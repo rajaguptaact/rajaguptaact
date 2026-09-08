@@ -1258,11 +1258,12 @@
                };
 
                unsubLive = db.collection("trustedDevices").doc(currentDevId).onSnapshot(doc => {
-                   if (!doc.exists && isAdmin) handleForceLogout();
+                   // 🚨 HACKER KICKOUT FIX: Agar isRevoked true hua, toh bina delay mili-second mein bahar feko
+                   if ((!doc.exists || doc.data().isRevoked === true) && isAdmin) handleForceLogout();
                });
 
                unsubAdminSess = db.collection("adminSessions").doc(currentDevId).onSnapshot(doc => {
-                   if (!doc.exists && isAdmin) handleForceLogout();
+                   if ((!doc.exists || doc.data().isRevoked === true) && isAdmin) handleForceLogout();
                });
 
                // 🚨 WHATSAPP STYLE HEARTBEAT ENGINE (Zinda hone ka saboot) 🚨
