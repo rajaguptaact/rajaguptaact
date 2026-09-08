@@ -1434,6 +1434,10 @@
         </div>
       );
 
+      // 🚨 WHITE SCREEN FIXED: Missing CartView declaration added back
+      const CartView = () => {
+        const validItems = cart.filter(item => artworks.some(a => a.id === item.id));
+        
         // 🚨 FIX 5: AMAZON STYLE TRUE LIVE CART SYNC (Bypasses Local Storage Bugs)
         const total = validItems.reduce((sum, item) => {
             const liveArt = artworks.find(a => a.id === item.id);
