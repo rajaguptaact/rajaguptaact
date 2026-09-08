@@ -1487,9 +1487,9 @@
                   let cLive = item.price;
                   let cOld = item.priceOriginalOld;
                   if (liveArt) {
-                      if (item.selectedSize.includes('A3') && liveArt.priceA3) cLive = liveArt.priceA3;
-                      else if (item.selectedSize.includes('A4') && liveArt.priceA4) cLive = liveArt.priceA4;
-                      else if (item.selectedSize.includes('A5') && liveArt.priceA5) cLive = liveArt.priceA5;
+                      if (item.selectedSize === 'Print A3' && liveArt.priceA3) cLive = liveArt.priceA3;
+                      else if (item.selectedSize === 'Print A4' && liveArt.priceA4) cLive = liveArt.priceA4;
+                      else if (item.selectedSize === 'Print A5' && liveArt.priceA5) cLive = liveArt.priceA5;
                       else { cLive = liveArt.priceOriginal || item.price; cOld = liveArt.priceOriginalOld || item.priceOriginalOld; }
                   }
 
