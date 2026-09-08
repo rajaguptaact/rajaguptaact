@@ -3036,9 +3036,10 @@
                         setAdminStep(1); 
                         const devId = window.localStorage.getItem('raja_device_id');
                         if(devId) {
-                            // 🔴 SOFT LOGOUT FIX: Delete nahi karenge warna Hacker trap trigger ho jayega, sirf lastSeen update karenge
-                            db.collection('adminSessions').doc(devId).update({ lastSeen: Date.now() }).catch(e=>console.log(e));
-                        }
+                            // 🔴 SECURE LOGOUT FIX: Dono list mein offline status dalo taaki history list mein device safe rahe aur offline dikhe
+                            db.collection('adminSessions').doc(devId).update({ lastSeen: Date.now(), isOnline: false }).catch(e=>console.log(e));
+                            db.collection('trustedDevices').doc(devId).update({ lastSeen: Date.now(), isOnline: false }).catch(e=>console.log(e));
+                        }                   
                         
                         // 🔴 FIX: Background mein full detail nikal kar hi Logout message bhejega
                         fetchDeviceDetails().then(dev => {
