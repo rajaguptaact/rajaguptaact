@@ -897,18 +897,30 @@
              if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) deviceType = "Mobile Phone";
              else if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) deviceType = "Tablet";
 
-             // 🚨 Model Number Extractor Fixed! Ab "24116RNCI1" dikhega
-             if (/android/i.test(ua)) {
-                 const match = ua.match(/Android[^;]*;\s*([^;]+)\s+Build/i) || ua.match(/Android[^;]*;\s*([^;)]+)/i);
-                 if (match && match[1]) {
-                     let rawModel = match[1].split(';').pop().replace(/wv|K\)|HTML|like Mac OS X/ig, "").replace(/[^a-zA-Z0-9\s-]/g, "").trim();
-                     deviceModel = (rawModel.length > 2 && rawModel.length < 30) ? rawModel : "Android Smartphone";
-                 } else deviceModel = "Android Smartphone";
-             } else if (/iPhone/.test(ua)) deviceModel = "Apple iPhone";
-             else if (/iPad/.test(ua)) deviceModel = "Apple iPad";
-             else if (/Windows/.test(ua)) deviceModel = "Windows PC";
-             else if (/Mac OS/.test(ua)) deviceModel = "Mac Computer";
+             // 🚨 EXACT MODEL EXTRACTOR (Modern Browsers ke liye)
+             if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+                 try {
+                     const uaData = await navigator.userAgentData.getHighEntropyValues(["model"]);
+                     if (uaData && uaData.model) deviceModel = uaData.model;
+                 } catch(e) {}
+             }
+
+             // Backup Extractor purane phones ke liye
+             if (deviceModel === "Unknown Device" || deviceModel.length < 3) {
+                 if (/android/i.test(ua)) {
+                     const match = ua.match(/\bAndroid[^;]*;(.*?)(?:Build|\) AppleWebKit)/i);
+                     if (match && match[1]) {
+                         let rawModel = match[1].split(';').pop().trim();
+                         rawModel = rawModel.replace(/wv|K\)|HTML|like Mac OS X/ig, "").replace(/[^a-zA-Z0-9\s-]/g, "").trim();
+                         deviceModel = (rawModel.length > 2 && rawModel.length < 30) ? rawModel : "Android Smartphone";
+                     } else deviceModel = "Android Smartphone";
+                 } else if (/iPhone/.test(ua)) deviceModel = "Apple iPhone";
+                 else if (/iPad/.test(ua)) deviceModel = "Apple iPad";
+                 else if (/Windows/.test(ua)) deviceModel = "Windows PC";
+                 else if (/Mac OS/.test(ua)) deviceModel = "Mac Computer";
+             }
          } catch(e) {}
+
 
          // 🚨 Chrome Cache Trap Fix (Date.now() bypasses browser cache)
          try {
