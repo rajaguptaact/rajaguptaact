@@ -1513,14 +1513,15 @@
                             <p className="font-black text-lg md:text-xl text-gray-500 line-through">{getPrice((item.price || 0) * (item.qty || 1))}</p>
                         ) : (
                             <div className="flex flex-col items-end w-full">
-                                {cOld && cLive && Number(cOld) > Number(cLive) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
-                                  <div className="flex items-center gap-1.5 mb-0.5">
-                                    <span className="bg-yellow-400 text-gray-900 text-[9px] md:text-[10px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                                 {cOld && cLive && Number(cOld) > Number(cLive) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
+                                  <div className="flex flex-row items-center justify-end gap-2 mb-1 w-full">
+                                    <span className="bg-yellow-400 text-gray-900 text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wide shadow-sm">
                                       {Math.round(((Number(cOld) - Number(cLive)) / Number(cOld)) * 100)}% OFF
                                     </span>
-                                    <span className="line-through text-gray-400 text-[10px] md:text-xs font-bold">{getPrice(cOld)}</span>
+                                    <span className="line-through text-gray-400 text-xs font-bold">{getPrice(cOld)}</span>
                                   </div>
                                 ) : null}
+
                                 
                                 {/* 🔴 FIX 2: Correct JSX Structure without unclosed tags */}
                                 <div className="flex flex-row items-center justify-end gap-6 mt-1 w-full">
