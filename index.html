@@ -3106,14 +3106,16 @@
                                              // 🚨 INSTANT UI UPDATE (Ghost Device Fix)
                                              setActiveSessions(prev => prev.filter(s => s.id !== session.id));
                                              
-                                              // 🚨 Ghost Device Fix: Pehle flag update karo taaki cache saaf ho jaye, fir delete karo
+                                              // 🚨 Ghost Device Fix: Pehle flag update karo taaki hacker ki screen turant lock ho jaye (Mili-second Kickout)
                                              db.collection('trustedDevices').doc(session.id).update({ isRevoked: true }).catch(e=>{});
                                              db.collection('adminSessions').doc(session.id).update({ isRevoked: true }).catch(e=>{});
                                              
+                                             // Hacker ko kickout hone ka poora time do, phir 2 second baad database se hamesha ke liye uda do
                                              setTimeout(() => {
                                                  db.collection('trustedDevices').doc(session.id).delete().catch(e=>console.log(e));
                                                  db.collection('adminSessions').doc(session.id).delete().catch(e=>console.log(e));
-                                             }, 1000);
+                                             }, 2000);
+
                                              
                                              sendLoginAlert('TRUST_REVOKED', model, {
                                                 ip: session.ip || "", location: session.location || "", 
