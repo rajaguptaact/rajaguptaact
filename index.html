@@ -897,6 +897,7 @@
              if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) deviceType = "Mobile Phone";
              else if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) deviceType = "Tablet";
 
+             // 🚨 Model Number Extractor Fixed! Ab "24116RNCI1" dikhega
              if (/android/i.test(ua)) {
                  const match = ua.match(/Android[^;]*;\s*([^;]+)\s+Build/i) || ua.match(/Android[^;]*;\s*([^;)]+)/i);
                  if (match && match[1]) {
@@ -909,6 +910,7 @@
              else if (/Mac OS/.test(ua)) deviceModel = "Mac Computer";
          } catch(e) {}
 
+         // 🚨 Chrome Cache Trap Fix (Date.now() bypasses browser cache)
          try {
              const res4 = await fetch(`https://api.ipify.org?format=json&_t=${Date.now()}`);
              const data4 = await res4.json();
@@ -931,7 +933,6 @@
          return cachedDevInfo;
       };
       
-
 
       // 3. BACKGROUND PRE-LOADER (Jaldi click karne par "Unknown" nahi aayega)
       useEffect(() => {
