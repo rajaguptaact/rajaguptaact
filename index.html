@@ -3055,8 +3055,8 @@
                             const model = session.deviceModel || "Unknown Device";
                             const isMobile = model.includes("Phone") || model.includes("iPhone") || model.includes("Android");
 
-                            // 🚨 FIX: 90 Seconds Sleep Mode Bypass Threshold
-                            const isActiveNow = (Date.now() - (session.lastSeen || 0)) < 90000; 
+                            // 🚨 INSTANT OFFLINE LOGIC: Tab close/hide hote hi millisecond mein offline dikhega
+                            const isActiveNow = session.isOnline !== false && (Date.now() - (session.lastSeen || 0)) < 90000; 
                         
                             return (
                               <div key={session.id} className={`p-3 md:p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-3 ${isCurrentDev ? 'bg-blue-50 border-blue-300 shadow-md ring-1 ring-blue-100' : 'bg-white border-gray-200 shadow-sm hover:border-gray-300 transition-colors'}`}>
@@ -3066,8 +3066,8 @@
                                           {isMobile ? "📱" : "💻"} {model}
                                        </p>
                                        {isCurrentDev && <span className="bg-blue-600 text-white text-[9px] md:text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider shadow-sm">Current</span>}
-                                       {/* 🚨 Removed Top Online Tag for Clean UI */}
                                     </div>
+
                                     
                                     <div className="flex flex-col gap-1 mb-2">
                                        <p className="text-[10px] md:text-xs font-bold text-gray-600">IP: <span className="font-medium text-gray-800">{session.ip || "IP Hidden"}</span></p>
