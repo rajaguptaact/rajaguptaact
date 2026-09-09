@@ -90,7 +90,7 @@
     const db = firebase.firestore();
     
     try {
-        db.enablePersistence().catch(function(err) {
+        db.enablePersistence({ synchronizeTabs: true }).catch(function(err) {
             console.log("Offline cache active error:", err);
         });
     } catch (e) {}
