@@ -1518,8 +1518,10 @@
                             <p className="font-black text-lg md:text-xl text-gray-500 line-through">{getPrice((item.price || 0) * (item.qty || 1))}</p>
                         ) : (
                             <div className="flex flex-col items-end w-full">
+                                
+                                {/* 🔴 DESIGN FIX: Bada Price (Kata Hua) aur Peela Badge Upar */}
                                 {cOld && cLive && Number(cOld) > Number(cLive) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
-                                  <div className="flex items-center justify-end gap-2 mb-1 w-full">
+                                  <div className="flex items-center justify-end gap-2 mb-0.5 w-full">
                                     <span className="line-through text-gray-400 text-sm md:text-base font-bold">{getPrice((cOld || 0) * (item.qty || 1))}</span>
                                     <span className="bg-yellow-400 text-gray-900 text-[10px] md:text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wide shadow-sm">
                                       {Math.round(((Number(cOld) - Number(cLive)) / Number(cOld)) * 100)}% OFF
@@ -1527,21 +1529,11 @@
                                   </div>
                                 ) : null}
 
-                                {/* 🔴 FIX 2: Naya Price Theek Niche */}
-                                <div className="flex flex-row items-center justify-end gap-4 md:gap-6 mt-0 w-full">
+                                {/* 🔴 DESIGN FIX: Naya Bada Price aur Quantity Theek Niche */}
+                                <div className="flex flex-row items-center justify-end gap-4 md:gap-6 w-full">
                                   
-                                  {/* 1. LIVE ORIGINAL PRICE (LEFT SIDE) */}
+                                  {/* LIVE ORIGINAL PRICE */}
                                   <p className={`font-black text-xl md:text-2xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>
-                                      {getPrice((cLive || 0) * (item.qty || 1))}
-                                  </p>
-
-
-                                
-                                {/* 🔴 FIX 2: Correct JSX Structure without unclosed tags */}
-                                <div className="flex flex-row items-center justify-end gap-6 mt-1 w-full">
-                                  
-                                  {/* 1. LIVE ORIGINAL PRICE (LEFT SIDE) */}
-                                  <p className={`font-black text-lg md:text-xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>
                                       {getPrice((cLive || 0) * (item.qty || 1))}
                                   </p>
 
