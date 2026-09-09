@@ -2761,8 +2761,7 @@
           }
 
           if (editArtId && !isMediaModified) {
-              setUploadStatus("Syncing Live Across All Devices... ⏳");
-              
+              // 1. Button ko 'Syncing...' par lock hone se rokne ke liye humne UploadStatus ko set nahi kiya hai.
               const quickData = {
                   title: uploadData.title, desc: uploadData.desc, 
                   priceOriginal: finalPriceCurrent, priceOriginalOld: finalPriceOld, 
@@ -2771,24 +2770,20 @@
                   fakeLikes: Number(uploadData.fakeLikes) || 0
               };
 
-              try {
-                  // 🔴 FIX: Added 'await' back to guarantee instant cloud sync for all devices (Local Cache Trap Fixed)
-                  await db.collection('RajaStudio').doc(editArtId).update(quickData);
+              // 2. Firebase ko background me update hone do bina screen ko roke (Await hata diya hai)
+              db.collection('RajaStudio').doc(editArtId).update(quickData).catch(e => {
+                  console.log("Background Cloud Sync Error: ", e);
+              });
 
-                  
-                  showToast("✅ Details & Likes Updated Instantly! ⚡");
-                  
-                  setEditArtId(null); 
-                  setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
-                  setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); 
-                  setUploadStatus(""); 
-                  setIsMediaModified(false);
-              } catch(e) {
-                  alert("❌ ERROR: Failed to update details.");
-                  setUploadStatus("");
-              }
+              // 3. UI ko turant (milliseconds me) update aur clear kar do! Firebase apne aap baaki devices par bhej dega.
+              showToast("✅ Details & Likes Updated Instantly! ⚡");
+              setEditArtId(null); 
+              setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
+              setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); 
+              setUploadStatus(""); 
+              setIsMediaModified(false);
               return;
-          }
+           }
 
 
           if (selectedBgs.length > 0 && selectedBgs.length !== 3) {
