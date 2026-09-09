@@ -1254,12 +1254,13 @@
 
                unsubLive = db.collection("trustedDevices").doc(currentDevId).onSnapshot(doc => {
                    // 🚨 HACKER KICKOUT FIX: Agar isRevoked true hua, toh bina delay mili-second mein bahar feko
-                   if ((!doc.exists || doc.data().isRevoked === true) && isAdmin) handleForceLogout();
+                   if (isAdmin && doc.exists && doc.data().isRevoked === true) handleForceLogout();
                });
 
                unsubAdminSess = db.collection("adminSessions").doc(currentDevId).onSnapshot(doc => {
-                   if ((!doc.exists || doc.data().isRevoked === true) && isAdmin) handleForceLogout();
+                   if (isAdmin && doc.exists && doc.data().isRevoked === true) handleForceLogout();
                });
+
 
                // 🚨 WHATSAPP STYLE HEARTBEAT ENGINE (Zinda hone ka saboot) 🚨
                const updatePresence = () => {
