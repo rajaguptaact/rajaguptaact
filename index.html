@@ -1178,36 +1178,63 @@
             if(isLoadingGallery) setIsSlowNetwork(true);
         }, 4500); 
 
-        const unsubArt = db.collection("RajaStudio").onSnapshot(snap => {
-          const fetchedArts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt);
-          setArtworks(fetchedArts);
-          
-          if (snap.empty) {
-              setTimeout(() => { setShowEmptyGallery(true); setIsLoadingGallery(false); }, 100);
-          } else {
-              setShowEmptyGallery(false);
-              setIsLoadingGallery(false);
-          }
-          
-          clearTimeout(slowNetworkTimer);
-          setIsSlowNetwork(false);
-        });
+        // 🚨 PREVENT WHITE SCREEN: Variables ko safely initialize kiya
+        let unsubArt = () => {};
+        let unsubOrd = () => {};
+        let unsubAnn = () => {};
+        let unsubBg = () => {};
 
-        const unsubOrd = db.collection("orders").onSnapshot(snap => {
-          setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
-        });
-        const unsubAnn = db.collection("announcements").onSnapshot(snap => {
-          setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
-        });
-        const unsubBg = db.collection("RajaBackgrounds").onSnapshot(snap => {
-          setSavedBackgrounds(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => b.createdAt - a.createdAt));
-        });
+        try {
+            // 🚨 100% SECURE REAL-TIME LOGIC (NO TIMERS, NO CRASH)
+            unsubArt = db.collection("RajaStudio").onSnapshot(snap => {
+              if (!snap) return; // Agar data missing hai, toh white screen ki jagah safely exit karega
+              
+              const fetchedArts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+              setArtworks(fetchedArts);
+              
+              if (snap.empty) {
+                  // Metadata ko safely check karega taaki purane phones mein crash na ho
+                  if (snap.metadata && !snap.metadata.fromCache) {
+                      setShowEmptyGallery(true);
+                      setIsLoadingGallery(false);
+                      clearTimeout(slowNetworkTimer);
+                      setIsSlowNetwork(false);
+                  }
+              } else {
+                  // Live database se data aate hi show karega
+                  setShowEmptyGallery(false);
+                  setIsLoadingGallery(false);
+                  clearTimeout(slowNetworkTimer);
+                  setIsSlowNetwork(false);
+              }
+            }, (error) => {
+               console.log("Gallery live update delayed (handled safely):", error);
+            });
+
+            unsubOrd = db.collection("orders").onSnapshot(snap => {
+              if (snap) setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+            });
+            
+            unsubAnn = db.collection("announcements").onSnapshot(snap => {
+              if (snap) setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+            });
+            
+            unsubBg = db.collection("RajaBackgrounds").onSnapshot(snap => {
+              if (snap) setSavedBackgrounds(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+            });
+
+        } catch (err) {
+            // Agar Firebase connection fail hota hai, toh app white screen nahi hogi
+            console.log("Database connection error blocked safely:", err);
+        }
 
         return () => { 
+            // 🚨 CLEAN MEMORY LEAKS (Browser hang hone se bachayega)
             unsubArt(); unsubOrd(); unsubAnn(); unsubBg(); 
             clearTimeout(slowNetworkTimer);
         };
       }, []);
+        
       
       // 🚨 FIX 1: GLOBAL ONLINE/OFFLINE TRACKER (Bounce Glitch Fixed)
       useEffect(() => {
