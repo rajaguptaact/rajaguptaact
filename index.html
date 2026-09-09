@@ -3646,31 +3646,66 @@
       
       // 🚨 BACKGROUND SECURITY CHECK (Level 2: Page Load Verify)
       useEffect(() => {
+          let isMounted = true;
+          
           const verifyBlockStatus = async () => {
-              setIsCheckingSecurity(true); // Lock the Admin Panel UI
+              setIsCheckingSecurity(true); // Password box STRICTLY LOCKED rahega
               
-              if (deviceFingerprint) {
-                  const hwDoc = await db.collection('BlockedHackers').doc(deviceFingerprint).get();
-                  if (hwDoc.exists && hwDoc.data().blockedUntil > Date.now()) { setBlockUntil(hwDoc.data().blockedUntil); setIsAdmin(false); }
+              try {
+                  // 1. HARDWARE CHECK (Fast)
+                  const checkHardware = async () => {
+                      if (!deviceFingerprint) return;
+                      const hwDoc = await db.collection('BlockedHackers').doc(deviceFingerprint).get();
+                      if (hwDoc.exists && hwDoc.data().blockedUntil > Date.now() && isMounted) { 
+                          setBlockUntil(hwDoc.data().blockedUntil); 
+                          setIsAdmin(false); 
+                      }
+                      db.collection('BlockedHackers').doc(deviceFingerprint).onSnapshot(doc => {
+                          if (doc.exists && doc.data().blockedUntil > Date.now() && isMounted) { 
+                              setBlockUntil(doc.data().blockedUntil); 
+                              setIsAdmin(false); 
+                          }
+                      });
+                  };
+
+                  // 2. IP CHECK (Parallel with 2-second timeout to prevent loading hang)
+                  const checkIP = async () => {
+                      const dev = await Promise.race([
+                          fetchDeviceDetails(),
+                          new Promise(resolve => setTimeout(() => resolve(cachedDevInfo || { ip: "Unknown" }), 2000))
+                      ]);
+                      
+                      if (dev && dev.ip && !dev.ip.includes("Unknown")) {
+                          const safeIp = dev.ip.replace(/\./g, '_');
+                          const ipDoc = await db.collection('BlockedHackers').doc(safeIp).get();
+                          if (ipDoc.exists && ipDoc.data().blockedUntil > Date.now() && isMounted) { 
+                              setBlockUntil(ipDoc.data().blockedUntil); 
+                              setIsAdmin(false); 
+                          }
+                          db.collection('BlockedHackers').doc(safeIp).onSnapshot(doc => {
+                              if (doc.exists && doc.data().blockedUntil > Date.now() && isMounted) { 
+                                  setBlockUntil(doc.data().blockedUntil); 
+                                  setIsAdmin(false); 
+                              }
+                          });
+                      }
+                  };
+
+                  // Dono check ek sath chalayenge (Speed double ho jayegi)
+                  await Promise.all([checkHardware(), checkIP()]);
                   
-                  db.collection('BlockedHackers').doc(deviceFingerprint).onSnapshot(doc => {
-                      if (doc.exists && doc.data().blockedUntil > Date.now()) { setBlockUntil(doc.data().blockedUntil); setIsAdmin(false); }
-                  });
+              } catch (e) {
+                  console.log("Security Check Error:", e);
               }
 
-              const dev = await fetchDeviceDetails();
-              if (dev && dev.ip && !dev.ip.includes("Unknown")) {
-                  const safeIp = dev.ip.replace(/\./g, '_');
-                  const ipDoc = await db.collection('BlockedHackers').doc(safeIp).get();
-                  if (ipDoc.exists && ipDoc.data().blockedUntil > Date.now()) { setBlockUntil(ipDoc.data().blockedUntil); setIsAdmin(false); }
-                  
-                  db.collection('BlockedHackers').doc(safeIp).onSnapshot(doc => {
-                      if (doc.exists && doc.data().blockedUntil > Date.now()) { setBlockUntil(doc.data().blockedUntil); setIsAdmin(false); }
-                  });
-              }
-              setIsCheckingSecurity(false); // Unlock the UI
+              // 3. SAB KUCH VERIFY HONE KE BAAD HI SPINNER HATEGA
+              // Agar block hua, toh 'blockUntil' active ho jayega aur seedha Block screen dikhegi.
+              if (isMounted) setIsCheckingSecurity(false);
           };
+          
           verifyBlockStatus();
+          
+          return () => { isMounted = false; };
       }, [deviceFingerprint]);
 
 
