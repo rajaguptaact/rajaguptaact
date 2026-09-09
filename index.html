@@ -1209,10 +1209,14 @@
         };
       }, []);
       
-      // 🚨 FIX 1: GLOBAL ONLINE/OFFLINE TRACKER (Har jagah kaam karega - Gallery, Cart, Admin sab jagah)
+      // 🚨 FIX 1: GLOBAL ONLINE/OFFLINE TRACKER (Bounce Glitch Fixed)
       useEffect(() => {
+          let heartbeatInterval = null;
+
           const startPresenceTracker = () => {
-              // Local storage se ID check karega ki yeh trusted device hai ya nahi
+              // 🚨 STRICT FIX: Agar tab minimize hai ya dusra app khula hai, toh 'Online' bhejna ROK DO!
+              if (document.visibilityState === 'hidden') return;
+
               const currentDevId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
               if(!currentDevId) return; // Agar aam user hai (not logged in), toh kuch mat karo
 
@@ -1230,8 +1234,12 @@
               db.collection("trustedDevices").doc(currentDevId).update({ lastSeen: now, isOnline: false }).catch(e=>{});
           };
 
-          startPresenceTracker(); // Website open hote hi first signal bhejega
-          const heartbeatInterval = setInterval(startPresenceTracker, 5000); // Har 5 sec me signal bhejega (Internet off hua to ye ruk jayega aur offline dikhega)
+          // Website start hote hi check karega (Agar minimize nahi hai tabhi Online bhejega)
+          if (document.visibilityState !== 'hidden') {
+              startPresenceTracker(); 
+          }
+          
+          heartbeatInterval = setInterval(startPresenceTracker, 5000); 
 
           // 1. Tab close, browser uda dena ya page refresh karna
           window.addEventListener('beforeunload', stopPresenceTracker);
@@ -1251,9 +1259,9 @@
               window.removeEventListener('beforeunload', stopPresenceTracker);
               document.removeEventListener('visibilitychange', handleVisibilityChange);
           };
-      }, [isAdmin]); // Login/Logout par turant action lega
+      }, [isAdmin]);
 
-      // 🚨 FIX 2: ADMIN PANEL UI & HACKER KICKOUT (Sirf Admin Panel ki Security)
+      // 🚨 FIX 2: ADMIN PANEL UI & HACKER KICKOUT (100% Safe - No Changes)
       useEffect(() => {
         let unsubSess = () => {};
         let unsubLive = () => {};
@@ -1308,6 +1316,7 @@
             unsubSess(); unsubLive(); unsubAdminSess(); 
         };
       }, [isAdmin, view]);
+
         
 
       useEffect(() => { 
