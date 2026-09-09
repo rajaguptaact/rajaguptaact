@@ -1209,23 +1209,65 @@
         };
       }, []);
       
+      // 🚨 FIX 1: GLOBAL ONLINE/OFFLINE TRACKER (Har jagah kaam karega - Gallery, Cart, Admin sab jagah)
+      useEffect(() => {
+          const startPresenceTracker = () => {
+              // Local storage se ID check karega ki yeh trusted device hai ya nahi
+              const currentDevId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
+              if(!currentDevId) return; // Agar aam user hai (not logged in), toh kuch mat karo
+
+              const now = Date.now();
+              db.collection("adminSessions").doc(currentDevId).update({ lastSeen: now, isOnline: true }).catch(e=>{});
+              db.collection("trustedDevices").doc(currentDevId).update({ lastSeen: now, isOnline: true }).catch(e=>{});
+          };
+
+          const stopPresenceTracker = () => {
+              const currentDevId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
+              if(!currentDevId) return;
+
+              const now = Date.now();
+              db.collection("adminSessions").doc(currentDevId).update({ lastSeen: now, isOnline: false }).catch(e=>{});
+              db.collection("trustedDevices").doc(currentDevId).update({ lastSeen: now, isOnline: false }).catch(e=>{});
+          };
+
+          startPresenceTracker(); // Website open hote hi first signal bhejega
+          const heartbeatInterval = setInterval(startPresenceTracker, 5000); // Har 5 sec me signal bhejega (Internet off hua to ye ruk jayega aur offline dikhega)
+
+          // 1. Tab close, browser uda dena ya page refresh karna
+          window.addEventListener('beforeunload', stopPresenceTracker);
+          
+          // 2. Tab switch karna, phone minimize karna, ya dusre app me jana
+          const handleVisibilityChange = () => {
+              if (document.visibilityState === 'hidden') {
+                  stopPresenceTracker();
+              } else {
+                  startPresenceTracker();
+              }
+          };
+          document.addEventListener('visibilitychange', handleVisibilityChange);
+
+          return () => {
+              clearInterval(heartbeatInterval);
+              window.removeEventListener('beforeunload', stopPresenceTracker);
+              document.removeEventListener('visibilitychange', handleVisibilityChange);
+          };
+      }, [isAdmin]); // Login/Logout par turant action lega
+
+      // 🚨 FIX 2: ADMIN PANEL UI & HACKER KICKOUT (Sirf Admin Panel ki Security)
       useEffect(() => {
         let unsubSess = () => {};
         let unsubLive = () => {};
         let unsubAdminSess = () => {};
-        let heartbeatInterval = null; // 🚨 Naya Heartbeat Timer
         
         if (isAdmin) {
-           // 🚨 FIX 3: GLOBAL SYNC MULTI-DEVICE LIST (No Hidden Devices)
+           // Admin list show karne ke liye
            unsubSess = db.collection("trustedDevices").onSnapshot(snap => {
                const sessionsMap = new Map();
                snap.docs.forEach(doc => {
-                   // Ghost Device Filter: Agar revoke ho gaya hai toh list mein nahi aayega
                    if (doc.data().isRevoked !== true) {
                        sessionsMap.set(doc.id, doc.data());
                    }
                });
-
                const sessions = Array.from(sessionsMap.values());
                sessions.sort((a, b) => {
                    const currentId = window.localStorage.getItem('raja_permanent_device_id');
@@ -1233,7 +1275,7 @@
                    if (b.id === currentId) return 1;
                    return (b.lastSeen || b.createdAt) - (a.lastSeen || a.createdAt);
                });
-               setActiveSessions([...sessions]); // Force Instant UI Update
+               setActiveSessions([...sessions]); 
            });
 
            const currentDevId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
@@ -1252,45 +1294,21 @@
                    window.location.reload();
                };
 
+               // Agar Master Admin ne Revoke button daba diya to seedha bahar!
                unsubLive = db.collection("trustedDevices").doc(currentDevId).onSnapshot(doc => {
-                   // 🚨 HACKER KICKOUT FIX: Agar isRevoked true hua, toh bina delay mili-second mein bahar feko
                    if (isAdmin && doc.exists && doc.data().isRevoked === true) handleForceLogout();
                });
 
                unsubAdminSess = db.collection("adminSessions").doc(currentDevId).onSnapshot(doc => {
                    if (isAdmin && doc.exists && doc.data().isRevoked === true) handleForceLogout();
                });
-
-
-               // 🚨 WHATSAPP STYLE HEARTBEAT ENGINE (Zinda hone ka saboot) 🚨
-               const updatePresence = () => {
-                   const now = Date.now();
-                   db.collection("adminSessions").doc(currentDevId).update({ lastSeen: now, isOnline: true }).catch(e=>{});
-                   db.collection("trustedDevices").doc(currentDevId).update({ lastSeen: now, isOnline: true }).catch(e=>{});
-               };
-               
-               updatePresence(); // Khulte hi turant update
-               heartbeatInterval = setInterval(updatePresence, 5000); 
-
-               // 🚨 MILLISECOND INSTANT OFFLINE DETECTOR (Jab tab close/cut kare) 🚨
-               const handleOffline = () => {
-                   const now = Date.now();
-                   db.collection("adminSessions").doc(currentDevId).update({ lastSeen: now, isOnline: false }).catch(e=>{});
-                   db.collection("trustedDevices").doc(currentDevId).update({ lastSeen: now, isOnline: false }).catch(e=>{});
-               };
-
-               window.addEventListener('beforeunload', handleOffline);
-               document.addEventListener('visibilitychange', () => {
-                   if (document.visibilityState === 'hidden') handleOffline();
-                   else updatePresence();
-               });
            }
         }
         return () => { 
             unsubSess(); unsubLive(); unsubAdminSess(); 
-            if (heartbeatInterval) clearInterval(heartbeatInterval); 
         };
       }, [isAdmin, view]);
+        
 
       useEffect(() => { 
         try {
