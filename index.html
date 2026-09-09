@@ -1261,14 +1261,55 @@
           };
       }, [isAdmin]);
 
-      // 🚨 FIX 2: ADMIN PANEL UI & HACKER KICKOUT (100% Safe - No Changes)
+      // 🚨 FIX 2: GLOBAL HACKER KICKOUT & ADMIN PANEL UI
       useEffect(() => {
         let unsubSess = () => {};
         let unsubLive = () => {};
         let unsubAdminSess = () => {};
+
+        const currentDevId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
+
+        // 1. GLOBAL HACKER KICKOUT (Ab yeh 'if (isAdmin)' ke bahar hai, toh har jagah chalega!)
+        if (currentDevId) {
+             const handleForceLogout = () => {
+                 window.localStorage.removeItem('raja_device_id');
+                 window.localStorage.removeItem('raja_permanent_device_id');
+                 window.localStorage.removeItem('raja_admin_fails');
+                 window.localStorage.removeItem('raja_admin_block');
+                 window.localStorage.removeItem('raja_otp_fails');
+                 window.localStorage.removeItem('raja_otp_resends');
+                 setIsAdmin(false);
+                 setAdminStep(1);
+                 alert("🚨 SECURITY ALERT: Your access has been revoked by the Master Admin. You have been forcefully logged out.");
+                 window.location.reload();
+             };
+
+             // 🚨 Instant Kickout Listener (Milli-seconds mein fire karega)
+             unsubLive = db.collection("trustedDevices").doc(currentDevId).onSnapshot(doc => {
+                 // Condition 1: Revoke button daba (Instant kill)
+                 if (doc.exists && doc.data().isRevoked === true) {
+                     handleForceLogout();
+                 } 
+                 // Condition 2: Document is missing (Login bounce fix ke liye 1.5s ruko)
+                 else if (!doc.exists) {
+                     setTimeout(() => {
+                         const stillHasId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
+                         if (stillHasId) {
+                             db.collection("trustedDevices").doc(stillHasId).get().then(check => {
+                                 if (!check.exists) handleForceLogout();
+                             }).catch(()=>{});
+                         }
+                     }, 1500);
+                 }
+             });
+
+             unsubAdminSess = db.collection("adminSessions").doc(currentDevId).onSnapshot(doc => {
+                 if (doc.exists && doc.data().isRevoked === true) handleForceLogout();
+             });
+        }
         
+        // 2. ADMIN PANEL DEVICE LIST (Yeh theek waise hi hai jaisa tumhare purane code mein tha)
         if (isAdmin) {
-           // Admin list show karne ke liye
            unsubSess = db.collection("trustedDevices").onSnapshot(snap => {
                const sessionsMap = new Map();
                snap.docs.forEach(doc => {
@@ -1285,33 +1326,8 @@
                });
                setActiveSessions([...sessions]); 
            });
-
-           const currentDevId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
-
-           if (currentDevId) {
-               const handleForceLogout = () => {
-                   window.localStorage.removeItem('raja_device_id');
-                   window.localStorage.removeItem('raja_permanent_device_id');
-                   window.localStorage.removeItem('raja_admin_fails');
-                   window.localStorage.removeItem('raja_admin_block');
-                   window.localStorage.removeItem('raja_otp_fails');
-                   window.localStorage.removeItem('raja_otp_resends');
-                   setIsAdmin(false);
-                   setAdminStep(1);
-                   alert("🚨 SECURITY ALERT: Your access has been revoked by the Master Admin. You have been forcefully logged out.");
-                   window.location.reload();
-               };
-
-               // Agar Master Admin ne Revoke button daba diya to seedha bahar!
-               unsubLive = db.collection("trustedDevices").doc(currentDevId).onSnapshot(doc => {
-                   if (isAdmin && doc.exists && doc.data().isRevoked === true) handleForceLogout();
-               });
-
-               unsubAdminSess = db.collection("adminSessions").doc(currentDevId).onSnapshot(doc => {
-                   if (isAdmin && doc.exists && doc.data().isRevoked === true) handleForceLogout();
-               });
-           }
         }
+
         return () => { 
             unsubSess(); unsubLive(); unsubAdminSess(); 
         };
