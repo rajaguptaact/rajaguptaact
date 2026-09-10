@@ -1678,13 +1678,19 @@
                                const liveArt = artworks.find(a => a.id === item.id);
                                if (liveArt) {
                                    const isWishlisted = wishlist.some(w => w.id === liveArt.id && w.savedSize === item.selectedSize);
-                                   if (!isWishlisted) {
+                                   if (isWishlisted) {
+                                       // 🚨 BUG FIX: Agar pehle se wishlist mein hai, toh error dikhao aur Cart se mat hatao!
+                                       showToast("⚠️ This item is already in your Wishlist.");
+                                       return; 
+                                   } else {
+                                       // Agar nahi hai, tabhi wishlist mein dalo
                                        const newList = [...wishlist, { ...liveArt, savedSize: item.selectedSize }];
                                        setWishlist(newList);
                                        if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
+                                       showToast(`Moved ${item.selectedSize} to Wishlist!`);
                                    }
-                                   showToast(`Moved ${item.selectedSize} to Wishlist!`);
                                }
+                               // Upar wala step pass hone ke baad hi Cart se delete hoga
                                const updatedCart = cart.filter(c => c.cartId !== item.cartId);
                                setCart(updatedCart);
                                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
