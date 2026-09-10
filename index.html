@@ -735,9 +735,8 @@
                   if (doc.exists) {
                       setWishlist(doc.data().wishlist || []);
                       setUserLikes(doc.data().likes || []);
-                  } else {
-                      setWishlist([]); setUserLikes([]);
                   }
+                  // 🚨 BUG FIX: Removed 'else' block so it doesn't wipe local wishlist on refresh/loading
                   setIsDataLoaded(true);
               });
           });
