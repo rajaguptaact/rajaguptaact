@@ -656,6 +656,15 @@
         return [];
       });
       const [wishlistPopupArt, setWishlistPopupArt] = useState(null);
+      // 🔴 FIX: AUTO-SAVE WISHLIST TO LOCAL STORAGE (Refresh Fix)
+      useEffect(() => {
+        try {
+          if (wishlist && Array.isArray(wishlist)) {
+             window.localStorage.setItem('raja_wishlist_live_v1', JSON.stringify(wishlist));
+          }
+        } catch(e) {}
+      }, [wishlist]);
+
       const [userLikes, setUserLikes] = useState([]);
       const [isDataLoaded, setIsDataLoaded] = useState(false);
 
