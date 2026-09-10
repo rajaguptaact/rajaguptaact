@@ -1865,21 +1865,21 @@
               {validAnns.map((ann) => (
                 <div key={ann.id} className="glass-panel p-5 md:p-8 rounded-3xl shadow-lg border-l-8 border-purple-500 relative overflow-hidden">
                   
-                  {/* 1. DATE ONLY (Top Right Corner) */}
-                  <div className="absolute top-0 right-0 bg-purple-100 text-purple-700 text-[10px] md:text-xs font-black px-3 py-1.5 md:px-4 md:py-2 rounded-bl-xl border-b border-l border-purple-200">
+                  {/* 1. PREMIUM TIMER (Top Left Corner - Ab ek line mein date ke samne rahega) */}
+                  {ann.showTimer && ann.expireAt && (
+                      <LiveCountdown targetTime={ann.expireAt} isCorner={true} />
+                  )}
+
+                  {/* 2. DATE ONLY (Top Right Corner) */}
+                  <div className="absolute top-0 right-0 bg-purple-100 text-purple-700 text-[10px] md:text-xs font-black px-3 py-1.5 md:px-4 md:py-2 rounded-bl-2xl border-b border-l border-purple-200 shadow-sm z-10">
                       {ann.date}
                   </div>
 
-                  <div className="flex flex-col">
-                      {/* 2. PREMIUM TIMER (Smaller, aligned horizontally with Date on top) */}
-                      {ann.showTimer && ann.expireAt && (
-                          <div className="mb-3 flex items-start">
-                              <LiveCountdown targetTime={ann.expireAt} />
-                          </div>
-                      )}
+                  {/* Margin top (mt-6) diya hai taaki upar wala timer aur date text se na chipke */}
+                  <div className="flex flex-col mt-6 md:mt-4">
 
-                      {/* 3. TITLE (Highlighted with extra space below) */}
-                      <h3 className={`text-xl md:text-2xl font-black text-gray-900 mb-4 ${!(ann.showTimer && ann.expireAt) ? 'mt-2' : ''}`}>
+                      {/* 3. TITLE (TRUNCATE LAGAYA HAI: Ab ye kabhi 2 line mein nahi tootega, sirf 1 line mein rahega) */}
+                      <h3 className="text-lg md:text-2xl font-black text-gray-900 mb-2 md:mb-3 truncate w-full" title={ann.title}>
                           {ann.title}
                       </h3>
 
@@ -1895,7 +1895,7 @@
         );
       };
 
-
+      
       const MyOrdersView = () => {
         const handleRecoverOrders = (e) => {
             e.preventDefault();
