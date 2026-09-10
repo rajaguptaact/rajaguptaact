@@ -645,7 +645,16 @@
 
       const [deviceFingerprint, setDeviceFingerprint] = useState(null);
       const [currentUser, setCurrentUser] = useState(null);
-      const [wishlist, setWishlist] = useState([]);
+      const [wishlist, setWishlist] = useState(() => {
+        try {
+          const savedWishlist = window.localStorage.getItem('raja_wishlist_live_v1');
+          if (savedWishlist) {
+            const parsed = JSON.parse(savedWishlist);
+            if (Array.isArray(parsed)) return parsed;
+          }
+        } catch(e) {}
+        return [];
+      });
       const [wishlistPopupArt, setWishlistPopupArt] = useState(null);
       const [userLikes, setUserLikes] = useState([]);
       const [isDataLoaded, setIsDataLoaded] = useState(false);
