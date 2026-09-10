@@ -1174,17 +1174,36 @@
       };
 
       useEffect(() => {
-        let stallTimer;
+        // 🚨 NAYA LOGIC: LIVE NETWORK SPEED CYCLE (No Timers!)
+        let liveCheckInterval;
 
-        // Shuru mein maan lete hain ki network speed theek hai (Koi error nahi dikhega)
-        setIsSlowNetwork(false);
-
-        // System 5 second wait karega. Agar data atak gaya (nahi aaya), tabhi message dikhaega.
-        if (isLoadingGallery) {
-            stallTimer = setTimeout(() => {
+        const checkLiveNetwork = () => {
+            // 1. Agar phone ka internet bilkul band hai
+            if (!navigator.onLine) {
                 setIsSlowNetwork(true);
-            }, 5000); 
-        }
+                return;
+            }
+
+            // 2. Asli Speed aur Ping Check (Live Cycle)
+            if (navigator.connection) {
+                const speedMbps = navigator.connection.downlink; // Speed in Megabits per second
+                const ping = navigator.connection.rtt; // Latency/Ping in milliseconds
+
+                // Agar speed sach mein bohot kam hai (0.2 Mbps se kam) YA ping 1500ms se zyada hai (Atak gaya hai)
+                if (speedMbps < 0.2 || ping > 1500) {
+                    setIsSlowNetwork(true); 
+                } else {
+                    setIsSlowNetwork(false); // Speed sahi hai, chahe loading mein time lag raha ho. Hide message!
+                }
+            } else {
+                // Agar purana phone hai jo speed nahi bata sakta, toh default hide rakho
+                setIsSlowNetwork(false);
+            }
+        };
+
+        // Website khulte hi Live Cycle shuru kar do (har 1.5 second mein speed check karega)
+        checkLiveNetwork();
+        liveCheckInterval = setInterval(checkLiveNetwork, 1500);
 
         let unsubArt = () => {};
         let unsubOrd = () => {};
@@ -1202,20 +1221,19 @@
                   if (snap.metadata && !snap.metadata.fromCache) {
                       setShowEmptyGallery(true);
                       setIsLoadingGallery(false);
-                      // 🔴 SUCCESS: Data aa gaya. Stall timer turant cancel karo aur Slow message hatao.
-                      clearTimeout(stallTimer); 
+                      // 🔴 SUCCESS: Data aa gaya. Live Tracker turant band karo.
+                      clearInterval(liveCheckInterval); 
                       setIsSlowNetwork(false);  
                   }
               } else {
                   setShowEmptyGallery(false);
                   setIsLoadingGallery(false);
-                  // 🔴 SUCCESS: Data aa gaya. Stall timer turant cancel karo aur Slow message hatao.
-                  clearTimeout(stallTimer); 
+                  // 🔴 SUCCESS: Data aa gaya. Live Tracker turant band karo.
+                  clearInterval(liveCheckInterval); 
                   setIsSlowNetwork(false);  
               }
             }, (error) => {
-                console.log("Data connection failed/blocked:", error);
-                // Agar sach mein Firebase block ho gaya ya net gir gaya, toh warning dikhayega
+                console.log("Data connection failed:", error);
                 setIsSlowNetwork(true); 
             });
 
@@ -1237,7 +1255,7 @@
 
         return () => { 
             // Memory clean up
-            clearTimeout(stallTimer);
+            clearInterval(liveCheckInterval);
             unsubArt(); unsubOrd(); unsubAnn(); unsubBg(); 
         };
       }, []);
