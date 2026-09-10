@@ -4347,22 +4347,30 @@
                         <h3 className="font-black text-lg md:text-xl text-gray-900 mb-4 pr-6">Select Size to Save</h3>
                         
                         <div className="space-y-3">
-                            {['Original Artwork', 'A3', 'A4', 'A5'].map(size => {
-                                // Check karenge ki kya is artwork mein yeh size/price available hai ya nahi
+                            {['Original A4 Colour Pencil', 'Print A3', 'Print A4', 'Print A5'].map(size => {
                                 let hasSize = false;
-                                if (size === 'Original Artwork' && wishlistPopupArt.priceOriginal) hasSize = true;
-                                if (size === 'A3' && wishlistPopupArt.priceA3) hasSize = true;
-                                if (size === 'A4' && wishlistPopupArt.priceA4) hasSize = true;
-                                if (size === 'A5' && wishlistPopupArt.priceA5) hasSize = true;
+                                if (size === 'Original A4 Colour Pencil' && wishlistPopupArt.priceOriginal) hasSize = true;
+                                if (size === 'Print A3' && wishlistPopupArt.priceA3) hasSize = true;
+                                if (size === 'Print A4' && wishlistPopupArt.priceA4) hasSize = true;
+                                if (size === 'Print A5' && wishlistPopupArt.priceA5) hasSize = true;
                                 
                                 if (!hasSize) return null;
                                 
-                                const isSaved = wishlist.some(w => w.id === wishlistPopupArt.id && w.savedSize === size);
+                                // Purane saves ko bhi naye system ke sath correctly match karne ka logic
+                                const isSaved = wishlist.some(w => {
+                                    if (w.id !== wishlistPopupArt.id) return false;
+                                    const wSize = w.savedSize || 'Original Artwork';
+                                    if (size === 'Original A4 Colour Pencil' && (wSize === 'Original Artwork' || wSize === 'Original A4 Colour Pencil')) return true;
+                                    if (size === 'Print A3' && (wSize === 'A3' || wSize === 'Print A3')) return true;
+                                    if (size === 'Print A4' && (wSize === 'A4' || wSize === 'Print A4')) return true;
+                                    if (size === 'Print A5' && (wSize === 'A5' || wSize === 'Print A5')) return true;
+                                    return false;
+                                });
                                 
                                 return (
                                     <div key={size} onClick={() => { 
                                         toggleWishlist(wishlistPopupArt, size); 
-                                        setWishlistPopupArt(null); // Click karte hi popup band ho jayega
+                                        setWishlistPopupArt(null); 
                                     }} className={`flex items-center justify-between p-3 rounded-xl border-2 cursor-pointer transition active:scale-95 ${isSaved ? 'border-purple-500 bg-purple-50' : 'border-gray-100 hover:border-purple-200 bg-gray-50'}`}>
                                         <span className={`font-black text-sm md:text-base ${isSaved ? 'text-purple-700' : 'text-gray-700'}`}>{size}</span>
                                         {isSaved ? (
