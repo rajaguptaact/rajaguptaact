@@ -2156,19 +2156,19 @@
 
                     const isLiked = userLikes.includes(liveArt.id);
                     
-                    const showSize = wItem.savedSize || 'Original Artwork';
-                   
-                    let displayPrice = liveArt.priceOriginal;
-                    if (showSize.includes('A3') && liveArt.priceA3) displayPrice = liveArt.priceA3;
-                    else if (showSize.includes('A4') && liveArt.priceA4) displayPrice = liveArt.priceA4;
-                    else if (showSize.includes('A5') && liveArt.priceA5) displayPrice = liveArt.priceA5;
+                    // 🚨 STRICT BUG FIX: Exact Size Normalization (No mixing up Original A4 with Print A4)
+                    const rawSize = wItem.savedSize || 'Original Artwork';
+                    
+                    let cartSizeName = 'Original A4 Colour Pencil';
+                    if (rawSize === 'A3' || rawSize === 'Print A3') cartSizeName = 'Print A3';
+                    else if (rawSize === 'A4' || rawSize === 'Print A4') cartSizeName = 'Print A4';
+                    else if (rawSize === 'A5' || rawSize === 'Print A5') cartSizeName = 'Print A5';
 
-                    // 🚀 BUG FIX: Cart ke size name se match karwane ke liye (Duplicate add nahi hoga)
-                    let cartSizeName = showSize;
-                    if (showSize === 'Original Artwork') cartSizeName = 'Original A4 Colour Pencil';
-                    else if (showSize === 'A3') cartSizeName = 'Print A3';
-                    else if (showSize === 'A4') cartSizeName = 'Print A4';
-                    else if (showSize === 'A5') cartSizeName = 'Print A5';
+                    let displayPrice = liveArt.priceOriginal;
+                    if (cartSizeName === 'Print A3' && liveArt.priceA3) displayPrice = liveArt.priceA3;
+                    else if (cartSizeName === 'Print A4' && liveArt.priceA4) displayPrice = liveArt.priceA4;
+                    else if (cartSizeName === 'Print A5' && liveArt.priceA5) displayPrice = liveArt.priceA5;
+
 
                     return (
                     <div key={wItem.id + showSize} className="flex flex-col md:flex-row md:items-center justify-between glass-panel p-4 rounded-2xl shadow-sm border border-white gap-4 md:gap-0">
