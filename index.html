@@ -1174,41 +1174,49 @@
       };
 
       useEffect(() => {
-        let slowNetworkTimer = setTimeout(() => {
-            if(isLoadingGallery) setIsSlowNetwork(true);
-        }, 4500); 
+        let stallTimer;
 
-        // 🚨 PREVENT WHITE SCREEN: Variables ko safely initialize kiya
+        // Shuru mein maan lete hain ki network speed theek hai (Koi error nahi dikhega)
+        setIsSlowNetwork(false);
+
+        // System 5 second wait karega. Agar data atak gaya (nahi aaya), tabhi message dikhaega.
+        if (isLoadingGallery) {
+            stallTimer = setTimeout(() => {
+                setIsSlowNetwork(true);
+            }, 5000); 
+        }
+
         let unsubArt = () => {};
         let unsubOrd = () => {};
         let unsubAnn = () => {};
         let unsubBg = () => {};
 
         try {
-            // 🚨 100% SECURE REAL-TIME LOGIC (NO TIMERS, NO CRASH)
             unsubArt = db.collection("RajaStudio").onSnapshot(snap => {
-              if (!snap) return; // Agar data missing hai, toh white screen ki jagah safely exit karega
+              if (!snap) return; 
               
               const fetchedArts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
               setArtworks(fetchedArts);
               
               if (snap.empty) {
-                  // Metadata ko safely check karega taaki purane phones mein crash na ho
                   if (snap.metadata && !snap.metadata.fromCache) {
                       setShowEmptyGallery(true);
                       setIsLoadingGallery(false);
-                      clearTimeout(slowNetworkTimer);
-                      setIsSlowNetwork(false);
+                      // 🔴 SUCCESS: Data aa gaya. Stall timer turant cancel karo aur Slow message hatao.
+                      clearTimeout(stallTimer); 
+                      setIsSlowNetwork(false);  
                   }
               } else {
-                  // Live database se data aate hi show karega
                   setShowEmptyGallery(false);
                   setIsLoadingGallery(false);
-                  clearTimeout(slowNetworkTimer);
-                  setIsSlowNetwork(false);
+                  // 🔴 SUCCESS: Data aa gaya. Stall timer turant cancel karo aur Slow message hatao.
+                  clearTimeout(stallTimer); 
+                  setIsSlowNetwork(false);  
               }
             }, (error) => {
-               console.log("Gallery live update delayed (handled safely):", error);
+                console.log("Data connection failed/blocked:", error);
+                // Agar sach mein Firebase block ho gaya ya net gir gaya, toh warning dikhayega
+                setIsSlowNetwork(true); 
             });
 
             unsubOrd = db.collection("orders").onSnapshot(snap => {
@@ -1224,14 +1232,13 @@
             });
 
         } catch (err) {
-            // Agar Firebase connection fail hota hai, toh app white screen nahi hogi
-            console.log("Database connection error blocked safely:", err);
+            console.log("Anti-Crash System Active");
         }
 
         return () => { 
-            // 🚨 CLEAN MEMORY LEAKS (Browser hang hone se bachayega)
+            // Memory clean up
+            clearTimeout(stallTimer);
             unsubArt(); unsubOrd(); unsubAnn(); unsubBg(); 
-            clearTimeout(slowNetworkTimer);
         };
       }, []);
         
