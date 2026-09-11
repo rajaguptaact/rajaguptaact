@@ -710,33 +710,66 @@
                   } catch(e) { console.log("Merge Error", e); }
               }
 
-                            // 🚀 STABLE REAL-TIME CLOUD LISTENERS (FIXED BLINKING)
+              // 🚀 CLOUD-FIRST REAL-TIME LISTENERS (Cloud is Master, No Data Loss)
               db.collection('RecoveredCarts').doc(activeId).onSnapshot(doc => {
                   if (doc.exists) {
                       const cloudItems = doc.data().items || [];
                       setCart(prevCart => {
-                          if (JSON.stringify(prevCart) !== JSON.stringify(cloudItems)) {
-                              return cloudItems;
+                          // Agar Cloud mein data hai, toh wahi original hai
+                          if (cloudItems.length > 0) return cloudItems; 
+                          // Agar Cloud empty de par local mein ho, toh Cloud ko wapas update kar do
+                          if (cloudItems.length === 0 && prevCart.length > 0) {
+                              db.collection('RecoveredCarts').doc(activeId).set({ items: prevCart, updatedAt: Date.now() }, { merge: true });
+                              return prevCart;
                           }
-                          return prevCart;
+                          return [];
                       });
                   }
               });
 
               db.collection('UserOrders').doc(activeId).onSnapshot(doc => {
                   if (doc.exists) {
-                      setMyLocalOrders(doc.data().orders || []);
-                      window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(doc.data().orders || []));
-                  } else {
-                      setMyLocalOrders([]);
+                      const cloudOrders = doc.data().orders || [];
+                      setMyLocalOrders(prevOrders => {
+                          if (cloudOrders.length > 0) {
+                              window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(cloudOrders));
+                              return cloudOrders;
+                          }
+                          if (cloudOrders.length === 0 && prevOrders.length > 0) {
+                              db.collection('UserOrders').doc(activeId).set({ orders: prevOrders }, { merge: true });
+                              return prevOrders;
+                          }
+                          return [];
+                      });
                   }
               });
+
               db.collection('UserSaves').doc(activeId).onSnapshot(doc => {
                   if (doc.exists) {
-                      setWishlist(doc.data().wishlist || []);
-                      setUserLikes(doc.data().likes || []);
+                      const cloudWishlist = doc.data().wishlist || [];
+                      const cloudLikes = doc.data().likes || [];
+                      
+                      setWishlist(prevWish => {
+                          // 1. Agar Cloud mein data hai, toh HAMESHA Cloud data use hoga (Browser data udne par yahan se aayega)
+                          if (cloudWishlist.length > 0) return cloudWishlist;
+                          
+                          // 2. Agar Firebase glitch se empty de, par cache mein data ho, toh wipe nahi hoga balki Cloud pe wapas push ho jayega
+                          if (cloudWishlist.length === 0 && prevWish.length > 0) {
+                              db.collection('UserSaves').doc(activeId).set({ wishlist: prevWish }, { merge: true });
+                              return prevWish;
+                          }
+                          return [];
+                      });
+
+                      setUserLikes(prevLikes => {
+                          if (cloudLikes.length > 0) return cloudLikes;
+                          if (cloudLikes.length === 0 && prevLikes.length > 0) {
+                              db.collection('UserSaves').doc(activeId).set({ likes: prevLikes }, { merge: true });
+                              return prevLikes;
+                          }
+                          return [];
+                      });
                   }
-                  // 🚨 BUG FIX: Removed 'else' block so it doesn't wipe local wishlist on refresh/loading
                   setIsDataLoaded(true);
               });
           });
