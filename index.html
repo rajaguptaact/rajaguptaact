@@ -2175,11 +2175,11 @@
                         );
                     }
 
-                    if (!liveArt) return null;
+                    // 🚨 BULLETPROOF FIX: Use local data (wItem) while loading, live data (liveArt) when ready!
+                    const currentArt = liveArt || wItem;
 
-                    const isLiked = userLikes.includes(liveArt.id);
+                    const isLiked = userLikes.includes(currentArt.id);
                     
-                    // 🚨 STRICT BUG FIX: Exact Size Normalization (White Screen Fixed)
                     const showSize = wItem.savedSize || 'Original Artwork';
                     
                     let cartSizeName = 'Original A4 Colour Pencil';
@@ -2187,35 +2187,32 @@
                     else if (showSize === 'A4' || showSize === 'Print A4') cartSizeName = 'Print A4';
                     else if (showSize === 'A5' || showSize === 'Print A5') cartSizeName = 'Print A5';
 
-                    let displayPrice = liveArt.priceOriginal;
-                    if (cartSizeName === 'Print A3' && liveArt.priceA3) displayPrice = liveArt.priceA3;
-                    else if (cartSizeName === 'Print A4' && liveArt.priceA4) displayPrice = liveArt.priceA4;
-                    else if (cartSizeName === 'Print A5' && liveArt.priceA5) displayPrice = liveArt.priceA5;
-
-
+                    let displayPrice = currentArt.priceOriginal;
+                    if (cartSizeName === 'Print A3' && currentArt.priceA3) displayPrice = currentArt.priceA3;
+                    else if (cartSizeName === 'Print A4' && currentArt.priceA4) displayPrice = currentArt.priceA4;
+                    else if (cartSizeName === 'Print A5' && currentArt.priceA5) displayPrice = currentArt.priceA5;
 
                     return (
                     <div key={wItem.id + showSize} className="flex flex-col md:flex-row md:items-center justify-between glass-panel p-4 rounded-2xl shadow-sm border border-white gap-4 md:gap-0">
                       <div className="flex items-center gap-4 w-full md:w-auto">
                         <div className="relative">
-                            <img src={liveArt.image} className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none" />
-                            {liveArt.isSold && <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-xl font-black text-red-600 text-[10px] uppercase backdrop-blur-[1px]">Sold Out</div>}
+                            <img src={currentArt.image} className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none" />
+                            {currentArt.isSold && <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-xl font-black text-red-600 text-[10px] uppercase backdrop-blur-[1px]">Sold Out</div>}
                         </div>
                         <div className="flex-1">
-                           <h4 className="font-black text-sm md:text-lg text-gray-900 line-clamp-1">{liveArt.title}</h4>
+                           <h4 className="font-black text-sm md:text-lg text-gray-900 line-clamp-1">{currentArt.title}</h4>
                            
-                           {/* Correct Name yahan dikhega */}
                            <p className="text-[10px] md:text-xs font-black text-purple-600 mt-1 bg-purple-50 inline-block px-2 py-0.5 rounded border border-purple-100 uppercase">
                                Size: {cartSizeName}
                            </p>
 
                            <div className="flex items-center gap-4 mt-2">
-                               <button onClick={() => handleLikeArt(liveArt)} className="flex items-center gap-1.5 cursor-pointer">
+                               <button onClick={() => handleLikeArt(currentArt)} className="flex items-center gap-1.5 cursor-pointer">
                                    <svg className={`w-4 h-4 md:w-5 md:h-5 transition-transform ${isLiked ? 'fill-red-500 text-red-500 scale-110' : 'fill-none text-gray-400 hover:scale-110'}`} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                    </svg>
                                    <span className="text-[10px] md:text-xs font-black text-gray-600">
-                                       {Number((Number(liveArt.realLikes) || 0) + (Number(liveArt.fakeLikes) || 0)).toLocaleString('en-IN')}
+                                       {Number((Number(currentArt.realLikes) || 0) + (Number(currentArt.fakeLikes) || 0)).toLocaleString('en-IN')}
                                    </span>
                                </button>
                                <p className="font-black text-xs md:text-sm text-gray-900">
@@ -2229,25 +2226,23 @@
                         <button onClick={() => {
                             nav('gallery');
                             setTimeout(() => { 
-                                const el = document.getElementById('art-' + liveArt.id); 
+                                const el = document.getElementById('art-' + currentArt.id); 
                                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
                             }, 500);
-                        }} disabled={liveArt.isSold} className={`px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-black shadow-sm transition cursor-pointer ${liveArt.isSold ? 'bg-gray-100 text-gray-400' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}>
-                            {liveArt.isSold ? 'Sold Out' : 'View Artwork'}
+                        }} disabled={currentArt.isSold} className={`px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-black shadow-sm transition cursor-pointer ${currentArt.isSold ? 'bg-gray-100 text-gray-400' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}>
+                            {currentArt.isSold ? 'Sold Out' : 'View Artwork'}
                         </button>
                         
-                        {/* 🔴 NEW: ADD TO CART STRICT LIMIT & ENGLISH POPUP */}
                         <div className="flex items-center gap-2 md:gap-3 mt-1 md:mt-0">
-                           {!liveArt.isSold && (
+                           {!currentArt.isSold && (
                              <>
                                <button onClick={() => {
-                                   const alreadyInCart = cart.some(c => c.id === liveArt.id && c.selectedSize === cartSizeName);
+                                   const alreadyInCart = cart.some(c => c.id === currentArt.id && c.selectedSize === cartSizeName);
                                    if (alreadyInCart) {
-                                       // Sirf niche wala VIP popup aayega
                                        showToast("⚠️ This item is already in your Cart.");
                                    } else {
-                                       addToCart(liveArt, cartSizeName, displayPrice, cartSizeName.includes('Original') ? liveArt.priceOriginalOld : null);
-                                       const newList = wishlist.filter(item => !(item.id === liveArt.id && item.savedSize === wItem.savedSize));
+                                       addToCart(currentArt, cartSizeName, displayPrice, cartSizeName.includes('Original') ? currentArt.priceOriginalOld : null);
+                                       const newList = wishlist.filter(item => !(item.id === currentArt.id && item.savedSize === wItem.savedSize));
                                        setWishlist(newList);
                                        if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
                                    }
@@ -2261,6 +2256,7 @@
                     </div>
                     );
                  })}
+          
 
               </div>
             )}
