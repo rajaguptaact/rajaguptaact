@@ -640,6 +640,14 @@
 
       const [isLoadingGallery, setIsLoadingGallery] = useState(true); 
       const [showEmptyGallery, setShowEmptyGallery] = useState(false);
+      
+      // Minimum 1.5 Second Loading Timer for Consistent UI
+      const [minLoadTimePassed, setMinLoadTimePassed] = useState(false);
+      useEffect(() => {
+          const timer = setTimeout(() => { setMinLoadTimePassed(true); }, 1500);
+          return () => clearTimeout(timer);
+      }, []);
+
       const [isSlowNetwork, setIsSlowNetwork] = useState(false);
       
       const [orders, setOrders] = useState([]);
