@@ -710,14 +710,15 @@
                   } catch(e) { console.log("Merge Error", e); }
               }
 
-              // 🚀 CLOUD-FIRST REAL-TIME LISTENERS (Cloud is Master, No Data Loss)
+               // 🚀 CLOUD-FIRST REAL-TIME LISTENERS (Fixed Infinite Loop & Blinking Glitch)
               db.collection('RecoveredCarts').doc(activeId).onSnapshot(doc => {
                   if (doc.exists) {
                       const cloudItems = doc.data().items || [];
                       setCart(prevCart => {
-                          // Agar Cloud mein data hai, toh wahi original hai
+                          // 🚨 MAIN FIX: Agar data same hai toh loop break kar do (No Blinking)
+                          if (JSON.stringify(prevCart) === JSON.stringify(cloudItems)) return prevCart;
+                          
                           if (cloudItems.length > 0) return cloudItems; 
-                          // Agar Cloud empty de par local mein ho, toh Cloud ko wapas update kar do
                           if (cloudItems.length === 0 && prevCart.length > 0) {
                               db.collection('RecoveredCarts').doc(activeId).set({ items: prevCart, updatedAt: Date.now() }, { merge: true });
                               return prevCart;
@@ -731,6 +732,9 @@
                   if (doc.exists) {
                       const cloudOrders = doc.data().orders || [];
                       setMyLocalOrders(prevOrders => {
+                          // 🚨 MAIN FIX: Loop break for Orders
+                          if (JSON.stringify(prevOrders) === JSON.stringify(cloudOrders)) return prevOrders;
+
                           if (cloudOrders.length > 0) {
                               window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(cloudOrders));
                               return cloudOrders;
@@ -750,10 +754,10 @@
                       const cloudLikes = doc.data().likes || [];
                       
                       setWishlist(prevWish => {
-                          // 1. Agar Cloud mein data hai, toh HAMESHA Cloud data use hoga (Browser data udne par yahan se aayega)
+                          // 🚨 MAIN FIX: Loop break for Wishlist (Fast Delete will work now)
+                          if (JSON.stringify(prevWish) === JSON.stringify(cloudWishlist)) return prevWish;
+
                           if (cloudWishlist.length > 0) return cloudWishlist;
-                          
-                          // 2. Agar Firebase glitch se empty de, par cache mein data ho, toh wipe nahi hoga balki Cloud pe wapas push ho jayega
                           if (cloudWishlist.length === 0 && prevWish.length > 0) {
                               db.collection('UserSaves').doc(activeId).set({ wishlist: prevWish }, { merge: true });
                               return prevWish;
@@ -762,6 +766,9 @@
                       });
 
                       setUserLikes(prevLikes => {
+                          // 🚨 MAIN FIX: Loop break for Likes
+                          if (JSON.stringify(prevLikes) === JSON.stringify(cloudLikes)) return prevLikes;
+
                           if (cloudLikes.length > 0) return cloudLikes;
                           if (cloudLikes.length === 0 && prevLikes.length > 0) {
                               db.collection('UserSaves').doc(activeId).set({ likes: prevLikes }, { merge: true });
@@ -770,7 +777,7 @@
                           return [];
                       });
                   }
-                  setIsDataLoaded(true);
+                  setIsDataLoaded(true);  
               });
           });
 
