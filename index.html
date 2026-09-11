@@ -754,24 +754,24 @@
                       const cloudLikes = doc.data().likes || [];
                       
                       setWishlist(prevWish => {
-                          // 🚨 MAIN FIX: Loop break for Wishlist (Fast Delete will work now)
                           if (JSON.stringify(prevWish) === JSON.stringify(cloudWishlist)) return prevWish;
 
-                          if (cloudWishlist.length > 0) return cloudWishlist;
-                          if (cloudWishlist.length === 0 && prevWish.length > 0) {
-                              db.collection('UserSaves').doc(activeId).set({ wishlist: prevWish }, { merge: true });
+                          // Logic: Agar local khali hai aur cloud mein data hai (jaise Gmail login ke baad), tabhi cloud se download karo
+                          if (prevWish.length === 0 && cloudWishlist.length > 0) return cloudWishlist;
+                          
+                          // Logic: Agar user ne naya item add kiya hai, toh usko cloud par forcefully update karo, undo mat hone do
+                          if (prevWish.length > 0) {
+                              db.collection('UserSaves').doc(activeId).set({ wishlist: prevWish }, { merge: true }).catch(e=>{});
                               return prevWish;
                           }
                           return [];
                       });
 
                       setUserLikes(prevLikes => {
-                          // 🚨 MAIN FIX: Loop break for Likes
                           if (JSON.stringify(prevLikes) === JSON.stringify(cloudLikes)) return prevLikes;
-
-                          if (cloudLikes.length > 0) return cloudLikes;
-                          if (cloudLikes.length === 0 && prevLikes.length > 0) {
-                              db.collection('UserSaves').doc(activeId).set({ likes: prevLikes }, { merge: true });
+                          if (prevLikes.length === 0 && cloudLikes.length > 0) return cloudLikes;
+                          if (prevLikes.length > 0) {
+                              db.collection('UserSaves').doc(activeId).set({ likes: prevLikes }, { merge: true }).catch(e=>{});
                               return prevLikes;
                           }
                           return [];
