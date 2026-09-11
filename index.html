@@ -656,14 +656,44 @@
         return [];
       });
       const [wishlistPopupArt, setWishlistPopupArt] = useState(null);
-      // 🔴 FIX: AUTO-SAVE WISHLIST TO LOCAL STORAGE (Refresh Fix)
+      // 🔴 FIX: AUTO-SAVE WISHLIST TO LOCAL STORAGE & CLOUD (Cart + Gmail Logic)
       useEffect(() => {
         try {
           if (wishlist && Array.isArray(wishlist)) {
              window.localStorage.setItem('raja_wishlist_live_v1', JSON.stringify(wishlist));
+
+             // Logic: Check karega ki Gmail login hai ya Hardware Guest mode
+             const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : deviceFingerprint;
+
+             if (activeUid) {
+                 db.collection('UserSaves').doc(activeUid).set({
+                     wishlist: wishlist,
+                     expireAt: getExpiry(),
+                     updatedAt: Date.now()
+                 }, { merge: true }).catch(e=>{});
+             }
           }
         } catch(e) {}
-      }, [wishlist]);
+      }, [wishlist, deviceFingerprint]);
+
+      // 🔴 FIX: AUTO-SAVE LIKES TO CLOUD (Cart + Gmail Logic)
+      useEffect(() => {
+        try {
+          if (userLikes && Array.isArray(userLikes)) {
+             // Logic: Check karega ki Gmail login hai ya Hardware Guest mode
+             const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : deviceFingerprint;
+
+             if (activeUid) {
+                 db.collection('UserSaves').doc(activeUid).set({
+                     likes: userLikes,
+                     expireAt: getExpiry(),
+                     updatedAt: Date.now()
+                 }, { merge: true }).catch(e=>{});
+             }
+          }
+        } catch(e) {}
+      }, [userLikes, deviceFingerprint]);
+
 
       const [userLikes, setUserLikes] = useState([]);
       const [isDataLoaded, setIsDataLoaded] = useState(false);
