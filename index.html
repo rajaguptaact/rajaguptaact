@@ -89,11 +89,6 @@
     }
     const db = firebase.firestore();
     
-    // Firebase Smart Cache Engine (Instant load + Live background sync)
-    db.enablePersistence({ synchronizeTabs: true }).catch(function(err) {
-        console.log("Firebase Cache Engine Offline", err);
-    });
-
     
       const ArtworkCard = ({ art, getPrice, addToCart, wishlist, userLikes, toggleWishlist, handleLikeArt, shareArtwork, setWishlistPopupArt }) => {
 
