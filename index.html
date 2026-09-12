@@ -1874,7 +1874,7 @@
                           return;
                       }
                       if (commissionInput.instagram.trim().length < 5) {
-                          alert("❌ Please enter a valid Instagram ID (minimum 5 characters).");
+                          showToast("❌ Please enter a valid Instagram ID (minimum 5 characters).");
                           return;
                       }
                       const rawBudget = Number(commissionInput.budget);
