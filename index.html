@@ -2324,10 +2324,15 @@
                                    if (alreadyInCart) {
                                        showToast("⚠️ This item is already in your Cart.");
                                    } else {
-                                       addToCart(currentArt, cartSizeName, displayPrice, cartSizeName.includes('Original') ? currentArt.priceOriginalOld : null);
-                                       const newList = wishlist.filter(item => !(item.id === currentArt.id && item.savedSize === wItem.savedSize));
-                                       setWishlist(newList);
-                                       if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
+                                       // 🚨 ADDED CHECK: addToCart ka signal check karo
+                                       const isAdded = addToCart(currentArt, cartSizeName, displayPrice, cartSizeName.includes('Original') ? currentArt.priceOriginalOld : null);
+                                       
+                                       // 🚨 Agar block nahi hua (false nahi aaya), tabhi delete karo
+                                       if (isAdded !== false) {
+                                           const newList = wishlist.filter(item => !(item.id === currentArt.id && item.savedSize === wItem.savedSize));
+                                           setWishlist(newList);
+                                           if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
+                                       }
                                    }
                                }} className="text-purple-600 text-[11px] md:text-xs font-bold hover:underline cursor-pointer">Add to Cart</button>
                                <span className="text-gray-300">|</span>
