@@ -963,7 +963,7 @@
                (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S' || e.key === 'p' || e.key === 'P')) ||
                (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'c' || e.key === 'C'))) {
               e.preventDefault();
-              showToast("Security Alert: Action Disabled");
+              showToast("❌ Security Alert: Action Disabled");
             }
         };
         document.addEventListener('contextmenu', handleContext);
