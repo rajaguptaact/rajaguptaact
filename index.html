@@ -1509,14 +1509,15 @@
       const addToCart = (art, size, price, oldPrice) => {
         const now = Date.now();
         if (now - lastAddedTime < 3000) { // 🚨 3 Second ka timer
-            showToast("⏳ Wait 3s before adding again."); // 🚨 Chota message jo badi screen mein fit hoga
+            showToast("⏳ Wait 3s before adding another item."); // 🚨 Chota message jo badi screen mein fit hoga
             return false; // 🚨 SIGNAL: Block ho gaya hai
         }
 
         if (size && size.includes('Original')) {
             const alreadyInCart = cart.some(c => c.id === art.id && c.selectedSize.includes('Original'));
             if (alreadyInCart) {
-                alert("❌ You have already added this Original Artwork to your cart. Since it's a unique piece, it can only be added once.");
+                // 🚨 FIX: Poora original message wapas daal diya
+                showToast("❌ You have already added this Original Artwork to your cart. Since it's a unique piece, it can only be added once.");
                 return false; // 🚨 SIGNAL: Block ho gaya hai
             }
         }
