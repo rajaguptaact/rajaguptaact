@@ -1804,6 +1804,7 @@
                                const updatedCart = cart.filter(c => c.cartId !== item.cartId);
                                setCart(updatedCart);
                                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
+                               showToast("🗑️ Item removed from Cart"); // 🚨 FIX: Ye line Pop-up message dikhayegi
                            }} className="text-rose-500 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Remove</button>
                         </div>
                      </div>
