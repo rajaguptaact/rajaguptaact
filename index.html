@@ -1789,7 +1789,7 @@
                                        const newList = [...wishlist, { ...liveArt, savedSize: item.selectedSize }];
                                        setWishlist(newList);
                                        if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
-                                       showToast(`Moved ${item.selectedSize} to Wishlist!`);
+                                       showToast(`🔖 Moved ${item.selectedSize} to Wishlist!`);
                                    }
                                }
                                // Upar wala step pass hone ke baad hi Cart se delete hoga
