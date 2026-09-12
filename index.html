@@ -4441,13 +4441,14 @@
           </footer>
 
           {toastMessage && (
-            <div className="fixed bottom-6 md:bottom-10 left-1/2 z-[100] animate-toast">
-              <div className="bg-gray-900 text-white px-4 md:px-6 py-3 md:py-4 rounded-full shadow-2xl font-black text-xs md:text-sm flex items-center gap-2 md:gap-3 border border-gray-700 whitespace-nowrap">
-                <svg className="w-5 h-5 md:w-6 md:h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
-                {toastMessage}
+            <div className="fixed bottom-6 md:bottom-10 left-1/2 z-[100] animate-toast w-[90%] md:w-auto flex justify-center">
+              <div className="bg-gray-900 text-white px-5 py-3 md:py-4 rounded-2xl shadow-2xl font-black text-xs md:text-sm flex items-center gap-3 border border-gray-700 max-w-sm md:max-w-md text-left leading-relaxed">
+                <svg className="w-6 h-6 md:w-7 md:h-7 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                <span>{toastMessage}</span>
               </div>
             </div>
           )}
+
                     {/* 🚀 WISHLIST SIZE POPUP (PAPA PLANE) */}
             {wishlistPopupArt && (
                 <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setWishlistPopupArt(null)}>
