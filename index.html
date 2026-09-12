@@ -2464,7 +2464,7 @@
              setCommissionInput({ subject: '', size: 'A4 Colour Pencil', budget: '', instagram: '' });
              setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
              
-             alert(`✅ Commission Request Sent Successfully!\n\n(You can track this request in "Order History")\n\nI will contact you soon via WhatsApp/Instagram.`);
+             showToast(`✅ Commission Request Sent Successfully! (You can track this request in "Order History") I will contact you soon via WhatsApp/Instagram.`);
              nav('my_orders');
           } else {
              setIsOrderPlaced(false);
