@@ -4443,12 +4443,13 @@
           </footer>
 
           {toastMessage && (
-            <div className="fixed bottom-6 md:bottom-10 left-1/2 z-[100] animate-toast w-[90%] md:w-auto flex justify-center">
-              <div className="bg-gray-900 text-white px-5 py-3 md:py-4 rounded-2xl shadow-2xl font-black text-xs md:text-sm flex items-center gap-3 border border-gray-700 max-w-sm md:max-w-md text-left leading-relaxed">
-                <span>{toastMessage}</span>
+            <div className="fixed bottom-6 md:bottom-10 left-1/2 z-[100] animate-toast w-[90%] sm:w-auto flex justify-center">
+              <div className="bg-gray-900 text-white px-5 py-3 md:py-4 rounded-2xl shadow-2xl font-black text-xs md:text-sm flex items-start gap-3 border border-gray-700 max-w-[90vw] sm:max-w-sm md:max-w-md text-left leading-relaxed">
+                <span className="whitespace-normal break-words">{toastMessage}</span>
               </div>
             </div>
           )}
+
 
                     {/* 🚀 WISHLIST SIZE POPUP (PAPA PLANE) */}
             {wishlistPopupArt && (
