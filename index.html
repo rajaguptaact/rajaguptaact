@@ -2893,11 +2893,11 @@
         const handlePreview = async (e) => {
             e.preventDefault();
             if (!uploadData.image) {
-                alert("⚠️ Please select a Main Artwork Image first.");
+                showToast("⚠️ Please select a Main Artwork Image first.");
                 return;
             }
             if (selectedBgs.length !== 3) {
-                alert(`⚠️ Action Required: You must select EXACTLY 3 backgrounds to generate a preview.`);
+                showToast(`⚠️ Action Required: You must select EXACTLY 3 backgrounds to generate a preview.`);
                 return;
             }
 
