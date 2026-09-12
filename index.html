@@ -1870,7 +1870,7 @@
                   <form onSubmit={(e) => { 
                       e.preventDefault(); 
                       if (commissionInput.subject.trim().length < 5) {
-                          alert("❌ Please provide a detailed subject description (minimum 5 characters).");
+                          showToast("❌ Please provide a detailed subject description (minimum 5 characters).");
                           return;
                       }
                       if (commissionInput.instagram.trim().length < 5) {
