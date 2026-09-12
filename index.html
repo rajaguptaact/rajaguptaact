@@ -1518,7 +1518,7 @@
             const alreadyInCart = cart.some(c => c.id === art.id && c.selectedSize.includes('Original'));
             if (alreadyInCart) {
                 // 🚨 FIX: Poora original message wapas daal diya
-                showToast("❌ You have already added this Original Artwork to your cart. Since it's a unique piece, it can only be added once.");
+                showToast("⚠️ You have already added this Original Artwork to your cart. Since it's a unique piece, it can only be added once.");
                 return false; // 🚨 SIGNAL: Block ho gaya hai
             }
         }
