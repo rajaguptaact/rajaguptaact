@@ -843,7 +843,7 @@
               const newList = wishlist.filter(item => !(item.id === art.id && item.savedSize === art.savedSize));
               setWishlist(newList);
               if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
-              showToast("Removed from Wishlist");
+              showToast("🗑️ Item removed from Wishlist");
           }
       };
 
