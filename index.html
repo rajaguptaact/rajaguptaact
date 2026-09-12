@@ -2769,7 +2769,7 @@
                       setIsBgUploading(false);
                       setRawBgFile(null);
                   })
-                  .catch(()=> { setIsBgUploading(false); alert(" ⚠️ Error saving."); });
+                  .catch(()=> { setIsBgUploading(false); showToast(" ⚠️ Error saving."); });
             };
             img.src = rawBgFile;
         };
@@ -2788,9 +2788,9 @@
                  setMyLocalOrders([]);
                  try { window.localStorage.removeItem('raja_my_orders_v1'); } catch(e){}
 
-                 alert("All orders have been successfully deleted from Database and your Device.");
+                 showToast(" ✅ All orders have been successfully deleted from Database and your Device.");
              } catch (error) {
-                 alert("Error executing atomic delete batch.");
+                 showToast(" ⚠️ Error executing atomic delete batch.");
              }
           }
         };
