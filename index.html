@@ -1590,7 +1590,7 @@
 
            const hasDeletedItems = items.some(item => !artworks.find(a => a.id === item.id));
            if (hasDeletedItems) {
-               alert("❌ Action Required: Some items in your cart have been removed by the artist and are no longer available. Please click 'Remove' on the deleted items to proceed with your purchase.");
+               showToast("❌ Action Required: Some items in your cart have been removed by the artist and are no longer available. Please click 'Remove' on the deleted items to proceed with your purchase.");
                return;
            }
         }
