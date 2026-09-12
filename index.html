@@ -828,7 +828,7 @@
       const getExpiry = () => currentUser ? null : Date.now() + (30 * 24 * 60 * 60 * 1000);
 
                   const toggleWishlist = (art, specificSize = null) => {
-          if (!deviceFingerprint) { showToast("Wait, connecting securely..."); return; }
+          if (!deviceFingerprint) { showToast("⏳ Wait, connecting securely..."); return; }
           
           if (specificSize) {
               const isWishlisted = wishlist.some(item => item.id === art.id && item.savedSize === specificSize);
