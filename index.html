@@ -853,7 +853,9 @@
           const isLiked = userLikes.includes(art.id);
           const newLikes = isLiked ? userLikes.filter(id => id !== art.id) : [...userLikes, art.id];
           
-          setUserLikes(newLikes); // 🚀 INSTANT UPDATE: Dil turant lal hoga aur infinite click rok dega
+          setUserLikes(newLikes); 
+          try { window.localStorage.setItem('raja_likes_live_v1', JSON.stringify(newLikes)); } catch(e){} // 🚀 FIX: Local memory mein instantly save
+          
           db.collection('UserSaves').doc(deviceFingerprint).set({ likes: newLikes, expireAt: getExpiry() }, { merge: true });
           db.collection('RajaStudio').doc(art.id).update({ realLikes: firebase.firestore.FieldValue.increment(isLiked ? -1 : 1) });
       };
