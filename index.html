@@ -947,8 +947,9 @@
       const [toastMessage, setToastMessage] = useState(null);
       const showToast = (msg) => {
         setToastMessage(msg);
-        setTimeout(() => setToastMessage(null), 3000);
+        setTimeout(() => setToastMessage(null), 5000); // 🚨 5 seconds ke baad hi message gayab hoga
       };
+
 
       useEffect(() => {
         const handleContext = (e) => {
