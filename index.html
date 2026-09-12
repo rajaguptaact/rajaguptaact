@@ -2765,7 +2765,7 @@
                 const bgData = canvas.toDataURL('image/jpeg', 0.90);
                 db.collection('RajaBackgrounds').add({ image: bgData, createdAt: Date.now() })
                   .then(() => {
-                      alert("Background Cropped & Saved Successfully in HD!");
+                      showToast("Background Cropped & Saved Successfully in HD!");
                       setIsBgUploading(false);
                       setRawBgFile(null);
                   })
