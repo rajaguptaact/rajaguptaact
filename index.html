@@ -695,7 +695,17 @@
       }, [userLikes, deviceFingerprint]);
 
 
-      const [userLikes, setUserLikes] = useState([]);
+      const [userLikes, setUserLikes] = useState(() => {
+        try {
+          const savedLikes = window.localStorage.getItem('raja_likes_live_v1');
+          if (savedLikes) {
+            const parsed = JSON.parse(savedLikes);
+            if (Array.isArray(parsed)) return parsed;
+          }
+        } catch(e) {}
+        return [];
+      });
+
       const [isDataLoaded, setIsDataLoaded] = useState(false);
 
       useEffect(() => {
