@@ -3059,7 +3059,7 @@
                   await Promise.all(uploadPromises);
               }
 
-              alert(editArtId ? "Artwork Media Updated Successfully!" : "Artwork Uploaded Globally!"); 
+              showToast(editArtId ? "✅ Artwork Media Updated Successfully!" : "✅ Artwork Uploaded Globally!");
               setEditArtId(null); 
               setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
               setSelectedBgs([]);
