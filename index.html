@@ -2944,7 +2944,7 @@
           let curP = Number(curPStr) || 0;
 
           if (oldP > 0 && curP > 0 && curP >= oldP) {
-              alert("❌ PRICE ERROR: Discount Price (Current) MUST be strictly less than the Old Price. Please correct your inputs.");
+              showPremiumAlert("❌ PRICE ERROR: Discount Price (Current) MUST be strictly less than the Old Price. Please correct your inputs.");
               return;
           }
 
