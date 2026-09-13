@@ -4084,7 +4084,7 @@
            let otpFails = Number(window.localStorage.getItem('raja_otp_fails') || 0) + 1;
            window.localStorage.setItem('raja_otp_fails', otpFails);
            fetchDeviceDetails().then(dev => sendLoginAlert('OTP_FAILED', `${otpInput}|${otpFails}`, dev));
-           showToast(\ ❌ Incorrect OTP! (You can try again)`);`
+           showToast(\❌ Incorrect OTP! (You can try again)`);`
            setOtpInput('');
         }
         setIsProcessingLogin(false);
