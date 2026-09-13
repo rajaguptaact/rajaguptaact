@@ -4113,7 +4113,7 @@
              setLiveOTP(newOTP);
              setResendTimer(30);
              fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', `${newOTP}|${resends}`, dev)); 
-             showToast(\ ✅ New 6-Digit OTP Sent! (Resend ${resends}/3)`);`
+             showToast(\✅ New 6-Digit OTP Sent! (Resend ${resends}/3)`);`
          }
          setIsProcessingLogin(false);
       };
