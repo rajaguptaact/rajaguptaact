@@ -2089,7 +2089,9 @@
                              if (deviceFingerprint) {
                                  db.collection('UserOrders').doc(deviceFingerprint).set({ orders: updated }, { merge: true }).catch(e=>{});
                              }
+                             showToast("🗑️ Order removed from history");
                          }
+
                       }} className="absolute top-4 right-4 md:top-6 md:right-6 text-rose-500 hover:text-rose-700 transition cursor-pointer p-1 z-10" title="Delete from History">
 
 
