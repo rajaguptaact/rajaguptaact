@@ -3069,7 +3069,7 @@
               setIsMediaModified(false);
           } catch (err) {
               console.error(err);
-              alert("❌ ERROR: Failed to upload. Please try again. System memory might be full.");
+              showToast("❌ ERROR: Failed to upload. System memory might be full.");
               setUploadStatus("");
           }
         };
