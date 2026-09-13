@@ -944,10 +944,23 @@
       };
 
 
+      const toastTimerRef = useRef(null); // Purane alarm ko yaad rakhne ke liye
       const [toastMessage, setToastMessage] = useState(null);
+      const [toastKey, setToastKey] = useState(0); // Animation restart karne ke liye
+
       const showToast = (msg) => {
         setToastMessage(msg);
-        setTimeout(() => setToastMessage(null), 5000); // 🚨 5 seconds ke baad hi message gayab hoga
+        setToastKey(Date.now()); // Har message ko naya time do taaki animation wapas chale
+        
+        // Agar pehle se koi alarm laga hai, toh usko cancel (kill) karo
+        if (toastTimerRef.current) {
+            clearTimeout(toastTimerRef.current);
+        }
+        
+        // Ab fresh 5 second ka naya alarm lagao
+        toastTimerRef.current = setTimeout(() => {
+            setToastMessage(null);
+        }, 5000); 
       };
 
 
