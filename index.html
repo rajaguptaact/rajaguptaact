@@ -3960,7 +3960,7 @@
         if (blockUntil > Date.now()) { setIsProcessingLogin(false); return; }
         
         if (!password || password.trim() === '') {
-            alert("⚠️ Please enter your password first!"); setIsProcessingLogin(false); return;
+            showToast("⚠️ Please enter your password first!"); setIsProcessingLogin(false); return;
         }
 
 
@@ -4040,12 +4040,12 @@
         setIsProcessingLogin(true); 
 
         if (!otpInput || otpInput.trim() === '') {
-            alert("⚠️ Please enter the 6-digit OTP first.");
+            showToast("⚠️ Please enter the 6-digit OTP first.");
             setIsProcessingLogin(false);
             return;
         }
         if (otpInput.length !== 6 || !/^\d{6}$/.test(otpInput)) {
-            alert("⚠️ OTP must be exactly 6 digits.");
+            showToast("⚠️ OTP must be exactly 6 digits.");
             setIsProcessingLogin(false);
             return;
         }
@@ -4084,7 +4084,7 @@
            let otpFails = Number(window.localStorage.getItem('raja_otp_fails') || 0) + 1;
            window.localStorage.setItem('raja_otp_fails', otpFails);
            fetchDeviceDetails().then(dev => sendLoginAlert('OTP_FAILED', `${otpInput}|${otpFails}`, dev));
-           alert(`❌ Incorrect OTP! (You can try again)`);
+           showToast(`❌ Incorrect OTP! (You can try again)`);`
            setOtpInput('');
         }
         setIsProcessingLogin(false);
@@ -4113,7 +4113,7 @@
              setLiveOTP(newOTP);
              setResendTimer(30);
              fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', `${newOTP}|${resends}`, dev)); 
-             alert(`✅ New 6-Digit OTP Sent! (Resend ${resends}/3)`);
+             showToast(`✅ New 6-Digit OTP Sent! (Resend ${resends}/3)`);`
          }
          setIsProcessingLogin(false);
       };
