@@ -1602,7 +1602,7 @@
                }
            });
            if (soldItems.length > 0) {
-               alert(`❌ STOCK ALERT: The following Original Artwork(s) have just been SOLD OUT to another buyer:\n\n- ${soldItems.join('\n- ')}\n\nPlease remove them from your cart to proceed.`);
+               showPremiumAlert(`❌ STOCK ALERT: The following Original Artwork(s) have just been SOLD OUT to another buyer:\n\n- ${soldItems.join('\n- ')}\n\nPlease remove them from your cart to proceed.`);
                return; 
            }
 
