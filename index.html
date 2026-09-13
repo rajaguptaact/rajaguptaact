@@ -2989,7 +2989,7 @@
                   setIsMediaModified(false);
               })
               .catch(e => {
-                  alert("❌ ERROR: Network problem. Data not saved.");
+                  showToast("❌ ERROR: Network problem. Data not saved.");
                   setUploadStatus("");
               });
               
