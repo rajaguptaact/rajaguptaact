@@ -2062,8 +2062,9 @@
                                if (deviceFingerprint) {
                                    db.collection('UserOrders').doc(deviceFingerprint).delete().catch(e=>{});
                                }
-                               showToast("🗑️ Order history cleared"); // 👈 BAS YE LINE ADD HUI HAI
-                            }
+                               showToast("🗑️ Order history cleared");
+                           }
+
                          
                        }} className="bg-rose-50 text-rose-600 border border-rose-200 px-3 md:px-4 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-black shadow-sm hover:bg-rose-100 transition">
                            Clear History
