@@ -2453,7 +2453,7 @@
         const handleShippingSubmit = (e) => {
           e.preventDefault();
           if (!canSubmit) {
-             alert("❌ Details verification failed. Please check all the red error messages and fix them.");
+             showPremiumAlert("❌ Details verification failed. Please check all the red error messages and fix them.");
              return;
           }
 
