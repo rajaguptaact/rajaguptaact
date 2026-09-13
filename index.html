@@ -3933,7 +3933,7 @@
              setLiveOTP('');
          } else {
              fetchDeviceDetails().then(dev => sendLoginAlert(type, data, dev));
-             if (type === 'FAILED') alert(`❌ Incorrect Password! Attempt ${fails}/3.`);
+             if (type === 'FAILED') showToast(`❌ Incorrect Password! Attempt ${fails}/3.`);`
          }
       };
 
