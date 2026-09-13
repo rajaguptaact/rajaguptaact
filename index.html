@@ -3499,7 +3499,7 @@
                                                  setSelectedBgs(selectedBgs.filter(id => id !== bg.id));
                                              } else {
                                                  if(selectedBgs.length >= 3) {
-                                                     alert("⚠️ Maximum limit reached! Please unselect one first if you want to add a new one.");
+                                                     showPremiumAlert("⚠️ Maximum limit reached! Please unselect one first if you want to add a new one.");
                                                      return;
                                                  }
                                                  setSelectedBgs([...selectedBgs, bg.id]);
