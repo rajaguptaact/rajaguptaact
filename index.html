@@ -2557,7 +2557,7 @@
                  </div>
               </div>
 
-              <button type="submit" disabled={!canSubmit} className={`w-full text-white py-3 md:py-4 rounded-xl font-black text-base md:text-lg shadow-lg transition-transform transform active:scale-95 ${!canSubmit ? 'bg-gray-400 opacity-70 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 cursor-pointer hover:shadow-xl'}`}>
+              <button type="submit" className={`w-full text-white py-3 md:py-4 rounded-xl font-black text-base md:text-lg shadow-lg transition-transform transform active:scale-95 ${!canSubmit ? 'bg-gray-400 opacity-70 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 cursor-pointer hover:shadow-xl'}`}>
                 {checkoutData.type === 'Commission' ? "Submit Commission Request" : "Proceed to Payment"}
               </button>
             </form>
