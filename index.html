@@ -2260,23 +2260,8 @@
                     const liveArt = artworks.find(a => a.id === wItem.id);
                     const isDeleted = !isLoadingGallery && !liveArt;
 
-                    if (isDeleted) {
-                        return (
-                            <div key={wItem.id} className="flex items-center justify-between bg-red-50 p-4 rounded-2xl border border-red-200 shadow-sm">
-                               <div>
-                                  <h4 className="font-black text-red-800 text-sm md:text-base">Artwork Unavailable</h4>
-                                  <p className="text-[10px] md:text-xs font-bold text-red-600 mt-0.5">This item has been modified or removed by the owner.</p>
-                               </div>
-                               <button onClick={() => toggleWishlist(wItem)} className="text-red-600 font-black text-[10px] md:text-xs bg-white px-3 py-1.5 md:py-2 rounded-lg shadow-sm border border-red-200 hover:bg-red-50 cursor-pointer">Remove</button>
-                            </div>
-                        );
-                    }
-
-                    // 🚨 BULLETPROOF FIX: Use local data (wItem) while loading, live data (liveArt) when ready!
                     const currentArt = liveArt || wItem;
-
                     const isLiked = userLikes.includes(currentArt.id);
-                    
                     const showSize = wItem.savedSize || 'Original Artwork';
                     
                     let cartSizeName = 'Original A4 Colour Pencil';
@@ -2290,20 +2275,22 @@
                     else if (cartSizeName === 'Print A5' && currentArt.priceA5) displayPrice = currentArt.priceA5;
 
                     return (
-                    <div key={wItem.id + showSize} className="flex flex-col md:flex-row md:items-center justify-between glass-panel p-4 rounded-2xl shadow-sm border border-white gap-4 md:gap-0">
+                    <div key={wItem.id + showSize} className={`flex flex-col md:flex-row md:items-center justify-between glass-panel p-4 rounded-2xl shadow-sm border gap-4 md:gap-0 ${isDeleted ? 'border-gray-300 bg-gray-50' : 'border-white'}`}>
                       <div className="flex items-center gap-4 w-full md:w-auto">
                         <div className="relative">
-                            <img src={currentArt.image} className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none" />
-                            {currentArt.isSold && <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-xl font-black text-red-600 text-[10px] uppercase backdrop-blur-[1px]">Sold Out</div>}
+                            <img src={currentArt.image} className={`w-20 h-20 md:w-24 md:h-24 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none ${isDeleted ? 'grayscale blur-[2px] opacity-70' : ''}`} />
+                            {currentArt.isSold && !isDeleted && <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-xl font-black text-red-600 text-[10px] uppercase backdrop-blur-[1px]">Sold Out</div>}
+                            {isDeleted && <div className="absolute inset-0 bg-black/10 rounded-xl"></div>}
                         </div>
                         <div className="flex-1">
-                           <h4 className="font-black text-sm md:text-lg text-gray-900 line-clamp-1">{currentArt.title}</h4>
+                           <h4 className={`font-black text-sm md:text-lg line-clamp-1 ${isDeleted ? 'text-gray-500 line-through' : 'text-gray-900'}`}>{currentArt.title}</h4>
                            
-                           <p className="text-[10px] md:text-xs font-black text-purple-600 mt-1 bg-purple-50 inline-block px-2 py-0.5 rounded border border-purple-100 uppercase">
+                           <p className={`text-[10px] md:text-xs font-black mt-1 inline-block px-2 py-0.5 rounded border uppercase ${isDeleted ? 'bg-gray-200 text-gray-500 border-gray-300' : 'bg-purple-50 text-purple-600 border-purple-100'}`}>
                                Size: {cartSizeName}
                            </p>
+                           {isDeleted && <span className="text-[9px] md:text-[10px] bg-gray-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block shadow-sm ml-2">Deleted</span>}
 
-                           <div className="flex items-center gap-4 mt-2">
+                           <div className={`flex items-center gap-4 mt-2 ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
                                <button onClick={() => handleLikeArt(currentArt)} className="flex items-center gap-1.5 cursor-pointer">
                                    <svg className={`w-4 h-4 md:w-5 md:h-5 transition-transform ${isLiked ? 'fill-red-500 text-red-500 scale-110' : 'fill-none text-gray-400 hover:scale-110'}`} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -2326,39 +2313,42 @@
                                 const el = document.getElementById('art-' + currentArt.id); 
                                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
                             }, 500);
-                        }} disabled={currentArt.isSold} className={`px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-black shadow-sm transition cursor-pointer ${currentArt.isSold ? 'bg-gray-100 text-gray-400' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}>
-                            {currentArt.isSold ? 'Sold Out' : 'View Artwork'}
+                        }} disabled={currentArt.isSold || isDeleted} className={`px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-black shadow-sm transition ${currentArt.isSold || isDeleted ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-purple-100 text-purple-700 hover:bg-purple-200 cursor-pointer'}`}>
+                            {isDeleted ? 'Unavailable' : currentArt.isSold ? 'Sold Out' : 'View Artwork'}
                         </button>
                         
                         <div className="flex items-center gap-2 md:gap-3 mt-1 md:mt-0">
                            {!currentArt.isSold && (
                              <>
-                               <button onClick={() => {
+                               <button disabled={isDeleted} onClick={() => {
                                    const alreadyInCart = cart.some(c => c.id === currentArt.id && c.selectedSize === cartSizeName);
                                    if (alreadyInCart) {
                                        showToast("⚠️ This item is already in your Cart.");
                                    } else {
-                                       // 🚨 ADDED CHECK: addToCart ka signal check karo
                                        const isAdded = addToCart(currentArt, cartSizeName, displayPrice, cartSizeName.includes('Original') ? currentArt.priceOriginalOld : null);
-                                       
-                                       // 🚨 Agar block nahi hua (false nahi aaya), tabhi delete karo
                                        if (isAdded !== false) {
                                            const newList = wishlist.filter(item => !(item.id === currentArt.id && item.savedSize === wItem.savedSize));
                                            setWishlist(newList);
                                            if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
                                        }
                                    }
-                               }} className="text-purple-600 text-[11px] md:text-xs font-bold hover:underline cursor-pointer">Add to Cart</button>
+                               }} className={`text-[11px] md:text-xs font-bold ${isDeleted ? 'text-gray-400 cursor-not-allowed grayscale opacity-50' : 'text-purple-600 hover:underline cursor-pointer'}`}>Add to Cart</button>
                                <span className="text-gray-300">|</span>
                              </>
                            )}
-                           <button onClick={() => toggleWishlist(wItem)} className="text-rose-500 text-[11px] md:text-xs font-bold hover:underline cursor-pointer">Remove</button>
+                           <button onClick={() => toggleWishlist(wItem)} className="text-rose-500 text-[11px] md:text-xs font-bold hover:underline cursor-pointer bg-rose-50 px-2 py-1 rounded-md">Remove</button>
                         </div>
                       </div>
                     </div>
                     );
                  })}
-          
+
+                 {wishlist.some(wItem => !isLoadingGallery && !artworks.find(a => a.id === wItem.id)) && (
+                    <div className="bg-red-50 text-red-700 p-3 md:p-4 rounded-xl text-xs md:text-sm font-bold border border-red-200 mt-6 text-center shadow-sm">
+                       ⚠️ Action Required: Some items in your Wishlist have been removed by the artist and are no longer available. Please click 'Remove' on the deleted items.
+                    </div>
+                 )}
+                           
 
               </div>
             )}
