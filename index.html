@@ -1711,110 +1711,97 @@
                       else { cLive = liveArt.priceOriginal || item.price; cOld = liveArt.priceOriginalOld || item.priceOriginalOld; }
                   }
 
+                  
                   return (
-                    <div key={i} className={`flex flex-col md:flex-row md:items-center justify-between glass-panel p-4 rounded-2xl shadow-sm border gap-4 md:gap-0 ${isDeleted ? 'border-gray-400 bg-gray-100 opacity-80' : isItemSoldOut ? 'border-red-300 bg-red-50' : 'border-white'}`}>
+                    <div key={i} className={`flex flex-col md:flex-row md:items-center justify-between glass-panel p-4 rounded-2xl shadow-sm border gap-4 md:gap-0 ${isDeleted ? 'border-gray-300 bg-gray-50' : isItemSoldOut ? 'border-red-300 bg-red-50' : 'border-white'}`}>
                       <div className="flex items-center gap-4">
                         <div className="relative">
-                            <img src={item.image} className={`w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none ${isDeleted ? 'grayscale blur-[1px]' : ''}`} />
-                            {isDeleted && <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center"><svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg></div>}
+                            <img src={item.image} className={`w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none ${isDeleted ? 'grayscale blur-[2px] opacity-70' : ''}`} />
+                            {isDeleted && <div className="absolute inset-0 bg-black/10 rounded-xl"></div>}
                         </div>
                         <div>
                            <h4 className={`font-black text-sm md:text-lg line-clamp-1 ${isDeleted ? 'text-gray-500 line-through' : isItemSoldOut ? 'text-red-800' : 'text-gray-900'}`}>{item.title}</h4>
                            <p className={`text-xs md:text-sm font-bold ${isDeleted ? 'text-gray-400' : 'text-purple-600'}`}>{item.selectedSize}</p>
-                           {isDeleted && <span className="text-[9px] md:text-[10px] bg-gray-600 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block shadow-sm">Artwork Deleted</span>}
+                           {isDeleted && <span className="text-[9px] md:text-[10px] bg-gray-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block shadow-sm">Artwork Deleted</span>}
                            {!isDeleted && isItemSoldOut && <span className="text-[9px] md:text-[10px] bg-red-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block animate-pulse shadow-sm">Sold Out</span>}
                         </div>
                       </div>
                       
-                      <div className="text-right flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start">
-                                                {isDeleted ? (
-                            <p className="font-black text-lg md:text-xl text-gray-500 line-through">{getPrice((item.price || 0) * (item.qty || 1))}</p>
-                        ) : (
-                            <div className="flex flex-col items-end w-full">
-                                
-                                {/* 🔴 DESIGN FIX: Bada Price (Kata Hua) aur Peela Badge Upar */}
-                                {cOld && cLive && Number(cOld) > Number(cLive) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
-                                  <div className="flex items-center justify-end gap-2 mb-0.5 w-full">
-                                    <span className="line-through text-gray-400 text-sm md:text-base font-bold">{getPrice((cOld || 0) * (item.qty || 1))}</span>
-                                    <span className="bg-yellow-400 text-gray-900 text-[10px] md:text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wide shadow-sm">
-                                      {Math.round(((Number(cOld) - Number(cLive)) / Number(cOld)) * 100)}% OFF
-                                    </span>
-                                  </div>
-                                ) : null}
+                      <div className="text-right flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start w-full md:w-auto mt-2 md:mt-0">
+                        
+                        {/* PRICE & QTY WRAPPER (GREY OUT IF DELETED) */}
+                        <div className={`flex flex-col items-end w-full ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
+                            {cOld && cLive && Number(cOld) > Number(cLive) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
+                              <div className="flex items-center justify-end gap-2 mb-0.5 w-full">
+                                <span className="line-through text-gray-400 text-sm md:text-base font-bold">{getPrice((cOld || 0) * (item.qty || 1))}</span>
+                                <span className="bg-yellow-400 text-gray-900 text-[10px] md:text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wide shadow-sm">
+                                  {Math.round(((Number(cOld) - Number(cLive)) / Number(cOld)) * 100)}% OFF
+                                </span>
+                              </div>
+                            ) : null}
 
-                                {/* 🔴 DESIGN FIX: Naya Bada Price aur Quantity Theek Niche */}
-                                <div className="flex flex-row items-center justify-end gap-4 md:gap-6 w-full">
-                                  
-                                  {/* LIVE ORIGINAL PRICE */}
-                                  <p className={`font-black text-xl md:text-2xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>
-                                      {getPrice((cLive || 0) * (item.qty || 1))}
-                                  </p>
+                            <div className="flex flex-row items-center justify-end gap-4 md:gap-6 w-full">
+                              <p className={`font-black text-xl md:text-2xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>
+                                  {getPrice((cLive || 0) * (item.qty || 1))}
+                              </p>
 
-                                  {/* 2. SIMPLE QUANTITY AFTER PRICE (RIGHT SIDE) */}
-                                  {!isDeleted && !isItemSoldOut && (
-                                    <div className="flex items-center gap-2 border-l border-gray-200 pl-4">
-                                        <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Qty:</span>
-                                        {(!item.selectedSize || !item.selectedSize.includes('Original')) ? (
-                                          <div className="flex items-center gap-1.5">
-                                            <button onClick={() => {
-                                                setCart(prevCart => {
-                                                    const updated = prevCart.map(c => c.cartId === item.cartId && (c.qty || 1) > 1 ? { ...c, qty: (c.qty || 1) - 1 } : c);
-                                                    try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updated)); } catch(e){}
-                                                    return updated;
+                              {!isItemSoldOut && (
+                                <div className="flex items-center gap-2 border-l border-gray-200 pl-4">
+                                    <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Qty:</span>
+                                    {(!item.selectedSize || !item.selectedSize.includes('Original')) ? (
+                                      <div className="flex items-center gap-1.5">
+                                        <button onClick={() => {
+                                            setCart(prevCart => {
+                                                const updated = prevCart.map(c => c.cartId === item.cartId && (c.qty || 1) > 1 ? { ...c, qty: (c.qty || 1) - 1 } : c);
+                                                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updated)); } catch(e){}
+                                                return updated;
+                                            });
+                                        }} className="text-gray-500 hover:text-purple-600 font-black text-base cursor-pointer px-1 active:scale-95 transition">-</button>
+                                        <span className="text-[11px] md:text-sm font-black text-gray-900 w-3 text-center">{item.qty || 1}</span>
+                                        <button onClick={() => {
+                                            setCart(prevCart => {
+                                                let allowed = true;
+                                                const updated = prevCart.map(c => {
+                                                    if (c.cartId === item.cartId) {
+                                                        if ((c.qty || 1) < 5) return { ...c, qty: (c.qty || 1) + 1 };
+                                                        else { allowed = false; return c; }
+                                                    }
+                                                    return c;
                                                 });
-                                            }} className="text-gray-500 hover:text-purple-600 font-black text-base cursor-pointer px-1 active:scale-95 transition">-</button>
-                                            
-                                            <span className="text-[11px] md:text-sm font-black text-gray-900 w-3 text-center">{item.qty || 1}</span>
-                                            
-                                            <button onClick={() => {
-                                                setCart(prevCart => {
-                                                    let allowed = true;
-                                                    const updated = prevCart.map(c => {
-                                                        if (c.cartId === item.cartId) {
-                                                            if ((c.qty || 1) < 5) return { ...c, qty: (c.qty || 1) + 1 };
-                                                            else { allowed = false; return c; }
-                                                        }
-                                                        return c;
-                                                    });
-                                                    if(!allowed) setTimeout(() => showToast("⚠️ Maximum 5 quantity allowed per item."), 0);
-                                                    else { try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updated)); } catch(e){} }
-                                                    return updated;
-                                                });
-                                            }} className="text-gray-500 hover:text-purple-600 font-black text-base cursor-pointer px-1 active:scale-95 transition">+</button>
-                                          </div>
-                                        ) : (
-                                            <span className="text-[10px] md:text-xs font-black text-gray-500 px-1">1</span>
-                                        )}
-                                    </div>
-                                  )}
+                                                if(!allowed) setTimeout(() => showToast("⚠️ Maximum 5 quantity allowed per item."), 0);
+                                                else { try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updated)); } catch(e){} }
+                                                return updated;
+                                            });
+                                        }} className="text-gray-500 hover:text-purple-600 font-black text-base cursor-pointer px-1 active:scale-95 transition">+</button>
+                                      </div>
+                                    ) : (
+                                        <span className="text-[10px] md:text-xs font-black text-gray-500 px-1">1</span>
+                                    )}
                                 </div>
+                              )}
                             </div>
-                        )}
+                        </div>
 
-
-                
-                        <div className="flex items-center justify-end gap-2 md:gap-3 mt-2 w-full">
-                           <button onClick={() => {
+                        {/* ACTIONS (SIRF REMOVE ACTIVE RAHEGA) */}
+                        <div className="flex items-center justify-end gap-2 md:gap-3 mt-3 w-full border-t border-gray-100 pt-2 md:border-none md:pt-0">
+                           <button disabled={isDeleted} onClick={() => {
                                const liveArt = artworks.find(a => a.id === item.id);
                                if (liveArt) {
                                    const isWishlisted = wishlist.some(w => w.id === liveArt.id && w.savedSize === item.selectedSize);
                                    if (isWishlisted) {
-                                       // 🚨 BUG FIX: Agar pehle se wishlist mein hai, toh error dikhao aur Cart se mat hatao!
                                        showToast("⚠️ This item is already in your Wishlist.");
                                        return; 
                                    } else {
-                                       // Agar nahi hai, tabhi wishlist mein dalo
                                        const newList = [...wishlist, { ...liveArt, savedSize: item.selectedSize }];
                                        setWishlist(newList);
                                        if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
                                        showToast(`🔖 Moved ${item.selectedSize} to Wishlist!`);
                                    }
                                }
-                               // Upar wala step pass hone ke baad hi Cart se delete hoga
                                const updatedCart = cart.filter(c => c.cartId !== item.cartId);
                                setCart(updatedCart);
                                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
-                           }} className="text-purple-600 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Move to Wishlist</button>
+                           }} className={`text-[10px] md:text-xs font-bold ${isDeleted ? 'text-gray-400 cursor-not-allowed grayscale opacity-50' : 'text-purple-600 hover:underline cursor-pointer'}`}>Move to Wishlist</button>
                            
                            <span className="text-gray-300">|</span>
                            
@@ -1822,19 +1809,20 @@
                                const updatedCart = cart.filter(c => c.cartId !== item.cartId);
                                setCart(updatedCart);
                                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
-                               showToast("🗑️ Item removed from Cart"); // 🚨 FIX: Ye line Pop-up message dikhayegi
-                           }} className="text-rose-500 text-[10px] md:text-xs font-bold hover:underline cursor-pointer">Remove</button>
+                               showToast("🗑️ Item removed from Cart"); 
+                           }} className="text-rose-500 text-[10px] md:text-xs font-bold hover:underline cursor-pointer bg-rose-50 px-2 py-1 rounded-md">Remove</button>
                         </div>
-                     </div>
-                   </div>
+                      </div>
+                    </div>
                   );
                 })}
                 
                 {hasDeletedItems && (
-                    <div className="bg-red-50 text-red-700 p-3 md:p-4 rounded-xl text-xs md:text-sm font-bold border border-red-200 mt-6 text-center animate-pulse">
-                       ⚠️ Action Required: Some artworks in your cart have been completely deleted by the artist. Please click 'Remove' on those items to proceed.
+                    <div className="bg-red-50 text-red-700 p-3 md:p-4 rounded-xl text-xs md:text-sm font-bold border border-red-200 mt-6 text-center shadow-sm">
+                       ⚠️ Action Required: Some items in your cart have been removed by the artist and are no longer available. Please click 'Remove' on the deleted items to proceed with your purchase.
                     </div>
                 )}
+                    
 
                 <div className="bg-gradient-to-r from-purple-700 to-pink-600 text-white p-5 md:p-6 rounded-2xl mt-4 flex flex-col md:flex-row justify-between items-center shadow-xl">
                   <div className="mb-4 md:mb-0 text-center md:text-left"><p className="text-xs md:text-sm text-purple-200 font-bold">Total Payable</p><p className="text-3xl md:text-4xl font-black">{getPrice(total)}</p></div>
