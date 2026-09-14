@@ -849,16 +849,24 @@
       };
 
 
-      const handleLikeArt = (art) => {
+     const handleLikeArt = (art) => {
           if (!deviceFingerprint) { showToast("⏳ Wait, connecting securely..."); return; }
+
           const isLiked = userLikes.includes(art.id);
           const newLikes = isLiked ? userLikes.filter(id => id !== art.id) : [...userLikes, art.id];
           
+          // 1. INSTANT UI UPDATE (Bina kisi message ya lock ke, dil turant laal hoga)
           setUserLikes(newLikes); 
-          try { window.localStorage.setItem('raja_likes_live_v1', JSON.stringify(newLikes)); } catch(e){} // 🚀 FIX: Local memory mein instantly save
           
-          db.collection('UserSaves').doc(deviceFingerprint).set({ likes: newLikes, expireAt: getExpiry() }, { merge: true });
-          db.collection('RajaStudio').doc(art.id).update({ realLikes: firebase.firestore.FieldValue.increment(isLiked ? -1 : 1) });
+          // 2. Cloud par Live Data bhejna
+          db.collection('UserSaves').doc(deviceFingerprint).set({ likes: newLikes, expireAt: getExpiry() }, { merge: true })
+            .then(() => {
+                // 3. THE MAGIC: Jab Cloud update success ho jaye, TABHI local memory mein save karo! 
+                // Isse agar koi hacker jaldi se refresh marega, toh minus (-) wala glitch zindagi mein nahi aayega.
+                try { window.localStorage.setItem('raja_likes_live_v1', JSON.stringify(newLikes)); } catch(e){} 
+            }).catch(e => console.log(e));
+
+          db.collection('RajaStudio').doc(art.id).update({ realLikes: firebase.firestore.FieldValue.increment(isLiked ? -1 : 1) }).catch(e=>console.log(e));
       };
 
       const shareArtwork = (art) => {
