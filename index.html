@@ -2368,6 +2368,16 @@
                        ⚠️ Action Required: Some items in your Wishlist have been removed by the artist and are no longer available. Please click 'Remove' on the deleted items.
                     </div>
                  )}
+
+                 {wishlist.some(wItem => {
+                     const liveArt = artworks.find(a => a.id === wItem.id);
+                     const savedSize = wItem.savedSize || 'Original Artwork';
+                     return liveArt && savedSize.includes('Original') && liveArt.isSold;
+                 }) && (
+                    <div className="bg-red-50 text-red-700 p-3 md:p-4 rounded-xl text-xs md:text-sm font-bold border border-red-200 mt-4 text-center shadow-sm">
+                       ⚠️ Stock Alert: An Original Artwork in your Wishlist has been SOLD OUT. (Prints may still be available to order).
+                    </div>
+                 )}
                            
 
               </div>
