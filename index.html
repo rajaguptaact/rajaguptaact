@@ -1615,11 +1615,11 @@
                return; 
            }
 
-           const hasDeletedItems = items.some(item => !artworks.find(a => a.id === item.id));
-           if (hasDeletedItems) {
-               showToast("❌ Action Required: Some items in your cart have been removed by the artist and are no longer available. Please click 'Remove' on the deleted items to proceed with your purchase.");
-               return;
-           }
+         const hasDeletedItems = items.some(item => !artworks.find(a => a.id === item.id));
+         if (hasDeletedItems) {
+             showPremiumAlert("❌ Action Required: Some items in your cart have been removed by the artist and are no longer available. Please click 'Remove' on the deleted items to proceed with your purchase.");
+             return;
+         }
         }
 
         // 🔴 FIX: Amazon Style Live Price Sync during Checkout!
