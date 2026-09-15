@@ -2338,7 +2338,7 @@
                         </button>
                         
                         <div className="flex items-center gap-2 md:gap-3 mt-1 md:mt-0">
-                           {!currentArt.isSold && (
+                           {(!currentArt.isSold || !cartSizeName.includes('Original')) && (
                              <>
                                <button disabled={isDeleted} onClick={() => {
                                    const alreadyInCart = cart.some(c => c.id === currentArt.id && c.selectedSize === cartSizeName);
