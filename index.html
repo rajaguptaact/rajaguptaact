@@ -1606,10 +1606,14 @@
            
            items.forEach(cartItem => {
                const liveArt = artworks.find(a => a.id === cartItem.id);
+               
+               // Naya Logic: Naam ke sath uska Size bhi jod diya gaya hai ek line mein
+               const itemNameWithSize = `${cartItem.title} - [Size: ${cartItem.selectedSize}]`;
+
                if (!liveArt) {
-                   deletedItems.push(cartItem.title);
+                   deletedItems.push(itemNameWithSize);
                } else if (cartItem.selectedSize && cartItem.selectedSize.includes('Original') && liveArt.isSold) {
-                   soldItems.push(cartItem.title);
+                   soldItems.push(itemNameWithSize);
                }
            });
 
