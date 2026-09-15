@@ -1602,25 +1602,29 @@
       const startCheckout = (items, type, extraData) => {
         if (type === 'Gallery Purchase') {
            let soldItems = [];
+           let deletedItems = [];
+           
            items.forEach(cartItem => {
-               if (cartItem.selectedSize && cartItem.selectedSize.includes('Original')) {
-                   const liveArt = artworks.find(a => a.id === cartItem.id);
-                   if (liveArt && liveArt.isSold) {
-                       soldItems.push(cartItem.title);
-                   }
+               const liveArt = artworks.find(a => a.id === cartItem.id);
+               if (!liveArt) {
+                   deletedItems.push(cartItem.title);
+               } else if (cartItem.selectedSize && cartItem.selectedSize.includes('Original') && liveArt.isSold) {
+                   soldItems.push(cartItem.title);
                }
            });
-           if (soldItems.length > 0) {
-               showPremiumAlert(`❌ STOCK ALERT: The following Original Artwork(s) have just been SOLD OUT to another buyer:\n\n- ${soldItems.join('\n- ')}\n\nPlease remove them from your cart to proceed.`);
-               return; 
-           }
 
-         const hasDeletedItems = items.some(item => !artworks.find(a => a.id === item.id));
-         if (hasDeletedItems) {
-             showPremiumAlert("❌ Action Required: Some items in your cart have been removed by the artist and are no longer available. Please click 'Remove' on the deleted items to proceed with your purchase.");
-             return;
-         }
+           if (soldItems.length > 0 && deletedItems.length > 0) {
+               showPremiumAlert(`❌ MULTIPLE ISSUES DETECTED:\n\n1. SOLD OUT (Originals):\n- ${soldItems.join('\n- ')}\n\n2. DELETED (Removed by Artist):\n- ${deletedItems.join('\n- ')}\n\nPlease remove these items from your cart to proceed.`);
+               return;
+           } else if (soldItems.length > 0) {
+               showPremiumAlert(`❌ STOCK ALERT: The following Original Artwork(s) have just been SOLD OUT to another buyer:\n\n- ${soldItems.join('\n- ')}\n\nPlease remove them to proceed.`);
+               return; 
+           } else if (deletedItems.length > 0) {
+               showPremiumAlert(`❌ ACTION REQUIRED: The following items have been removed by the artist and are no longer available:\n\n- ${deletedItems.join('\n- ')}\n\nPlease remove them to proceed.`);
+               return;
+           }
         }
+        
 
         // 🔴 FIX: Amazon Style Live Price Sync during Checkout!
         let total = items.reduce((sum, item) => {
