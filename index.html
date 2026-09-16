@@ -1845,16 +1845,17 @@
                     </div>
                 )}
                 
-                {hasSoldOutItems && (
-                    <div className="bg-red-50 text-red-700 p-3 md:p-4 rounded-xl text-xs md:text-sm font-bold border border-red-200 mt-4 text-center shadow-sm animate-pulse">
+    
+                   {hasSoldOutItems && (
+                    <div className="bg-red-50 text-red-700 p-3 md:p-4 rounded-xl text-xs md:text-sm font-bold border border-red-200 mt-4 text-center shadow-sm">
                        ⚠️ Stock Alert: One or more Original Artworks in your cart have just been SOLD OUT to another buyer. Please remove them to proceed.
                     </div>
                 )}
-   
+
 
                 <div className="bg-gradient-to-r from-purple-700 to-pink-600 text-white p-5 md:p-6 rounded-2xl mt-4 flex flex-col md:flex-row justify-between items-center shadow-xl">
                   <div className="mb-4 md:mb-0 text-center md:text-left"><p className="text-xs md:text-sm text-purple-200 font-bold">Total Payable</p><p className="text-3xl md:text-4xl font-black">{getPrice(total)}</p></div>
-                  <button onClick={() => startCheckout(cart, 'Gallery Purchase', {})} className={`w-full md:w-auto px-6 md:px-10 py-3 md:py-4 rounded-xl font-black text-base md:text-lg shadow-lg transition-transform transform active:scale-95 ${(validItems.length === 0 || hasDeletedItems) ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-white text-purple-700 hover:scale-105 cursor-pointer'}`}>Proceed to Checkout</button>
+                  <button onClick={() => startCheckout(cart, 'Gallery Purchase', {})} className={`w-full md:w-auto px-6 md:px-10 py-3 md:py-4 rounded-xl font-black text-base md:text-lg shadow-lg transition-transform transform active:scale-95 ${(validItems.length === 0 || hasDeletedItems || hasSoldOutItems) ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-white text-purple-700 hover:scale-105 cursor-pointer'}`}>Proceed to Checkout</button>
                 </div>
               </div>
             )}
