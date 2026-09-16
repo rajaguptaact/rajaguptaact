@@ -1301,36 +1301,39 @@
       };
 
       useEffect(() => {
-        // 🚨 NAYA LOGIC: LIVE NETWORK SPEED CYCLE (No Timers!)
+        // 🚨 NAYA LOGIC: LIVE NETWORK PING CYCLE (100% Accurate Live Speed)
         let liveCheckInterval;
 
         const checkLiveNetwork = () => {
-            // 1. Agar phone ka internet bilkul band hai
+            // 1. Agar phone ka internet bilkul band hai (Offline)
             if (!navigator.onLine) {
                 setIsSlowNetwork(true);
                 return;
             }
 
-            // 2. Asli Speed aur Ping Check (Live Cycle)
-            if (navigator.connection) {
-                const speedMbps = navigator.connection.downlink; // Speed in Megabits per second
-                const ping = navigator.connection.rtt; // Latency/Ping in milliseconds
-
-                // Agar speed sach mein bohot kam hai (0.2 Mbps se kam) YA ping 1500ms se zyada hai (Atak gaya hai)
-                if (speedMbps < 0.2 || ping > 1500) {
-                    setIsSlowNetwork(true); 
-                } else {
-                    setIsSlowNetwork(false); // Speed sahi hai, chahe loading mein time lag raha ho. Hide message!
-                }
-            } else {
-                // Agar purana phone hai jo speed nahi bata sakta, toh default hide rakho
-                setIsSlowNetwork(false);
-            }
+            // 2. 🚀 Asli Live Speed Test (Background mein ping test)
+            const pingImg = new Image();
+            let timer;
+            
+            // Agar ping jaldi aa gaya, matlab internet FAST ho chuka hai!
+            pingImg.onload = () => {
+                clearTimeout(timer);
+                setIsSlowNetwork(false); // 🟢 Net fast hai, message turant hata do!
+            };
+            
+            // Agar 1.2 second mein response nahi aaya, toh net SLOW hai
+            timer = setTimeout(() => {
+                pingImg.src = ""; // Loading rok do
+                setIsSlowNetwork(true); // 🔴 Net slow hai, message dikhao
+            }, 1200); 
+            
+            // Live internet check karne ke liye dummy ping (Cache bypass ke sath)
+            pingImg.src = "https://www.google.com/favicon.ico?_t=" + Date.now();
         };
 
-        // Website khulte hi Live Cycle shuru kar do (har 1.5 second mein speed check karega)
+        // Website khulte hi Live Cycle shuru kar do (har 2 second mein speed check karega)
         checkLiveNetwork();
-        liveCheckInterval = setInterval(checkLiveNetwork, 1500);
+        liveCheckInterval = setInterval(checkLiveNetwork, 2000);
 
         let unsubArt = () => {};
         let unsubOrd = () => {};
