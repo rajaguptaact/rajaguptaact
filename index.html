@@ -1814,7 +1814,7 @@
                                            showToast("⚠️ This item is already in your Wishlist.");
                                            return; 
                                        } else {
-                                           const newList = [...wishlist, { ...liveArt, savedSize: item.selectedSize }];
+                                           const newList = [{ ...liveArt, savedSize: item.selectedSize }, ...wishlist];
                                            setWishlist(newList);
                                            if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
                                            showToast(`🔖 Moved ${item.selectedSize} to Wishlist!`);
