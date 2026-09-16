@@ -1761,8 +1761,8 @@
                           </div>
                         ) : null}
 
-                        {/* NEW PRICE + QTY + ACTIONS ROW (NEECHE EK LINE MEIN) */}
-                        <div className="flex flex-row items-center justify-start md:justify-end gap-3 md:gap-4 w-full flex-wrap md:flex-nowrap">
+                       {/* NEW PRICE + QTY + ACTIONS ROW (NEECHE EK LINE MEIN) */}
+                       <div className="flex flex-row items-center justify-between md:justify-end gap-3 md:gap-4 w-full flex-wrap md:flex-nowrap mt-2"> 
                             
                             {/* NAYA PRICE (KATEGA NAHI CHAHE SOLD OUT HO) */}
                             <p className="font-black text-xl md:text-2xl text-gray-900">
@@ -1804,7 +1804,8 @@
                             </div>
 
                             {/* ACTIONS (WISHLIST + REMOVE) */}
-                            <div className="flex items-center gap-2 md:gap-3 border-l border-gray-200 pl-3 md:pl-4 h-full">
+                            <div className="flex items-center gap-2 md:gap-3 border-l border-gray-200 pl-3 md:pl-4 h-full ml-auto">
+                          
                                <button disabled={isDeleted} onClick={() => {
                                    const liveArt = artworks.find(a => a.id === item.id);
                                    if (liveArt) {
