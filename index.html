@@ -1752,57 +1752,61 @@
                       <div className="text-right flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start w-full md:w-auto mt-2 md:mt-0">
                         
                         {/* PRICE & QTY WRAPPER (GREY OUT IF DELETED) */}
-                        <div className={`flex flex-col items-end w-full ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
-                            {cOld && cLive && Number(cOld) > Number(cLive) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
-                              <div className="flex items-center justify-end gap-2 mb-0.5 w-full">
-                                <span className="line-through text-gray-400 text-sm md:text-base font-bold">{getPrice((cOld || 0) * (item.qty || 1))}</span>
-                                <span className="bg-yellow-400 text-gray-900 text-[10px] md:text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wide shadow-sm">
-                                  {Math.round(((Number(cOld) - Number(cLive)) / Number(cOld)) * 100)}% OFF
-                                </span>
-                              </div>
-                            ) : null}
+                        <div className={`flex flex-row items-center justify-end gap-4 md:gap-6 w-full ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
+                            
+                            {/* PRICING COLUMN (Aligned perfectly) */}
+                            <div className="flex flex-col items-end justify-center">
+                                {cOld && cLive && Number(cOld) > Number(cLive) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <span className="line-through text-gray-400 text-xs md:text-sm font-bold">{getPrice((cOld || 0) * (item.qty || 1))}</span>
+                                    <span className="bg-yellow-400 text-gray-900 text-[9px] md:text-[10px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide shadow-sm">
+                                      {Math.round(((Number(cOld) - Number(cLive)) / Number(cOld)) * 100)}% OFF
+                                    </span>
+                                  </div>
+                                ) : null}
 
-                            <div className="flex flex-row items-center justify-end gap-4 md:gap-6 w-full">
-                              <p className={`font-black text-xl md:text-2xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>
-                                  {getPrice((cLive || 0) * (item.qty || 1))}
-                              </p>
-
-                              {!isItemSoldOut && (
-                                <div className="flex items-center gap-2 border-l border-gray-200 pl-4">
-                                    <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Qty:</span>
-                                    {(!item.selectedSize || !item.selectedSize.includes('Original')) ? (
-                                      <div className="flex items-center gap-1.5">
-                                        <button onClick={() => {
-                                            setCart(prevCart => {
-                                                const updated = prevCart.map(c => c.cartId === item.cartId && (c.qty || 1) > 1 ? { ...c, qty: (c.qty || 1) - 1 } : c);
-                                                try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updated)); } catch(e){}
-                                                return updated;
-                                            });
-                                        }} className="text-gray-500 hover:text-purple-600 font-black text-base cursor-pointer px-1 active:scale-95 transition">-</button>
-                                        <span className="text-[11px] md:text-sm font-black text-gray-900 w-3 text-center">{item.qty || 1}</span>
-                                        <button onClick={() => {
-                                            setCart(prevCart => {
-                                                let allowed = true;
-                                                const updated = prevCart.map(c => {
-                                                    if (c.cartId === item.cartId) {
-                                                        if ((c.qty || 1) < 5) return { ...c, qty: (c.qty || 1) + 1 };
-                                                        else { allowed = false; return c; }
-                                                    }
-                                                    return c;
-                                                });
-                                                if(!allowed) setTimeout(() => showToast("⚠️ Maximum 5 quantity allowed per item."), 0);
-                                                else { try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updated)); } catch(e){} }
-                                                return updated;
-                                            });
-                                        }} className="text-gray-500 hover:text-purple-600 font-black text-base cursor-pointer px-1 active:scale-95 transition">+</button>
-                                      </div>
-                                    ) : (
-                                        <span className="text-[10px] md:text-xs font-black text-gray-500 px-1">1</span>
-                                    )}
-                                </div>
-                              )}
+                                <p className={`font-black text-xl md:text-2xl ${isItemSoldOut ? 'text-red-800 line-through' : 'text-gray-900'}`}>
+                                    {getPrice((cLive || 0) * (item.qty || 1))}
+                                </p>
                             </div>
+
+                            {/* QTY COLUMN */}
+                            {!isItemSoldOut && (
+                              <div className="flex items-center gap-2 border-l border-gray-200 pl-4 h-full">
+                                  <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Qty:</span>
+                                  {(!item.selectedSize || !item.selectedSize.includes('Original')) ? (
+                                    <div className="flex items-center gap-1.5">
+                                      <button onClick={() => {
+                                          setCart(prevCart => {
+                                              const updated = prevCart.map(c => c.cartId === item.cartId && (c.qty || 1) > 1 ? { ...c, qty: (c.qty || 1) - 1 } : c);
+                                              try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updated)); } catch(e){}
+                                              return updated;
+                                          });
+                                      }} className="text-gray-500 hover:text-purple-600 font-black text-base cursor-pointer px-1 active:scale-95 transition">-</button>
+                                      <span className="text-[11px] md:text-sm font-black text-gray-900 w-3 text-center">{item.qty || 1}</span>
+                                      <button onClick={() => {
+                                          setCart(prevCart => {
+                                              let allowed = true;
+                                              const updated = prevCart.map(c => {
+                                                  if (c.cartId === item.cartId) {
+                                                      if ((c.qty || 1) < 5) return { ...c, qty: (c.qty || 1) + 1 };
+                                                      else { allowed = false; return c; }
+                                                  }
+                                                  return c;
+                                              });
+                                              if(!allowed) setTimeout(() => showToast("⚠️ Maximum 5 quantity allowed per item."), 0);
+                                              else { try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updated)); } catch(e){} }
+                                              return updated;
+                                          });
+                                      }} className="text-gray-500 hover:text-purple-600 font-black text-base cursor-pointer px-1 active:scale-95 transition">+</button>
+                                    </div>
+                                  ) : (
+                                      <span className="text-[10px] md:text-xs font-black text-gray-500 px-1">1</span>
+                                  )}
+                              </div>
+                            )}
                         </div>
+                        
 
                         {/* ACTIONS (SIRF REMOVE ACTIVE RAHEGA) */}
                         <div className="flex items-center justify-end gap-2 md:gap-3 mt-3 w-full border-t border-gray-100 pt-2 md:border-none md:pt-0">
