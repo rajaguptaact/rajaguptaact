@@ -1719,7 +1719,7 @@
                &larr; Back to Gallery
             </button>
             <h2 className="text-2xl md:text-3xl font-black mb-6 md:mb-8 border-b pb-4 text-purple-800">Your Cart</h2>
-            {cart.length === 0 ? <p className="text-gray-500 font-bold glass-panel p-8 rounded-2xl text-center">Your cart is completely empty.</p> : (
+            {(isLoadingGallery || !isDataLoaded || cart.length === 0) ? <p className="text-gray-500 font-bold glass-panel p-8 rounded-2xl text-center">Your cart is completely empty.</p> : (
               <div className="space-y-4">
                 {cart.map((item, i) => {
                   const liveArt = artworks.find(a => a.id === item.id);
