@@ -1301,8 +1301,9 @@
       };
 
       useEffect(() => {
-        // 🚨 NAYA LOGIC: LIVE NETWORK PING CYCLE (100% Accurate Live Speed)
+        // 🚨 NAYA LOGIC: SMART NETWORK PING CYCLE (5 Sec Wait, Instant Fast Hide)
         let liveCheckInterval;
+        let slowNetworkTimer = null; // Ek master timer jo 5 second ka dhyan rakhega
 
         const checkLiveNetwork = () => {
             // 1. Agar phone ka internet bilkul band hai (Offline)
@@ -1313,25 +1314,29 @@
 
             // 2. 🚀 Asli Live Speed Test (Background mein ping test)
             const pingImg = new Image();
-            let timer;
             
-            // Agar ping jaldi aa gaya, matlab internet FAST ho chuka hai!
+            // 🟢 Agar internet FAST hai aur photo load ho gayi
             pingImg.onload = () => {
-                clearTimeout(timer);
-                setIsSlowNetwork(false); // 🟢 Net fast hai, message turant hata do!
+                if (slowNetworkTimer) {
+                    clearTimeout(slowNetworkTimer); // Purane slow alarm ko turant band karo
+                    slowNetworkTimer = null;
+                }
+                setIsSlowNetwork(false); // Message turant hata do (1 sec ke andar)
             };
             
-            // Agar 1.2 second mein response nahi aaya, toh net SLOW hai
-            timer = setTimeout(() => {
-                pingImg.src = ""; // Loading rok do
-                setIsSlowNetwork(true); // 🔴 Net slow hai, message dikhao
-            }, 1200); 
+            // 🔴 Agar internet SLOW hai, toh turant panic mat karo, 5 second ruko
+            if (!slowNetworkTimer) {
+                slowNetworkTimer = setTimeout(() => {
+                    setIsSlowNetwork(true); // Jab lagatar 5 second tak fast na ho, TABHI message dikhao
+                    slowNetworkTimer = null; // Timer reset
+                }, 5000); // 5000ms = 5 Seconds ka master intezaar
+            }
             
             // Live internet check karne ke liye dummy ping (Cache bypass ke sath)
             pingImg.src = "https://www.google.com/favicon.ico?_t=" + Date.now();
         };
 
-        // Website khulte hi Live Cycle shuru kar do (har 2 second mein speed check karega)
+        // Website khulte hi Live Cycle shuru kar do (har 2 second mein check bhejega, par message 5 sec baad aayega)
         checkLiveNetwork();
         liveCheckInterval = setInterval(checkLiveNetwork, 2000);
 
