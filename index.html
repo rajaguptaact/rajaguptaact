@@ -1301,9 +1301,8 @@
       };
 
       useEffect(() => {
-        // 🚨 NAYA LOGIC: SMART NETWORK PING CYCLE (5 Sec Wait, Instant Fast Hide)
+        // 🚨 NAYA LOGIC: LIVE NETWORK PING CYCLE (100% Accurate Live Speed)
         let liveCheckInterval;
-        let slowNetworkTimer = null; // Ek master timer jo 5 second ka dhyan rakhega
 
         const checkLiveNetwork = () => {
             // 1. Agar phone ka internet bilkul band hai (Offline)
@@ -1314,29 +1313,25 @@
 
             // 2. 🚀 Asli Live Speed Test (Background mein ping test)
             const pingImg = new Image();
+            let timer;
             
-            // 🟢 Agar internet FAST hai aur photo load ho gayi
+            // Agar ping jaldi aa gaya, matlab internet FAST ho chuka hai!
             pingImg.onload = () => {
-                if (slowNetworkTimer) {
-                    clearTimeout(slowNetworkTimer); // Purane slow alarm ko turant band karo
-                    slowNetworkTimer = null;
-                }
-                setIsSlowNetwork(false); // Message turant hata do (1 sec ke andar)
+                clearTimeout(timer);
+                setIsSlowNetwork(false); // 🟢 Net fast hai, message turant hata do!
             };
             
-            // 🔴 Agar internet SLOW hai, toh turant panic mat karo, 5 second ruko
-            if (!slowNetworkTimer) {
-                slowNetworkTimer = setTimeout(() => {
-                    setIsSlowNetwork(true); // Jab lagatar 5 second tak fast na ho, TABHI message dikhao
-                    slowNetworkTimer = null; // Timer reset
-                }, 5000); // 5000ms = 5 Seconds ka master intezaar
-            }
+            // Agar 1.2 second mein response nahi aaya, toh net SLOW hai
+            timer = setTimeout(() => {
+                pingImg.src = ""; // Loading rok do
+                setIsSlowNetwork(true); // 🔴 Net slow hai, message dikhao
+            }, 1200); 
             
             // Live internet check karne ke liye dummy ping (Cache bypass ke sath)
             pingImg.src = "https://www.google.com/favicon.ico?_t=" + Date.now();
         };
 
-        // Website khulte hi Live Cycle shuru kar do (har 2 second mein check bhejega, par message 5 sec baad aayega)
+        // Website khulte hi Live Cycle shuru kar do (har 2 second mein speed check karega)
         checkLiveNetwork();
         liveCheckInterval = setInterval(checkLiveNetwork, 2000);
 
@@ -2085,20 +2080,20 @@
                            if(window.confirm("Are you sure you want to clear your entire local order history from this device?")) {
                                setMyLocalOrders([]);
                                try { window.localStorage.removeItem('raja_my_orders_v1'); } catch(e){}
-                               const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : window.localStorage.getItem("art_guest_id");
-                               if (activeUid) {
-                                   db.collection('UserOrders').doc(activeUid).set({ orders: [] }).catch(e=>{});
+                               if (deviceFingerprint) {
+                                   db.collection('UserOrders').doc(deviceFingerprint).delete().catch(e=>{});
                                }
                                showToast("✅ Order history cleared");
                            }
+
+                         
                        }} className="bg-rose-50 text-rose-600 border border-rose-200 px-3 md:px-4 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-black shadow-sm hover:bg-rose-100 transition">
                            Clear History
                        </button>
-
                    )}
                </div>
 
-               {(isLoadingGallery || !isDataLoaded || myLocalOrders.length === 0) ? (
+               {myLocalOrders.length === 0 ? (
                  <div className="text-center p-8 md:p-10 glass-panel rounded-3xl shadow-sm font-bold text-gray-400 text-sm md:text-lg border border-dashed border-gray-200">
                    No recent orders found on this specific device. Use the recovery search below to find past orders.
                  </div>
@@ -2112,9 +2107,8 @@
                              const updated = myLocalOrders.filter((_, i) => i !== idx);
                              setMyLocalOrders(updated);
                              try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(updated)); } catch(e){}
-                             const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : window.localStorage.getItem("art_guest_id");
-                             if (activeUid) {
-                                 db.collection('UserOrders').doc(activeUid).set({ orders: updated }).catch(e=>{});
+                             if (deviceFingerprint) {
+                                 db.collection('UserOrders').doc(deviceFingerprint).set({ orders: updated }, { merge: true }).catch(e=>{});
                              }
                              showToast("🗑️ Order removed from history");
                          }
