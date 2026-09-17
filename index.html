@@ -2113,8 +2113,9 @@
                              const updated = myLocalOrders.filter((_, i) => i !== idx);
                              setMyLocalOrders(updated);
                              try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(updated)); } catch(e){}
-                             if (deviceFingerprint) {
-                                 db.collection('UserOrders').doc(deviceFingerprint).set({ orders: updated }, { merge: true }).catch(e=>{});
+                             const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : window.localStorage.getItem("art_guest_id");
+                             if (activeUid) {
+                                 db.collection('UserOrders').doc(activeUid).set({ orders: updated }).catch(e=>{});
                              }
                              showToast("🗑️ Order removed from history");
                          }
