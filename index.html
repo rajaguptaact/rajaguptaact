@@ -2075,13 +2075,13 @@
                            if(window.confirm("Are you sure you want to clear your entire local order history from this device?")) {
                                setMyLocalOrders([]);
                                try { window.localStorage.removeItem('raja_my_orders_v1'); } catch(e){}
-                               if (deviceFingerprint) {
-                                   db.collection('UserOrders').doc(deviceFingerprint).delete().catch(e=>{});
+                               
+                               const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : (window.localStorage.getItem("art_guest_id") || deviceFingerprint);
+                               if (activeUid) {
+                                   db.collection('UserOrders').doc(activeUid).delete().catch(e=>{});
                                }
                                showToast("✅ Order history cleared");
                            }
-
-                         
                        }} className="bg-rose-50 text-rose-600 border border-rose-200 px-3 md:px-4 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-black shadow-sm hover:bg-rose-100 transition">
                            Clear History
                        </button>
