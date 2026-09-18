@@ -2823,12 +2823,16 @@
                  orders.forEach(o => {
                      const docRef = db.collection('orders').doc(o.id);
                      batch.update(docRef, { isArchived: true });
-
                  });
                  await batch.commit();
                  
                  setMyLocalOrders([]);
                  try { window.localStorage.removeItem('raja_my_orders_v1'); } catch(e){}
+                 
+                 const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : (window.localStorage.getItem("art_guest_id") || deviceFingerprint);
+                 if (activeUid) {
+                     db.collection('UserOrders').doc(activeUid).delete().catch(e=>{});
+                 }
 
                  showToast(" ✅ All orders have been successfully deleted from Database and your Device.");
              } catch (error) {
@@ -2836,7 +2840,7 @@
              }
           }
         };
-
+  
         const handleImage = (e) => {
           const file = e.target.files[0];
           if(file) {
