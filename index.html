@@ -773,21 +773,15 @@
                   if (doc.exists) {
                       const cloudOrders = doc.data().orders || [];
                       setMyLocalOrders(prevOrders => {
-                          // 🚨 MAIN FIX: Loop break for Orders
                           if (JSON.stringify(prevOrders) === JSON.stringify(cloudOrders)) return prevOrders;
 
-                          if (cloudOrders.length > 0) {
-                              window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(cloudOrders));
-                              return cloudOrders;
-                          }
-                          if (cloudOrders.length === 0 && prevOrders.length > 0) {
-                              db.collection('UserOrders').doc(activeId).set({ orders: prevOrders }, { merge: true });
-                              return prevOrders;
-                          }
-                          return [];
+                          // 🚨 BUG FIX: Cloud Hamesha Master Rahega! Local data wapas cloud me upload nahi hoga.
+                          window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(cloudOrders));
+                          return cloudOrders;
                       });
                   }
               });
+
 
               db.collection('UserSaves').doc(activeId).onSnapshot(doc => {
                   if (doc.exists) {
