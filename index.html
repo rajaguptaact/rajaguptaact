@@ -207,7 +207,7 @@
           <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-4 pb-2 md:pb-4">
             <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-2 md:p-4 rounded-xl md:rounded-2xl shadow-lg text-center flex flex-col justify-between text-white transform hover:-translate-y-1 transition relative overflow-visible">
               {art.priceOriginalOld && art.priceOriginal && Number(art.priceOriginalOld) > Number(art.priceOriginal) && (
-                <span className="absolute -top-3 -right-3 bg-yellow-400 text-gray-900 text-[9px] md:text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide animate-heartbeat shadow-lg border border-yellow-200 z-10">
+                <span className="absolute -top-2 -right-1 bg-yellow-400 text-gray-900 text-[9px] md:text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide animate-heartbeat shadow-lg border border-yellow-200 z-10">
                   {Math.round(((Number(art.priceOriginalOld) - Number(art.priceOriginal)) / Number(art.priceOriginalOld)) * 100)}% OFF
                 </span>
               )}
