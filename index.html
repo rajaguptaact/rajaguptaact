@@ -38,6 +38,15 @@
     .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
     .img-protect-overlay { position: absolute; inset: 0; z-index: 20; }
     
+    /* CUSTOM HEARTBEAT ANIMATION FOR BADGE */
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    .animate-heartbeat {
+      animation: heartbeat 1.5s infinite;
+    }
+    
     /* VIP TOAST ANIMATION */
     @keyframes popupToast {
       0% { transform: translate(-50%, 150%); opacity: 0; }
