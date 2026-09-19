@@ -2817,7 +2817,7 @@
         };
 
         const clearAllOrders = async () => {
-          if (window.confirm("WARNING: Are you sure you want to clear your Inbox? (Cloud data remains safe for user recovery)")) {
+          if (window.confirm("WARNING: Are you sure you want to permanently delete ALL orders? This action cannot be undone.")) {
              try {
                  const batch = db.batch();
                  orders.forEach(o => {
