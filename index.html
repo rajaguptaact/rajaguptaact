@@ -2817,7 +2817,7 @@
         };
 
         const clearAllOrders = async () => {
-          if (window.confirm("WARNING: Are you sure you want to permanently delete ALL orders? This action cannot be undone.")) {
+          if (window.confirm("WARNING: Are you sure you want to clear your Inbox? (Cloud data remains safe for user recovery)")) {
              try {
                  const batch = db.batch();
                  orders.forEach(o => {
@@ -2829,17 +2829,18 @@
                  setMyLocalOrders([]);
                  try { window.localStorage.removeItem('raja_my_orders_v1'); } catch(e){}
                  
-                 const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : (window.localStorage.getItem("art_guest_id") || deviceFingerprint);
-                 if (activeUid) {
-                     db.collection('UserOrders').doc(activeUid).delete().catch(e=>{});
+                 const activeId = deviceFingerprint || window.localStorage.getItem("art_guest_id");
+                 if (activeId) {
+                     db.collection('UserOrders').doc(activeId).delete().catch(e=>{});
                  }
 
-                 showToast(" ✅ All orders have been successfully deleted from Database and your Device.");
+                 showToast(" ✅ Inbox Cleared! All orders removed from screen.");
              } catch (error) {
-                 showToast(" ⚠️ Error executing atomic delete batch.");
+                 showToast(" ⚠️ Error clearing inbox.");
              }
           }
         };
+
   
         const handleImage = (e) => {
           const file = e.target.files[0];
