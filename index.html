@@ -3792,8 +3792,10 @@
                               {/* ADMIN TRASH ICON (Top Right) */}
                               <button onClick={() => { 
                                   if(window.confirm("Delete this single order?")) {
-                                      db.collection('orders').doc(o.id).update({ isArchived: true });
+                                      // 🚨 1. Cloud se hide karo (Data safe rahega recovery ke liye)
+                                      db.collection('orders').doc(o.id).update({ isArchived: true }).catch(e=>console.log(e));
 
+                                      // 🚨 2. Local memory aur screen se uda do
                                       const updatedLocal = myLocalOrders.filter(local => {
                                           if (o.orderId && local.orderId) return local.orderId !== o.orderId;
                                           return !(local.date === o.date && local.time === o.time && local.displayAmount === o.displayAmount);
@@ -3801,13 +3803,14 @@
                                       setMyLocalOrders(updatedLocal);
                                       try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(updatedLocal)); } catch(e){}
                                       
-                                      const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : (window.localStorage.getItem("art_guest_id") || deviceFingerprint);
-                                      if (activeUid) {
-                                          db.collection('UserOrders').doc(activeUid).set({ orders: updatedLocal }, { merge: true }).catch(e=>{});
+                                      // 🚨 3. Ghost Sync block (Refresh par wapas aane se rokega)
+                                      const activeId = deviceFingerprint || window.localStorage.getItem("art_guest_id");
+                                      if (activeId) {
+                                          db.collection('UserOrders').doc(activeId).set({ orders: updatedLocal }).catch(e=>{});
                                       }
+                                      
                                       showToast("🗑️ Order deleted successfully");
                                   } 
-
                                }} className="absolute top-4 right-4 md:top-5 md:right-5 text-rose-500 hover:text-rose-700 transition cursor-pointer p-1" title="Delete Single Order">
 
 
