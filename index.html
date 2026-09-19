@@ -3777,7 +3777,7 @@
                    </button>
                    
                    <div className={`px-5 md:px-8 pb-6 md:pb-8 pt-2 ${isOrdersOpen ? 'block' : 'hidden'}`}>
-                      {orders.length > 0 && (
+                      {orders.filter(o => !o.isArchived).length > 0 && (
                          <div className="flex justify-end mb-4 md:mb-6">
                             <button onClick={clearAllOrders} className="bg-red-500 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl text-xs md:text-sm font-black hover:bg-red-600 transition cursor-pointer shadow-md flex items-center gap-1.5 md:gap-2">
                                <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -3786,7 +3786,11 @@
                          </div>
                       )}
                       
-                      {orders.length === 0 ? <p className="text-gray-500 font-bold bg-white p-4 md:p-6 rounded-2xl text-center shadow-sm text-sm md:text-base">No orders yet.</p> : (
+                      {orders.filter(o => !o.isArchived).length === 0 ? (
+                         <div className="text-center p-8 md:p-10 glass-panel rounded-3xl shadow-sm font-bold text-gray-500 text-sm md:text-lg border border-dashed border-gray-200">
+                             📭 Secure Inbox is completely empty. No new orders found.
+                         </div>
+                      ) : (
                       <div className="space-y-4 md:space-y-6 max-h-[400px] md:max-h-[500px] overflow-y-auto pr-2">
             {orders.filter(o => !o.isArchived).map(o => (
                             <div key={o.id} className="bg-white p-5 md:p-6 rounded-3xl shadow-md border-l-8 border-pink-500 relative">
