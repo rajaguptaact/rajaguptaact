@@ -2076,9 +2076,9 @@
                                setMyLocalOrders([]);
                                try { window.localStorage.removeItem('raja_my_orders_v1'); } catch(e){}
                                
-                               const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : (window.localStorage.getItem("art_guest_id") || deviceFingerprint);
-                               if (activeUid) {
-                                   db.collection('UserOrders').doc(activeUid).delete().catch(e=>{});
+                               const activeId = deviceFingerprint || window.localStorage.getItem("art_guest_id");
+                               if (activeId) {
+                                   db.collection('UserOrders').doc(activeId).delete().catch(e=>{});
                                }
                                showToast("✅ Order history cleared");
                            }
