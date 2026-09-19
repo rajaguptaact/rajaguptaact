@@ -2103,13 +2103,12 @@
                              setMyLocalOrders(updated);
                              try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(updated)); } catch(e){}
                              
-                             const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : (window.localStorage.getItem("art_guest_id") || deviceFingerprint);
-                             if (activeUid) {
-                                 db.collection('UserOrders').doc(activeUid).set({ orders: updated }, { merge: true }).catch(e=>{});
+                             const activeId = deviceFingerprint || window.localStorage.getItem("art_guest_id");
+                             if (activeId) {
+                                 db.collection('UserOrders').doc(activeId).set({ orders: updated }).catch(e=>{});
                              }
                              showToast("🗑️ Order removed from history");
                          }
-
                       }} className="absolute top-4 right-4 md:top-6 md:right-6 text-rose-500 hover:text-rose-700 transition cursor-pointer p-1 z-10" title="Delete from History">
 
 
