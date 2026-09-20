@@ -2346,31 +2346,38 @@
                            </p>
                            {isDeleted && <span className="text-[9px] md:text-[10px] bg-gray-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block shadow-sm ml-2">Deleted</span>}
 
-                           <div className={`flex items-center gap-4 mt-2 ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
-                               <button onClick={() => handleLikeArt(currentArt)} className="flex items-center gap-1.5 cursor-pointer">
-                                   <svg className={`w-4 h-4 md:w-5 md:h-5 transition-transform ${isLiked ? 'fill-red-500 text-red-500 scale-110' : 'fill-none text-gray-400 hover:scale-110'}`} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                   </svg>
-                                   <span className="text-[10px] md:text-xs font-black text-gray-600">
-                                       {Number(Math.max(0, Number(currentArt.realLikes) || 0) + (Number(currentArt.fakeLikes) || 0)).toLocaleString('en-IN')}
-                                   </span>
-                               </button>
-                               
-                               {/* WISH-LIST MEIN DISCOUNT AUR BADGE DIKHANE KA NAYA CODE */}
-                               <div className="flex flex-col items-start justify-center">
-                                   {currentArt.priceOriginalOld && currentArt.priceOriginal && Number(currentArt.priceOriginalOld) > Number(currentArt.priceOriginal) && cartSizeName.includes('Original') ? (
-                                       <div className="flex items-center gap-2 mb-0.5">
-                                           <span className="line-through text-gray-400 text-[10px] md:text-xs font-bold">{getPrice(currentArt.priceOriginalOld)}</span>
-                                           <span className="bg-yellow-400 text-gray-900 text-[8px] md:text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide shadow-sm">
-                                               {Math.round(((Number(currentArt.priceOriginalOld) - Number(currentArt.priceOriginal)) / Number(currentArt.priceOriginalOld)) * 100)}% OFF
-                                           </span>
-                                       </div>
-                                   ) : null}
-                                   <p className="font-black text-xs md:text-sm text-gray-900">
-                                       {getPrice(displayPrice)}
-                                   </p>
+                               <div className={`flex flex-wrap items-center gap-3 md:gap-4 mt-2 ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
+                                   
+                                   {/* 1. Heart & Likes */}
+                                   <button onClick={() => handleLikeArt(currentArt)} className="flex items-center gap-1.5 cursor-pointer">
+                                       <svg className={`w-4 h-4 md:w-5 md:h-5 transition-transform ${isLiked ? 'fill-red-500 text-red-500 scale-110' : 'fill-none text-gray-400 hover:scale-110'}`} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                           <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                       </svg>
+                                       <span className="text-[10px] md:text-xs font-black text-gray-600">
+                                           {Number(Math.max(0, Number(currentArt.realLikes) || 0) + (Number(currentArt.fakeLikes) || 0)).toLocaleString('en-IN')}
+                                       </span>
+                                   </button>
+                                   
+                                   {/* 2. Pricing Section (Inline horizontal) */}
+                                   <div className="flex items-center gap-2">
+                                       
+                                       {/* Naya Price (Bina discount ke yeh normal dikhega) */}
+                                       <p className="font-black text-xs md:text-sm text-gray-900">
+                                           {getPrice(displayPrice)}
+                                       </p>
+                                       
+                                       {/* Agar Discount Hai, toh uske theek bagal mein Kata Hua Price aur Badge aayega */}
+                                       {currentArt.priceOriginalOld && currentArt.priceOriginal && Number(currentArt.priceOriginalOld) > Number(currentArt.priceOriginal) && cartSizeName.includes('Original') ? (
+                                           <>
+                                               <span className="line-through text-gray-400 text-[10px] md:text-xs font-bold">{getPrice(currentArt.priceOriginalOld)}</span>
+                                               <span className="bg-yellow-400 text-gray-900 text-[8px] md:text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide shadow-sm">
+                                                   {Math.round(((Number(currentArt.priceOriginalOld) - Number(currentArt.priceOriginal)) / Number(currentArt.priceOriginalOld)) * 100)}% OFF
+                                               </span>
+                                           </>
+                                       ) : null}
+                                       
+                                   </div>
                                </div>
-                           </div>
                         </div>
                       </div>
                       
