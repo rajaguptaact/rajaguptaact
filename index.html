@@ -205,7 +205,7 @@
           </div>
           
           <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-4 pb-2 md:pb-4">
-            <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-2 md:p-4 rounded-xl md:rounded-2xl shadow-lg text-center flex flex-col justify-between text-white transform hover:-translate-y-1 transition relative overflow-visible">
+            <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-2 md:p-4 rounded-xl md:rounded-2xl shadow-lg text-center flex flex-col justify-between text-white transform hover:-translate-y-1 transition relative overflow-visible border-2 border-transparent">
               {art.priceOriginalOld && art.priceOriginal && Number(art.priceOriginalOld) > Number(art.priceOriginal) && (
                 <span className="absolute -top-2 -right-1 bg-yellow-400 text-gray-900 text-[9px] md:text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide animate-heartbeat shadow-lg border border-yellow-200 z-10">
                   {Math.round(((Number(art.priceOriginalOld) - Number(art.priceOriginal)) / Number(art.priceOriginalOld)) * 100)}% OFF
@@ -222,9 +222,9 @@
                 </div>
               </div>
               {art.isSold ? (
-                  <button disabled className="w-full bg-gray-400 text-gray-200 py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm shadow-md cursor-not-allowed mt-2">SOLD OUT</button>
+                  <button disabled className="w-full bg-gray-400 text-gray-200 py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm shadow-md cursor-not-allowed mt-2 border border-transparent">SOLD OUT</button>
               ) : (
-                  <button onClick={() => addToCart(art, 'Original A4 Colour Pencil', art.priceOriginal || art.priceOriginalOld, art.priceOriginal ? art.priceOriginalOld : null)} className="w-full bg-white text-purple-700 py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm shadow-md hover:bg-gray-50 cursor-pointer mt-2 transform transition-transform duration-150 active:scale-95">Add to Cart</button>
+                  <button onClick={() => addToCart(art, 'Original A4 Colour Pencil', art.priceOriginal || art.priceOriginalOld, art.priceOriginal ? art.priceOriginalOld : null)} className="w-full bg-white text-purple-700 py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm shadow-md hover:bg-gray-50 cursor-pointer mt-2 transform transition-transform duration-150 active:scale-95 border border-transparent">Add to Cart</button>
               )}
             </div>
             <div className="bg-white p-2 md:p-4 rounded-xl md:rounded-2xl shadow-md text-center border-2 border-gray-100 flex flex-col justify-between hover:border-pink-400 transition">
