@@ -2355,9 +2355,21 @@
                                        {Number(Math.max(0, Number(currentArt.realLikes) || 0) + (Number(currentArt.fakeLikes) || 0)).toLocaleString('en-IN')}
                                    </span>
                                </button>
-                               <p className="font-black text-xs md:text-sm text-gray-900">
-                                   {getPrice(displayPrice)}
-                               </p>
+                               
+                               {/* WISH-LIST MEIN DISCOUNT AUR BADGE DIKHANE KA NAYA CODE */}
+                               <div className="flex flex-col items-start justify-center">
+                                   {currentArt.priceOriginalOld && currentArt.priceOriginal && Number(currentArt.priceOriginalOld) > Number(currentArt.priceOriginal) && cartSizeName.includes('Original') ? (
+                                       <div className="flex items-center gap-2 mb-0.5">
+                                           <span className="line-through text-gray-400 text-[10px] md:text-xs font-bold">{getPrice(currentArt.priceOriginalOld)}</span>
+                                           <span className="bg-yellow-400 text-gray-900 text-[8px] md:text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide shadow-sm">
+                                               {Math.round(((Number(currentArt.priceOriginalOld) - Number(currentArt.priceOriginal)) / Number(currentArt.priceOriginalOld)) * 100)}% OFF
+                                           </span>
+                                       </div>
+                                   ) : null}
+                                   <p className="font-black text-xs md:text-sm text-gray-900">
+                                       {getPrice(displayPrice)}
+                                   </p>
+                               </div>
                            </div>
                         </div>
                       </div>
