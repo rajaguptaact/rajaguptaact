@@ -3177,7 +3177,7 @@
               showCurrent = ''; 
           }
 
-                              setUploadData({ 
+          setUploadData({ 
               title: art.title, desc: art.desc, image: art.image, 
               priceOriginal: showCurrent, 
               priceOriginalOld: showOld, 
@@ -3192,7 +3192,15 @@
           setSelectedBgs(art.savedBgsList || []); 
           setBgAdjustments(art.savedBgAdjustments || {});
           setPreviewMockups([]);
-          window.scrollTo(0, 0);
+          
+          // NAYA CODE: Ab screen theek Form par aakar rukegi, sabse upar nahi bhagegi
+          setTimeout(() => {
+              const formBox = document.getElementById('uploadFormBox');
+              if(formBox) {
+                  const y = formBox.getBoundingClientRect().top + window.scrollY - 80;
+                  window.scrollTo({top: y, behavior: 'smooth'});
+              }
+          }, 150);
         };     
 
         const postAnnouncement = (e) => {
