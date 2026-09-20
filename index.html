@@ -206,7 +206,7 @@
           
           <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-4 pb-2 md:pb-4">
             
-            {/* BOX 1: ORIGINAL (Premium Light Purple Theme - Option B) */}
+            {/* BOX 1: ORIGINAL (Light Purple Box, Purple Button, Gray Text) */}
             <div className="bg-purple-50 p-2 md:p-4 rounded-xl md:rounded-2xl shadow-md text-center flex flex-col justify-between transition relative overflow-visible border-2 border-purple-100 active:border-purple-400 md:hover:border-purple-400">
               {art.priceOriginalOld && art.priceOriginal && Number(art.priceOriginalOld) > Number(art.priceOriginal) && (
                 <span className="absolute -top-2 -right-1 bg-yellow-400 text-gray-900 text-[9px] md:text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide animate-heartbeat shadow-lg border border-yellow-200 z-10">
@@ -214,7 +214,7 @@
                 </span>
               )}
               <div>
-                <p className="font-bold text-purple-600 text-[9px] md:text-sm uppercase mt-0.5">Original Artwork</p>
+                <p className="font-bold text-gray-500 text-[9px] md:text-sm uppercase mt-0.5">Original Artwork</p>
                 <p className="font-black text-gray-900 text-[11px] md:text-lg mb-1">A4 Size</p>
                 <div className="flex flex-col items-center justify-center my-1 min-h-[45px] md:min-h-[50px]">
                   {art.priceOriginalOld && art.priceOriginal && Number(art.priceOriginalOld) > Number(art.priceOriginal) && (
@@ -230,8 +230,8 @@
               )}
             </div>
 
-            {/* BOX 2: PRINT A3 (Animation Issue Fixed) */}
-            <div className="bg-white p-2 md:p-4 rounded-xl md:rounded-2xl shadow-md text-center border-2 border-gray-100 flex flex-col justify-between active:border-pink-400 md:hover:border-pink-400 transition">
+            {/* BOX 2: PRINT A3 (Light Pink Box, Pink Button, Gray Text) */}
+            <div className="bg-pink-50 p-2 md:p-4 rounded-xl md:rounded-2xl shadow-md text-center border-2 border-pink-100 flex flex-col justify-between active:border-pink-400 md:hover:border-pink-400 transition">
               <div>
                 <p className="font-bold text-gray-500 text-[9px] md:text-sm uppercase mt-0.5">HD Print</p>
                 <p className="font-black text-gray-800 text-[11px] md:text-lg mb-1">A3 Size</p>
@@ -239,11 +239,11 @@
                   <p className="text-base md:text-2xl font-black text-pink-600">{getPrice(art.priceA3)}</p>
                 </div>
               </div>
-              <button onClick={() => addToCart(art, 'Print A3', art.priceA3, null)} className="w-full bg-gray-100 text-gray-900 border border-gray-200 py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm hover:bg-pink-50 hover:text-pink-600 cursor-pointer mt-2 transform transition-all duration-150 active:scale-95">Add to Cart</button>
+              <button onClick={() => addToCart(art, 'Print A3', art.priceA3, null)} className="w-full bg-pink-500 text-white py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm shadow-md hover:bg-pink-600 cursor-pointer mt-2 transform transition-all duration-150 active:scale-95 border border-transparent">Add to Cart</button>
             </div>
 
-            {/* BOX 3: PRINT A4 (Animation Issue Fixed) */}
-            <div className="bg-white p-2 md:p-4 rounded-xl md:rounded-2xl shadow-md text-center border-2 border-gray-100 flex flex-col justify-between active:border-pink-400 md:hover:border-pink-400 transition">
+            {/* BOX 3: PRINT A4 (Light Pink Box, Pink Button, Gray Text) */}
+            <div className="bg-pink-50 p-2 md:p-4 rounded-xl md:rounded-2xl shadow-md text-center border-2 border-pink-100 flex flex-col justify-between active:border-pink-400 md:hover:border-pink-400 transition">
               <div>
                 <p className="font-bold text-gray-500 text-[9px] md:text-sm uppercase mt-0.5">HD Print</p>
                 <p className="font-black text-gray-800 text-[11px] md:text-lg mb-1">A4 Size</p>
@@ -251,11 +251,11 @@
                   <p className="text-base md:text-2xl font-black text-pink-600">{getPrice(art.priceA4)}</p>
                 </div>
               </div>
-              <button onClick={() => addToCart(art, 'Print A4', art.priceA4, null)} className="w-full bg-gray-100 text-gray-900 border border-gray-200 py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm hover:bg-pink-50 hover:text-pink-600 cursor-pointer mt-2 transform transition-all duration-150 active:scale-95">Add to Cart</button>
+              <button onClick={() => addToCart(art, 'Print A4', art.priceA4, null)} className="w-full bg-pink-500 text-white py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm shadow-md hover:bg-pink-600 cursor-pointer mt-2 transform transition-all duration-150 active:scale-95 border border-transparent">Add to Cart</button>
             </div>
 
-            {/* BOX 4: PRINT A5 (Animation Issue Fixed) */}
-            <div className="bg-white p-2 md:p-4 rounded-xl md:rounded-2xl shadow-md text-center border-2 border-gray-100 flex flex-col justify-between active:border-pink-400 md:hover:border-pink-400 transition">
+            {/* BOX 4: PRINT A5 (Light Pink Box, Pink Button, Gray Text) */}
+            <div className="bg-pink-50 p-2 md:p-4 rounded-xl md:rounded-2xl shadow-md text-center border-2 border-pink-100 flex flex-col justify-between active:border-pink-400 md:hover:border-pink-400 transition">
                <div>
                 <p className="font-bold text-gray-500 text-[9px] md:text-sm uppercase mt-0.5">HD Print</p>
                 <p className="font-black text-gray-800 text-[11px] md:text-lg mb-1">A5 Size</p>
@@ -263,7 +263,7 @@
                   <p className="text-base md:text-2xl font-black text-pink-600">{getPrice(art.priceA5)}</p>
                 </div>
               </div>
-              <button onClick={() => addToCart(art, 'Print A5', art.priceA5, null)} className="w-full bg-gray-100 text-gray-900 border border-gray-200 py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm hover:bg-pink-50 hover:text-pink-600 cursor-pointer mt-2 transform transition-all duration-150 active:scale-95">Add to Cart</button>
+              <button onClick={() => addToCart(art, 'Print A5', art.priceA5, null)} className="w-full bg-pink-500 text-white py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm shadow-md hover:bg-pink-600 cursor-pointer mt-2 transform transition-all duration-150 active:scale-95 border border-transparent">Add to Cart</button>
             </div>
             
           </div>
