@@ -1486,25 +1486,32 @@
                  alert("🚨 SECURITY ALERT: Your access has been revoked by the Master Admin. You have been forcefully logged out.");
                  window.location.reload();
              };
-
+                         
+    
              // 🚨 Instant Kickout Listener (Milli-seconds mein fire karega)
              unsubLive = db.collection("trustedDevices").doc(currentDevId).onSnapshot(doc => {
-                 // Condition 1: Revoke button daba (Instant kill)
+                 // Condition 1: Revoke button daba (Instant kill - Hacker Block)
                  if (doc.exists && doc.data().isRevoked === true) {
                      handleForceLogout();
                  } 
-                 // Condition 2: Document is missing (Login bounce fix ke liye 1.5s ruko)
+                 // Condition 2: Document is missing (🚨 FIXED: False Logout & Network Bounce Bug)
                  else if (!doc.exists) {
                      setTimeout(() => {
                          const stillHasId = window.localStorage.getItem('raja_device_id') || window.localStorage.getItem('raja_permanent_device_id');
-                         if (stillHasId) {
-                             db.collection("trustedDevices").doc(stillHasId).get().then(check => {
+                         
+                         // Sirf tabhi verify karega jab phone/PC mein internet actually ON ho
+                         if (stillHasId && navigator.onLine) {
+                             // Forcefully Server (Cloud) se puchega, local memory se confusion nahi lega
+                             db.collection("trustedDevices").doc(stillHasId).get({ source: 'server' }).then(check => {
                                  if (!check.exists) handleForceLogout();
-                             }).catch(()=>{});
+                             }).catch((e)=>{ 
+                                 // Agar slow net ke karan check fail hua, toh logout nahi marega, ignore karega
+                             });
                          }
-                     }, 1500);
+                     }, 3500); // Time ko 1.5s se 3.5s kiya, taaki slow internet wale original admin bahar na fekayein
                  }
              });
+
 
              unsubAdminSess = db.collection("adminSessions").doc(currentDevId).onSnapshot(doc => {
                  if (doc.exists && doc.data().isRevoked === true) handleForceLogout();
