@@ -3862,35 +3862,38 @@
       };
 
       
-      // 🚨 BACKGROUND SECURITY CHECK (Level 2: Page Load Verify)
+      // 🚨 BACKGROUND SECURITY CHECK (Master Logic: Hacker + Trust + Network Check)
       useEffect(() => {
           let isMounted = true;
           
           const verifyBlockStatus = async () => {
-              setIsCheckingSecurity(true); // Password box STRICTLY LOCKED rahega
-              
+              setIsCheckingSecurity(true); 
+              setNetworkError(false); // Reset network error
+
+              // 1. INTERNET CONNECTION CHECK
+              if (!navigator.onLine) {
+                  setNetworkError(true);
+                  if (isMounted) setIsCheckingSecurity(false);
+                  return;
+              }
+
               try {
-                  // 1. HARDWARE CHECK (Fast)
-                  const checkHardware = async () => {
-                      if (!deviceFingerprint) return;
+                  // A. HARDWARE HACKER CHECK
+                  let isBlocked = false;
+                  if (deviceFingerprint) {
                       const hwDoc = await db.collection('BlockedHackers').doc(deviceFingerprint).get();
                       if (hwDoc.exists && hwDoc.data().blockedUntil > Date.now() && isMounted) { 
                           setBlockUntil(hwDoc.data().blockedUntil); 
                           setIsAdmin(false); 
+                          isBlocked = true;
                       }
-                      db.collection('BlockedHackers').doc(deviceFingerprint).onSnapshot(doc => {
-                          if (doc.exists && doc.data().blockedUntil > Date.now() && isMounted) { 
-                              setBlockUntil(doc.data().blockedUntil); 
-                              setIsAdmin(false); 
-                          }
-                      });
-                  };
+                  }
 
-                  // 2. IP CHECK (Parallel with 2-second timeout to prevent loading hang)
-                  const checkIP = async () => {
+                  // B. IP HACKER CHECK
+                  if (!isBlocked) {
                       const dev = await Promise.race([
                           fetchDeviceDetails(),
-                          new Promise(resolve => setTimeout(() => resolve(cachedDevInfo || { ip: "Unknown" }), 2000))
+                          new Promise(resolve => setTimeout(() => resolve(cachedDevInfo || { ip: "Unknown" }), 3000))
                       ]);
                       
                       if (dev && dev.ip && !dev.ip.includes("Unknown")) {
@@ -3899,30 +3902,33 @@
                           if (ipDoc.exists && ipDoc.data().blockedUntil > Date.now() && isMounted) { 
                               setBlockUntil(ipDoc.data().blockedUntil); 
                               setIsAdmin(false); 
+                              isBlocked = true;
                           }
-                          db.collection('BlockedHackers').doc(safeIp).onSnapshot(doc => {
-                              if (doc.exists && doc.data().blockedUntil > Date.now() && isMounted) { 
-                                  setBlockUntil(doc.data().blockedUntil); 
-                                  setIsAdmin(false); 
-                              }
-                          });
                       }
-                  };
+                  }
 
-                  // Dono check ek sath chalayenge (Speed double ho jayegi)
-                  await Promise.all([checkHardware(), checkIP()]);
+                  // C. TRUSTED DEVICE CHECK (Parallel Superfast Login Check)
+                  if (!isBlocked && isMounted) {
+                      let permDevId = window.localStorage.getItem('raja_permanent_device_id') || window.localStorage.getItem('raja_device_id');
+                      if (permDevId) {
+                          // Seedha server se poochega, net slow hoga toh catch mein chala jayega
+                          const trustDoc = await db.collection('trustedDevices').doc(permDevId).get({ source: 'server' });
+                          if (trustDoc.exists && trustDoc.data().isRevoked !== true) {
+                              setIsPreVerifiedTrusted(true);
+                          }
+                      }
+                  }
                   
               } catch (e) {
-                  console.log("Security Check Error:", e);
+                  // Agar check karte waqt net toot gaya ya server timeout ho gaya
+                  console.log("Security Check Network Error:", e);
+                  if (isMounted) setNetworkError(true);
               }
 
-              // 3. SAB KUCH VERIFY HONE KE BAAD HI SPINNER HATEGA
-              // Agar block hua, toh 'blockUntil' active ho jayega aur seedha Block screen dikhegi.
               if (isMounted) setIsCheckingSecurity(false);
           };
           
           verifyBlockStatus();
-          
           return () => { isMounted = false; };
       }, [deviceFingerprint]);
 
