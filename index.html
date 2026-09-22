@@ -643,8 +643,6 @@
       const [blockUntil, setBlockUntil] = useState(() => Number(window.localStorage.getItem('raja_admin_block')) || 0);
       const [resendTimer, setResendTimer] = useState(0);
       const [isCheckingSecurity, setIsCheckingSecurity] = useState(true); // 🚨 NAYA: Security Loader
-      const [isPreVerifiedTrusted, setIsPreVerifiedTrusted] = useState(false);
-      const [networkError, setNetworkError] = useState(false);
 
 
       // 🔴 FIX: Resend OTP Countdown Engine (Timer kam karne ke liye)
@@ -3862,38 +3860,35 @@
       };
 
       
-      // 🚨 BACKGROUND SECURITY CHECK (Master Logic: Hacker + Trust + Network Check)
+      // 🚨 BACKGROUND SECURITY CHECK (Level 2: Page Load Verify)
       useEffect(() => {
           let isMounted = true;
           
           const verifyBlockStatus = async () => {
-              setIsCheckingSecurity(true); 
-              setNetworkError(false); // Reset network error
-
-              // 1. INTERNET CONNECTION CHECK
-              if (!navigator.onLine) {
-                  setNetworkError(true);
-                  if (isMounted) setIsCheckingSecurity(false);
-                  return;
-              }
-
+              setIsCheckingSecurity(true); // Password box STRICTLY LOCKED rahega
+              
               try {
-                  // A. HARDWARE HACKER CHECK
-                  let isBlocked = false;
-                  if (deviceFingerprint) {
+                  // 1. HARDWARE CHECK (Fast)
+                  const checkHardware = async () => {
+                      if (!deviceFingerprint) return;
                       const hwDoc = await db.collection('BlockedHackers').doc(deviceFingerprint).get();
                       if (hwDoc.exists && hwDoc.data().blockedUntil > Date.now() && isMounted) { 
                           setBlockUntil(hwDoc.data().blockedUntil); 
                           setIsAdmin(false); 
-                          isBlocked = true;
                       }
-                  }
+                      db.collection('BlockedHackers').doc(deviceFingerprint).onSnapshot(doc => {
+                          if (doc.exists && doc.data().blockedUntil > Date.now() && isMounted) { 
+                              setBlockUntil(doc.data().blockedUntil); 
+                              setIsAdmin(false); 
+                          }
+                      });
+                  };
 
-                  // B. IP HACKER CHECK
-                  if (!isBlocked) {
+                  // 2. IP CHECK (Parallel with 2-second timeout to prevent loading hang)
+                  const checkIP = async () => {
                       const dev = await Promise.race([
                           fetchDeviceDetails(),
-                          new Promise(resolve => setTimeout(() => resolve(cachedDevInfo || { ip: "Unknown" }), 3000))
+                          new Promise(resolve => setTimeout(() => resolve(cachedDevInfo || { ip: "Unknown" }), 2000))
                       ]);
                       
                       if (dev && dev.ip && !dev.ip.includes("Unknown")) {
@@ -3902,33 +3897,30 @@
                           if (ipDoc.exists && ipDoc.data().blockedUntil > Date.now() && isMounted) { 
                               setBlockUntil(ipDoc.data().blockedUntil); 
                               setIsAdmin(false); 
-                              isBlocked = true;
                           }
+                          db.collection('BlockedHackers').doc(safeIp).onSnapshot(doc => {
+                              if (doc.exists && doc.data().blockedUntil > Date.now() && isMounted) { 
+                                  setBlockUntil(doc.data().blockedUntil); 
+                                  setIsAdmin(false); 
+                              }
+                          });
                       }
-                  }
+                  };
 
-                  // C. TRUSTED DEVICE CHECK (Parallel Superfast Login Check)
-                  if (!isBlocked && isMounted) {
-                      let permDevId = window.localStorage.getItem('raja_permanent_device_id') || window.localStorage.getItem('raja_device_id');
-                      if (permDevId) {
-                          // Seedha server se poochega, net slow hoga toh catch mein chala jayega
-                          const trustDoc = await db.collection('trustedDevices').doc(permDevId).get({ source: 'server' });
-                          if (trustDoc.exists && trustDoc.data().isRevoked !== true) {
-                              setIsPreVerifiedTrusted(true);
-                          }
-                      }
-                  }
+                  // Dono check ek sath chalayenge (Speed double ho jayegi)
+                  await Promise.all([checkHardware(), checkIP()]);
                   
               } catch (e) {
-                  // Agar check karte waqt net toot gaya ya server timeout ho gaya
-                  console.log("Security Check Network Error:", e);
-                  if (isMounted) setNetworkError(true);
+                  console.log("Security Check Error:", e);
               }
 
+              // 3. SAB KUCH VERIFY HONE KE BAAD HI SPINNER HATEGA
+              // Agar block hua, toh 'blockUntil' active ho jayega aur seedha Block screen dikhegi.
               if (isMounted) setIsCheckingSecurity(false);
           };
           
           verifyBlockStatus();
+          
           return () => { isMounted = false; };
       }, [deviceFingerprint]);
 
@@ -3981,52 +3973,94 @@
         if (isProcessingLogin) return; 
         setIsProcessingLogin(true); 
 
+        // 🚨 LEVEL 3 SECURITY: Check Cloud DB BEFORE verifying password
+        try {
+            const dev = await fetchDeviceDetails();
+            const safeIp = dev.ip.replace(/\./g, '_');
+            
+            const hwDoc = await db.collection('BlockedHackers').doc(deviceFingerprint).get();
+            if (hwDoc.exists && hwDoc.data().blockedUntil > Date.now()) {
+                setBlockUntil(hwDoc.data().blockedUntil); setIsAdmin(false); setIsProcessingLogin(false); return;
+            }
+            
+            const ipDoc = await db.collection('BlockedHackers').doc(safeIp).get();
+            if (ipDoc.exists && ipDoc.data().blockedUntil > Date.now()) {
+                setBlockUntil(ipDoc.data().blockedUntil); setIsAdmin(false); setIsProcessingLogin(false); return;
+            }
+        } catch(e) {}
+
         if (blockUntil > Date.now()) { setIsProcessingLogin(false); return; }
         
         if (!password || password.trim() === '') {
             showToast("⚠️ Please enter your password first!"); setIsProcessingLogin(false); return;
         }
 
+
         if (verifyAdmin(password)) {
+          let hasSession = false;
+          let currentDevId = null;
+          try { 
+            currentDevId = window.localStorage.getItem('raja_device_id');
+            if (currentDevId) {
+                // 🚨 STRICT SECURITY: Hacker cache bypass fix
+                const doc = await db.collection('adminSessions').doc(currentDevId).get({ source: 'server' });
+                if (doc.exists) hasSession = true;
+                else window.localStorage.removeItem('raja_device_id');
+            }
+          } catch(err){}
           
-          // 🚨 MASTER LOGIC: No server call here! Direct decision based on Spinner's background check
-          if (isPreVerifiedTrusted) {
-              // SCENARIO 1: Trusted Device -> Superfast 1-Second Login
-              setIsAdmin(true); 
-              setPassword('');
-              
-              fetchDeviceDetails().then(devDetails => {
-                  let permDevId = window.localStorage.getItem('raja_permanent_device_id') || window.localStorage.getItem('raja_device_id');
-                  try { 
-                     // Background update (Silent)
-                     db.collection('adminSessions').doc(permDevId).set({
-                         id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
-                     }, { merge: true });
-                     
-                     db.collection('trustedDevices').doc(permDevId).update({
-                         deviceType: devDetails.deviceType, org: devDetails.org, lastSeen: Date.now(), ip: devDetails.ip, location: devDetails.location
-                     }).catch(e=>{}); 
+          // 🚨 NAYA LOGIC: Login karte hi cache memory saaf, taaki current network ka FRESH data aaye
+          cachedDevInfo = null; 
 
-                     window.localStorage.setItem('raja_admin_fails', '0'); 
-                     window.localStorage.setItem('raja_otp_resends', '0');
-                  } catch(err){}
-                  
-                  sendLoginAlert('SUCCESS_TRUSTED', 'Logged in via saved trusted device (Superfast Mode)', devDetails);
-              });
-
+          if (hasSession) {
+            setIsAdmin(true); 
+            setPassword('');
+            fetchDeviceDetails().then(dev => sendLoginAlert('SUCCESS_TRUSTED', 'Password Login', dev)); 
           } else {
-              // SCENARIO 2: Naya Device -> OTP Bhejo
-              const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
-              setLiveOTP(newOTP);
-              setAdminStep(2); 
-              setResendTimer(30); 
-              window.localStorage.setItem('raja_admin_fails', '0'); 
-              window.localStorage.setItem('raja_otp_resends', '1'); 
-              window.localStorage.setItem('raja_otp_fails', '0'); 
-              
-              fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', `${newOTP}|1`, dev)); 
-          }
+            let isPermanentlyTrusted = false;
+            let permDevId = window.localStorage.getItem('raja_permanent_device_id');
+            
+            if (permDevId) {
+                try {
+                    const pDoc = await db.collection('trustedDevices').doc(permDevId).get({ source: 'server' });
+                    if (pDoc.exists) isPermanentlyTrusted = true;
+                } catch(e) {}
+            }
 
+            if (isPermanentlyTrusted) {
+                setIsAdmin(true); 
+                setPassword('');
+                fetchDeviceDetails().then(devDetails => {
+                    // 🚨 EXACT SAME DATA SYNC: 'devDetails' hi Database mein jayega aur wahi Telegram ko jayega. 0% Mismatch.
+                    try { 
+                       db.collection('adminSessions').doc(permDevId).set({
+                           id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
+                       });
+                       
+                       // 🚨 Network change hua hoga toh trusted list mein bhi update kar dega
+                       db.collection('trustedDevices').doc(permDevId).update({
+                           deviceType: devDetails.deviceType, org: devDetails.org, lastSeen: Date.now(), ip: devDetails.ip, location: devDetails.location
+                       }).catch(e=>{}); 
+
+                       window.localStorage.setItem('raja_device_id', permDevId); 
+                       window.localStorage.setItem('raja_admin_fails', '0'); 
+                       window.localStorage.setItem('raja_otp_resends', '0');
+                    } catch(err){}
+                    
+                    sendLoginAlert('SUCCESS_TRUSTED', 'Logged in via saved trusted device', devDetails);
+                });
+            } else {
+                const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
+                setLiveOTP(newOTP);
+                setAdminStep(2); 
+                setResendTimer(30); 
+                window.localStorage.setItem('raja_admin_fails', '0'); 
+                window.localStorage.setItem('raja_otp_resends', '1'); 
+                window.localStorage.setItem('raja_otp_fails', '0'); 
+                
+                fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', `${newOTP}|1`, dev)); 
+            }
+          }
         } else {
           registerFail('FAILED', password);
         }
@@ -4316,22 +4350,8 @@
                           <p className="text-xs font-bold text-gray-500">Establishing secure connection</p>
                       </div>
                   </div>
-              ) : networkError ? (
-                  <div className="p-4 md:p-6 max-w-sm mx-auto mt-20 text-center">
-                      <div className="glass-panel p-8 md:p-10 rounded-3xl shadow-2xl border-t-4 border-t-yellow-500 bg-yellow-50">
-                          <div className="bg-yellow-100 w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-inner">
-                             <svg className="w-6 h-6 md:w-8 md:h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                          </div>
-                          <h2 className="font-black text-xl md:text-2xl mb-2 text-yellow-900">Network Error</h2>
-                          <p className="text-xs md:text-sm font-bold text-yellow-700 mb-6 md:mb-8">Unable to securely connect to the database. Your internet is slow or disconnected.</p>
-                          <button onClick={() => { setIsCheckingSecurity(true); setNetworkError(false); setTimeout(() => setDeviceFingerprint(prev => prev ? prev + ' ' : ' '), 100); }} className="w-full text-white bg-yellow-600 hover:bg-yellow-700 py-3 md:py-4 rounded-xl font-black text-sm md:text-base shadow-lg transition-all cursor-pointer">
-                             Retry Connection
-                          </button>
-                      </div>
-                  </div>
               ) : (
                   isAdmin ? AdminPanel() : 
-                  
                   <div className="p-4 md:p-6 max-w-sm mx-auto mt-20 text-center">
                     {adminStep === 1 ? (
                       <div className="glass-panel p-8 md:p-10 rounded-3xl shadow-2xl border-t-4 border-t-gray-900">
