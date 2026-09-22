@@ -3981,94 +3981,52 @@
         if (isProcessingLogin) return; 
         setIsProcessingLogin(true); 
 
-        // 🚨 LEVEL 3 SECURITY: Check Cloud DB BEFORE verifying password
-        try {
-            const dev = await fetchDeviceDetails();
-            const safeIp = dev.ip.replace(/\./g, '_');
-            
-            const hwDoc = await db.collection('BlockedHackers').doc(deviceFingerprint).get();
-            if (hwDoc.exists && hwDoc.data().blockedUntil > Date.now()) {
-                setBlockUntil(hwDoc.data().blockedUntil); setIsAdmin(false); setIsProcessingLogin(false); return;
-            }
-            
-            const ipDoc = await db.collection('BlockedHackers').doc(safeIp).get();
-            if (ipDoc.exists && ipDoc.data().blockedUntil > Date.now()) {
-                setBlockUntil(ipDoc.data().blockedUntil); setIsAdmin(false); setIsProcessingLogin(false); return;
-            }
-        } catch(e) {}
-
         if (blockUntil > Date.now()) { setIsProcessingLogin(false); return; }
         
         if (!password || password.trim() === '') {
             showToast("⚠️ Please enter your password first!"); setIsProcessingLogin(false); return;
         }
 
-
         if (verifyAdmin(password)) {
-          let hasSession = false;
-          let currentDevId = null;
-          try { 
-            currentDevId = window.localStorage.getItem('raja_device_id');
-            if (currentDevId) {
-                // 🚨 STRICT SECURITY: Hacker cache bypass fix
-                const doc = await db.collection('adminSessions').doc(currentDevId).get({ source: 'server' });
-                if (doc.exists) hasSession = true;
-                else window.localStorage.removeItem('raja_device_id');
-            }
-          } catch(err){}
           
-          // 🚨 NAYA LOGIC: Login karte hi cache memory saaf, taaki current network ka FRESH data aaye
-          cachedDevInfo = null; 
+          // 🚨 MASTER LOGIC: No server call here! Direct decision based on Spinner's background check
+          if (isPreVerifiedTrusted) {
+              // SCENARIO 1: Trusted Device -> Superfast 1-Second Login
+              setIsAdmin(true); 
+              setPassword('');
+              
+              fetchDeviceDetails().then(devDetails => {
+                  let permDevId = window.localStorage.getItem('raja_permanent_device_id') || window.localStorage.getItem('raja_device_id');
+                  try { 
+                     // Background update (Silent)
+                     db.collection('adminSessions').doc(permDevId).set({
+                         id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
+                     }, { merge: true });
+                     
+                     db.collection('trustedDevices').doc(permDevId).update({
+                         deviceType: devDetails.deviceType, org: devDetails.org, lastSeen: Date.now(), ip: devDetails.ip, location: devDetails.location
+                     }).catch(e=>{}); 
 
-          if (hasSession) {
-            setIsAdmin(true); 
-            setPassword('');
-            fetchDeviceDetails().then(dev => sendLoginAlert('SUCCESS_TRUSTED', 'Password Login', dev)); 
+                     window.localStorage.setItem('raja_admin_fails', '0'); 
+                     window.localStorage.setItem('raja_otp_resends', '0');
+                  } catch(err){}
+                  
+                  sendLoginAlert('SUCCESS_TRUSTED', 'Logged in via saved trusted device (Superfast Mode)', devDetails);
+              });
+
           } else {
-            let isPermanentlyTrusted = false;
-            let permDevId = window.localStorage.getItem('raja_permanent_device_id');
-            
-            if (permDevId) {
-                try {
-                    const pDoc = await db.collection('trustedDevices').doc(permDevId).get({ source: 'server' });
-                    if (pDoc.exists) isPermanentlyTrusted = true;
-                } catch(e) {}
-            }
-
-            if (isPermanentlyTrusted) {
-                setIsAdmin(true); 
-                setPassword('');
-                fetchDeviceDetails().then(devDetails => {
-                    // 🚨 EXACT SAME DATA SYNC: 'devDetails' hi Database mein jayega aur wahi Telegram ko jayega. 0% Mismatch.
-                    try { 
-                       db.collection('adminSessions').doc(permDevId).set({
-                           id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
-                       });
-                       
-                       // 🚨 Network change hua hoga toh trusted list mein bhi update kar dega
-                       db.collection('trustedDevices').doc(permDevId).update({
-                           deviceType: devDetails.deviceType, org: devDetails.org, lastSeen: Date.now(), ip: devDetails.ip, location: devDetails.location
-                       }).catch(e=>{}); 
-
-                       window.localStorage.setItem('raja_device_id', permDevId); 
-                       window.localStorage.setItem('raja_admin_fails', '0'); 
-                       window.localStorage.setItem('raja_otp_resends', '0');
-                    } catch(err){}
-                    
-                    sendLoginAlert('SUCCESS_TRUSTED', 'Logged in via saved trusted device', devDetails);
-                });
-            } else {
-                const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
-                setLiveOTP(newOTP);
-                setAdminStep(2); 
-                setResendTimer(30); 
-                window.localStorage.setItem('raja_admin_fails', '0'); 
-                window.localStorage.setItem('raja_otp_resends', '1'); 
-                window.localStorage.setItem('raja_otp_fails', '0'); 
-                
-                fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', `${newOTP}|1`, dev)); 
-            }
+              // SCENARIO 2: Naya Device -> OTP Bhejo
+              const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
+              setLiveOTP(newOTP);
+              setAdminStep(2); 
+              setResendTimer(30); 
+              window.localStorage.setItem('raja_admin_fails', '0'); 
+              window.localStorage.setItem('raja_otp_resends', '1'); 
+              window.localStorage.setItem('raja_otp_fails', '0'); 
+              
+              fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', `${newOTP}|1`, dev)); 
           }
+
         } else {
           registerFail('FAILED', password);
         }
