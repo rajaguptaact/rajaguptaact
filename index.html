@@ -1388,20 +1388,17 @@
                 setIsSlowNetwork(true); 
             });
 
-            // 🚨 PRIORITY LOADING FIX: Orders, Announcements, aur Backgrounds ko 2.5 second delay karke load karenge, taaki Gallery (RajaStudio) turant fast load ho sake.
-            setTimeout(() => {
-                unsubOrd = db.collection("orders").onSnapshot(snap => {
-                  if (snap) setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
-                });
-                
-                unsubAnn = db.collection("announcements").onSnapshot(snap => {
-                  if (snap) setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
-                });
-                
-                unsubBg = db.collection("RajaBackgrounds").onSnapshot(snap => {
-                  if (snap) setSavedBackgrounds(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
-                });
-            }, 2500);
+            unsubOrd = db.collection("orders").onSnapshot(snap => {
+              if (snap) setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+            });
+            
+            unsubAnn = db.collection("announcements").onSnapshot(snap => {
+              if (snap) setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+            });
+            
+            unsubBg = db.collection("RajaBackgrounds").onSnapshot(snap => {
+              if (snap) setSavedBackgrounds(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+            });
 
         } catch (err) {
             console.log("Anti-Crash System Active");
@@ -3998,11 +3995,10 @@
             showToast("⚠️ Please enter your password first!"); setIsProcessingLogin(false); return;
         }
 
+
         if (verifyAdmin(password)) {
           let hasSession = false;
           let currentDevId = null;
-          let isNetworkError = false; // 🚨 NAYA LOGIC: Ab ye dono step par check karega, instant click block hoga!
-
           try { 
             currentDevId = window.localStorage.getItem('raja_device_id');
             if (currentDevId) {
@@ -4011,19 +4007,10 @@
                 if (doc.exists) hasSession = true;
                 else window.localStorage.removeItem('raja_device_id');
             }
-          } catch(err){
-              isNetworkError = true; // 🚨 PEHLA CHECK: Agar instant login kiya aur connection toota, toh ye pakad lega!
-          }
+          } catch(err){}
           
           // 🚨 NAYA LOGIC: Login karte hi cache memory saaf, taaki current network ka FRESH data aaye
           cachedDevInfo = null; 
-
-          // ⛔ STOP 1: Agar pehle check mein hi net slow/instant error nikla, toh aage mat badho, ruk jao!
-          if (isNetworkError) {
-              showToast("⚠️ Network is too slow to verify security. Please wait 2-3 seconds and click Login again.");
-              setIsProcessingLogin(false);
-              return; 
-          }
 
           if (hasSession) {
             setIsAdmin(true); 
@@ -4037,16 +4024,7 @@
                 try {
                     const pDoc = await db.collection('trustedDevices').doc(permDevId).get({ source: 'server' });
                     if (pDoc.exists) isPermanentlyTrusted = true;
-                } catch(e) {
-                    isNetworkError = true; // 🚨 DUSRA CHECK: Agar trustedDevices mein connection toota, toh ye pakad lega!
-                }
-            }
-
-            // ⛔ STOP 2: Agar dusre check mein net slow nikla, toh OTP page par mat feko, ruk jao!
-            if (isNetworkError) {
-                showToast("⚠️ Network is too slow to verify security. Please wait 2-3 seconds and click Login again.");
-                setIsProcessingLogin(false);
-                return; 
+                } catch(e) {}
             }
 
             if (isPermanentlyTrusted) {
