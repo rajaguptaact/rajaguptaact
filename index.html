@@ -3996,9 +3996,18 @@
         }
 
 
-        if (verifyAdmin(password)) {
+         if (verifyAdmin(password)) {
+          // 🌐 STEP 1: Basic System Offline Check
+          if (!navigator.onLine) {
+              showToast("⚠️ No Internet Connection: Please check your network and try again.");
+              setIsProcessingLogin(false);
+              return;
+          }
+
           let hasSession = false;
           let currentDevId = null;
+          let connectionFailed = false; // 🚨 Hacker & Glitch Blocker Flag
+
           try { 
             currentDevId = window.localStorage.getItem('raja_device_id');
             if (currentDevId) {
@@ -4007,9 +4016,18 @@
                 if (doc.exists) hasSession = true;
                 else window.localStorage.removeItem('raja_device_id');
             }
-          } catch(err){}
+          } catch(err){
+              connectionFailed = true; // 🔴 Connection failed
+          }
           
-          // 🚨 NAYA LOGIC: Login karte hi cache memory saaf, taaki current network ka FRESH data aaye
+          // 🔴 MAIN FIX 1: Connection timeout ya error aane par OTP page par block
+          if (connectionFailed) {
+              showToast("⚠️ Connection Timeout: Unable to securely process your request. Please try again.");
+              setIsProcessingLogin(false);
+              return; 
+          }
+
+          // 🚨 NAYA LOGIC: Login karte hi cache memory saaf
           cachedDevInfo = null; 
 
           if (hasSession) {
@@ -4024,7 +4042,16 @@
                 try {
                     const pDoc = await db.collection('trustedDevices').doc(permDevId).get({ source: 'server' });
                     if (pDoc.exists) isPermanentlyTrusted = true;
-                } catch(e) {}
+                } catch(e) {
+                    connectionFailed = true; // 🔴 Connection failed
+                }
+            }
+
+            // 🔴 MAIN FIX 2: Trusted check ke dauran net fail hua toh block
+            if (connectionFailed) {
+                showToast("⚠️ Verification Failed: Network error occurred during security check. Please try again.");
+                setIsProcessingLogin(false);
+                return;
             }
 
             if (isPermanentlyTrusted) {
