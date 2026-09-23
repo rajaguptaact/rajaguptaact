@@ -3998,10 +3998,11 @@
             showToast("⚠️ Please enter your password first!"); setIsProcessingLogin(false); return;
         }
 
-
         if (verifyAdmin(password)) {
           let hasSession = false;
           let currentDevId = null;
+          let isNetworkError = false; // 🚨 NAYA LOGIC: Ab ye dono step par check karega, instant click block hoga!
+
           try { 
             currentDevId = window.localStorage.getItem('raja_device_id');
             if (currentDevId) {
@@ -4010,10 +4011,19 @@
                 if (doc.exists) hasSession = true;
                 else window.localStorage.removeItem('raja_device_id');
             }
-          } catch(err){}
+          } catch(err){
+              isNetworkError = true; // 🚨 PEHLA CHECK: Agar instant login kiya aur connection toota, toh ye pakad lega!
+          }
           
           // 🚨 NAYA LOGIC: Login karte hi cache memory saaf, taaki current network ka FRESH data aaye
           cachedDevInfo = null; 
+
+          // ⛔ STOP 1: Agar pehle check mein hi net slow/instant error nikla, toh aage mat badho, ruk jao!
+          if (isNetworkError) {
+              showToast("⚠️ Network is too slow to verify security. Please wait 2-3 seconds and click Login again.");
+              setIsProcessingLogin(false);
+              return; 
+          }
 
           if (hasSession) {
             setIsAdmin(true); 
@@ -4022,22 +4032,21 @@
           } else {
             let isPermanentlyTrusted = false;
             let permDevId = window.localStorage.getItem('raja_permanent_device_id');
-            let isNetworkError = false; // 🚨 Naya Variable: Net check karne ke liye
             
             if (permDevId) {
                 try {
                     const pDoc = await db.collection('trustedDevices').doc(permDevId).get({ source: 'server' });
                     if (pDoc.exists) isPermanentlyTrusted = true;
                 } catch(e) {
-                    isNetworkError = true; // 🚨 Connection toot gaya (Slow Net), isko error mark kar diya
+                    isNetworkError = true; // 🚨 DUSRA CHECK: Agar trustedDevices mein connection toota, toh ye pakad lega!
                 }
             }
 
-            // 🚨 SMART SECURITY FIX: Agar Slow Net se error aaya, toh OTP mat maango, process yahi rok do
+            // ⛔ STOP 2: Agar dusre check mein net slow nikla, toh OTP page par mat feko, ruk jao!
             if (isNetworkError) {
                 showToast("⚠️ Network is too slow to verify security. Please wait 2-3 seconds and click Login again.");
-                setIsProcessingLogin(false); // Button ko wapas normal kar diya
-                return; // ⛔ Yahan se system ko wapas bhej do, aage OTP wale step par mat jaane do!
+                setIsProcessingLogin(false);
+                return; 
             }
 
             if (isPermanentlyTrusted) {
