@@ -1388,17 +1388,20 @@
                 setIsSlowNetwork(true); 
             });
 
-            unsubOrd = db.collection("orders").onSnapshot(snap => {
-              if (snap) setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
-            });
-            
-            unsubAnn = db.collection("announcements").onSnapshot(snap => {
-              if (snap) setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
-            });
-            
-            unsubBg = db.collection("RajaBackgrounds").onSnapshot(snap => {
-              if (snap) setSavedBackgrounds(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
-            });
+            // 🚨 PRIORITY LOADING FIX: Orders, Announcements, aur Backgrounds ko 2.5 second delay karke load karenge, taaki Gallery (RajaStudio) turant fast load ho sake.
+            setTimeout(() => {
+                unsubOrd = db.collection("orders").onSnapshot(snap => {
+                  if (snap) setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+                });
+                
+                unsubAnn = db.collection("announcements").onSnapshot(snap => {
+                  if (snap) setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+                });
+                
+                unsubBg = db.collection("RajaBackgrounds").onSnapshot(snap => {
+                  if (snap) setSavedBackgrounds(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+                });
+            }, 2500);
 
         } catch (err) {
             console.log("Anti-Crash System Active");
