@@ -2188,7 +2188,7 @@
                                {/* MODIFIED: Total Price aur See Details ko theek Qty ke niche shift kiya gaya hai */}
                             <div className="text-left md:text-right w-full md:w-auto p-1 md:p-0 flex flex-col items-end justify-between min-w-[120px]">
                                <div className="w-full text-right flex flex-row md:flex-col justify-between md:justify-end items-center md:items-end mb-1">
-                                  <p className="text-[9px] md:text-xs text-gray-500 font-black uppercase tracking-widest mb-0.5">{ord.type === 'Commission' ? 'Budget' : 'Total Paid'}</p>
+                                  <p className="text-xs md:text-sm text-gray-900 font-black uppercase tracking-widest mb-0.5">{ord.type === 'Commission' ? 'Budget' : 'Total Paid'}</p>
                                   <p className="text-lg md:text-3xl font-black text-green-600">{ord.displayAmount}</p>
                                </div>
                                <OrderBill ord={ord} />
@@ -2283,7 +2283,7 @@
                                {/* MODIFIED: Total Price aur See Details ko theek Qty ke niche shift kiya gaya hai */}
                             <div className="text-left md:text-right w-full md:w-auto p-1 md:p-0 flex flex-col items-end justify-between min-w-[120px]">
                                <div className="w-full text-right flex flex-row md:flex-col justify-between md:justify-end items-center md:items-end mb-1">
-                                   <p className="text-[9px] md:text-xs text-gray-500 font-black uppercase tracking-widest mb-0.5">{ord.type === 'Commission' ? 'Budget' : 'Total Paid'}</p>
+                                   <p className="text-xs md:text-sm text-gray-900 font-black uppercase tracking-widest mb-0.5">{ord.type === 'Commission' ? 'Budget' : 'Total Paid'}</p>
                                    <p className="text-lg md:text-3xl font-black text-green-600">{ord.displayAmount || '₹'+ord.amount}</p>
                                </div>
                                <OrderBill ord={ord} />
