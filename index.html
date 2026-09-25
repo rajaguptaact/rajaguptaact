@@ -3967,6 +3967,13 @@
 
       const handlePasswordSubmit = async () => {
         if (isProcessingLogin) return; 
+
+        // 🚨 FIX: Processing start hone se pehle hi check karo ki box khali toh nahi hai
+        if (!password || password.trim() === '') {
+            showToast("⚠️ Please enter your password first!"); 
+            return;
+        }
+
         setIsProcessingLogin(true); 
 
         // 🚨 LEVEL 3 SECURITY: Check Cloud DB BEFORE verifying password
@@ -3986,10 +3993,6 @@
         } catch(e) {}
 
         if (blockUntil > Date.now()) { setIsProcessingLogin(false); return; }
-        
-        if (!password || password.trim() === '') {
-            showToast("⚠️ Please enter your password first!"); setIsProcessingLogin(false); return;
-        }
 
 
          if (verifyAdmin(password)) {
