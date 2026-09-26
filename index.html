@@ -1924,20 +1924,20 @@
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-10">
-              <div className="space-y-4 md:space-y-6">
+              <div className="space-y-3 md:space-y-6">
                 
-                <div className="bg-indigo-50 border border-indigo-100 p-3.5 md:p-6 rounded-2xl shadow-sm relative overflow-hidden">
-                   <div className="absolute top-0 left-0 w-1.5 md:w-2 h-full bg-indigo-500"></div>
-                   <p className="font-black text-indigo-900 flex items-center gap-2 text-sm md:text-lg">
-                       <svg className="w-4 h-4 md:w-6 md:h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div className="bg-indigo-50 border border-indigo-100 px-3 py-2 md:p-6 rounded-xl md:rounded-2xl shadow-sm relative overflow-hidden">
+                   <div className="absolute top-0 left-0 w-1 md:w-2 h-full bg-indigo-500"></div>
+                   <p className="font-black text-indigo-900 flex items-center gap-1.5 md:gap-2 text-xs md:text-lg">
+                       <svg className="w-3.5 h-3.5 md:w-6 md:h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                       Important Studio Note
                    </p>
-                   <p className="text-[10px] md:text-sm text-gray-700 mt-1.5 md:mt-2 font-medium leading-relaxed">
+                   <p className="text-[9px] md:text-sm text-gray-700 mt-1 md:mt-2 font-medium leading-relaxed">
                      <span className="font-bold text-indigo-800">Strictly Colour Pencil Only:</span> I do not accept orders for watercolor, oil, or digital mediums. All commissioned requests are strictly handcrafted with highly detailed colour pencils.
                    </p>
                 </div>
 
-                <div className="glass-panel p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-xl">
+                <div className="glass-panel p-3 md:p-8 rounded-xl md:rounded-3xl shadow-xl">
                   <form onSubmit={(e) => { 
                       e.preventDefault(); 
                       if (commissionInput.subject.trim().length < 5) {
@@ -1951,37 +1951,37 @@
                       const rawBudget = Number(commissionInput.budget);
                       const basePriceINR = currency === 'USD' ? rawBudget * 83.5 : rawBudget;
                       startCheckout([{ title: 'Commission: ' + commissionInput.subject, selectedSize: commissionInput.size, price: basePriceINR }], 'Commission', { instagram: commissionInput.instagram }); 
-                    }} className="space-y-3 md:space-y-6">
+                    }} className="space-y-2.5 md:space-y-6">
                     <div>
-                      <label className="font-black text-[10px] md:text-sm text-gray-800 uppercase tracking-wide">Artwork Subject Details</label>
-                      <input required minLength="5" value={commissionInput.subject} onChange={e => setCommissionInput({...commissionInput, subject: e.target.value})} placeholder="E.g. Portrait of two people..." className="w-full border-2 border-gray-200 p-2.5 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-1 md:mt-2 text-xs md:text-base" />
+                      <label className="font-black text-[9px] md:text-sm text-gray-800 uppercase tracking-wide">Artwork Subject Details</label>
+                      <input required minLength="5" value={commissionInput.subject} onChange={e => setCommissionInput({...commissionInput, subject: e.target.value})} placeholder="E.g. Portrait of two people..." className="w-full border-2 border-gray-200 px-2 py-1.5 md:p-4 rounded-md md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-0.5 md:mt-2 text-[11px] md:text-base" />
                     </div>
                     
                     <div>
-                      <label className="font-black text-[10px] md:text-sm text-gray-800 uppercase tracking-wide">Instagram ID (Required)</label>
-                      <input required minLength="5" value={commissionInput.instagram} onChange={e => setCommissionInput({...commissionInput, instagram: e.target.value})} placeholder="E.g. @your_username" className="w-full border-2 border-gray-200 p-2.5 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-1 md:mt-2 text-xs md:text-base" />
-                      <p className="text-[9px] md:text-xs text-gray-500 font-bold mt-1 italic">This ID is strictly required for order updates and reference purposes. (Min 5 characters)</p>
+                      <label className="font-black text-[9px] md:text-sm text-gray-800 uppercase tracking-wide">Instagram ID (Required)</label>
+                      <input required minLength="5" value={commissionInput.instagram} onChange={e => setCommissionInput({...commissionInput, instagram: e.target.value})} placeholder="E.g. @your_username" className="w-full border-2 border-gray-200 px-2 py-1.5 md:p-4 rounded-md md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-0.5 md:mt-2 text-[11px] md:text-base" />
+                      <p className="text-[8px] md:text-xs text-gray-500 font-bold mt-0.5 md:mt-1 italic">This ID is strictly required for order updates and reference purposes. (Min 5 characters)</p>
                     </div>
 
                     <div>
-                      <label className="font-black text-[10px] md:text-sm text-gray-800 uppercase tracking-wide">Select Paper Size</label>
-                      <select required value={commissionInput.size} onChange={e => setCommissionInput({...commissionInput, size: e.target.value})} className="w-full border-2 border-gray-200 p-2.5 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-1 md:mt-2 text-xs md:text-base">
+                      <label className="font-black text-[9px] md:text-sm text-gray-800 uppercase tracking-wide">Select Paper Size</label>
+                      <select required value={commissionInput.size} onChange={e => setCommissionInput({...commissionInput, size: e.target.value})} className="w-full border-2 border-gray-200 px-2 py-1.5 md:p-4 rounded-md md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-0.5 md:mt-2 text-[11px] md:text-base">
                         <option value="A4 Colour Pencil">A4 Size (Medium)</option>
                         <option value="A3 Colour Pencil">A3 Size (Large)</option>
                       </select>
                     </div>
                     <div>
-                      <label className="font-black text-[10px] md:text-sm text-gray-800 uppercase tracking-wide">Estimated Budget ({currency === 'USD' ? '$ USD' : '₹ INR'})</label>
-                      <input required value={commissionInput.budget} onChange={e => setCommissionInput({...commissionInput, budget: e.target.value})} type="number" min={currency === 'USD' ? "18" : "1500"} placeholder={currency === 'USD' ? "Starting at $18..." : "Starting at ₹1500..."} className="w-full border-2 border-gray-200 p-2.5 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-1 md:mt-2 text-xs md:text-base" />
+                      <label className="font-black text-[9px] md:text-sm text-gray-800 uppercase tracking-wide">Estimated Budget ({currency === 'USD' ? '$ USD' : '₹ INR'})</label>
+                      <input required value={commissionInput.budget} onChange={e => setCommissionInput({...commissionInput, budget: e.target.value})} type="number" min={currency === 'USD' ? "18" : "1500"} placeholder={currency === 'USD' ? "Starting at $18..." : "Starting at ₹1500..."} className="w-full border-2 border-gray-200 px-2 py-1.5 md:p-4 rounded-md md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-0.5 md:mt-2 text-[11px] md:text-base" />
                     </div>
-                    <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2.5 md:py-4 rounded-lg md:rounded-xl font-black text-sm md:text-lg shadow-md hover:shadow-xl transition-transform transform active:scale-95 mt-2 md:mt-4 cursor-pointer">Proceed to Details</button>
+                    <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 md:py-4 rounded-md md:rounded-xl font-black text-xs md:text-lg shadow-md hover:shadow-xl transition-transform transform active:scale-95 mt-2 md:mt-4 cursor-pointer">Proceed to Details</button>
                   </form>
                 </div>
               </div>
 
               <div className="space-y-4 md:space-y-6">
                 <ExpandablePolicy />
-                <div className="glass-panel p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-lg border-t-4 border-t-pink-500">
+                <div className="glass-panel p-3 md:p-8 rounded-xl md:rounded-3xl shadow-lg border-t-4 border-t-pink-500">          
                   <h3 className="text-base md:text-2xl font-black text-gray-900 mb-3 md:mb-6 flex items-center gap-2 md:gap-3">
                      <svg className="w-4 h-4 md:w-6 md:h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                      Frequently Asked Questions
