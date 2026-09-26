@@ -392,23 +392,23 @@
                <div className={`space-y-3 ${adj.locked ? 'opacity-40 pointer-events-none grayscale' : ''}`}>
                    <label className="flex gap-2 md:gap-3 items-center w-full overflow-hidden">
                       <span className="w-14 md:w-16 text-[10px] md:text-xs flex-shrink-0">Left/Right</span> 
-                      <span className="w-8 md:w-10 text-purple-700 font-black text-right text-[10px] md:text-xs flex-shrink-0">{adj.x > 50 ? '+' : ''}{Math.round(adj.x - 50)}%</span>
+                      <span className="w-11 md:w-12 text-purple-700 font-black text-right text-[10px] md:text-xs flex-shrink-0">{adj.x !== 50 ? (adj.x > 50 ? '+' : '') + Math.round((adj.x - 50) * 2) : 0}%</span>
                       <input type="range" min="0" max="100" value={adj.x} onChange={e=>setAdj({x:Number(e.target.value)})} className="flex-1 accent-purple-600 min-w-0" />
                    </label>
                    <label className="flex gap-2 md:gap-3 items-center w-full overflow-hidden">
                       <span className="w-14 md:w-16 text-[10px] md:text-xs flex-shrink-0">Top/Bottom</span> 
-                      <span className="w-8 md:w-10 text-purple-700 font-black text-right text-[10px] md:text-xs flex-shrink-0">{adj.y > 50 ? '+' : ''}{Math.round(adj.y - 50)}%</span>
+                      <span className="w-11 md:w-12 text-purple-700 font-black text-right text-[10px] md:text-xs flex-shrink-0">{adj.y !== 50 ? (adj.y > 50 ? '+' : '') + Math.round((adj.y - 50) * 2) : 0}%</span>
                       <input type="range" min="0" max="100" value={adj.y} onChange={e=>setAdj({y:Number(e.target.value)})} className="flex-1 accent-purple-600 min-w-0" />
                    </label>
                    <label className="flex gap-2 md:gap-3 items-center w-full overflow-hidden">
                       <span className="w-14 md:w-16 text-[10px] md:text-xs flex-shrink-0">Size</span> 
-                      <span className="w-8 md:w-10 text-purple-700 font-black text-right text-[10px] md:text-xs flex-shrink-0">{Math.round(adj.scale)}%</span>
-                      <input type="range" min="10" max="150" value={adj.scale} onChange={e=>setAdj({scale:Number(e.target.value)})} className="flex-1 accent-purple-600 min-w-0" />
+                      <span className="w-11 md:w-12 text-purple-700 font-black text-right text-[10px] md:text-xs flex-shrink-0">{Math.round(adj.scale ?? 50)}%</span>
+                      <input type="range" min="0" max="100" value={adj.scale ?? 50} onChange={e=>setAdj({scale:Number(e.target.value)})} className="flex-1 accent-purple-600 min-w-0" />
                    </label>
                    <label className="flex gap-2 md:gap-3 items-center w-full overflow-hidden">
                       <span className="w-14 md:w-16 text-[10px] md:text-xs flex-shrink-0">Rotation</span> 
-                      <span className="w-8 md:w-10 text-purple-700 font-black text-right text-[10px] md:text-xs flex-shrink-0">{adj.rotate > 0 ? '+' : ''}{adj.rotate}°</span>
-                      <input type="range" min="-180" max="180" value={adj.rotate} onChange={e=>setAdj({rotate:Number(e.target.value)})} className="flex-1 accent-purple-600 min-w-0" />
+                      <span className="w-11 md:w-12 text-purple-700 font-black text-right text-[10px] md:text-xs flex-shrink-0">{adj.rotate > 0 ? '+' : ''}{adj.rotate}°</span>
+                      <input type="range" min="-360" max="360" value={adj.rotate} onChange={e=>setAdj({rotate:Number(e.target.value)})} className="flex-1 accent-purple-600 min-w-0" />
                    </label>
                </div>
 
