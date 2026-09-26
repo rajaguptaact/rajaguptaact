@@ -3534,7 +3534,10 @@
                   <form onSubmit={saveArtwork} className="space-y-2.5">
                     <input required placeholder="Artwork Title" className="w-full border-2 p-2 md:p-2.5 rounded-lg bg-white font-bold text-xs md:text-sm" value={uploadData.title} onChange={e => setUploadData({...uploadData, title: e.target.value})} />
                     
-                    <textarea required placeholder="Description..." className="w-full border-2 p-2 md:p-2.5 rounded-lg bg-white font-medium select-text text-xs md:text-sm" rows="2" value={uploadData.desc} onChange={e => setUploadData({...uploadData, desc: e.target.value})}></textarea>
+                    <div>
+                      <textarea required maxLength="2000" placeholder="Description (Max 2000 characters)..." className="w-full border-2 p-2 md:p-2.5 rounded-lg bg-white font-medium select-text text-xs md:text-sm" rows="2" value={uploadData.desc} onChange={e => setUploadData({...uploadData, desc: e.target.value})}></textarea>
+                      <p className="text-right text-[9px] font-bold text-gray-400 mt-0.5">{(uploadData.desc || '').length} / 2000 characters</p>
+                    </div>
                     
                     <div className="border-2 border-dashed border-purple-300 p-2 md:p-3 rounded-lg text-center bg-purple-50 cursor-pointer relative overflow-hidden hover:bg-purple-100 transition">
                       <label className="font-black text-purple-700 block cursor-pointer w-full h-full relative z-10 py-1 text-xs md:text-sm">
