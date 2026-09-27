@@ -1770,7 +1770,7 @@
 
                   
                   return (
-                    <div key={i} className={`flex flex-col justify-between glass-panel p-3 md:p-5 rounded-2xl shadow-sm border gap-3 md:gap-4 ${isDeleted ? 'border-gray-300 bg-gray-50' : isItemSoldOut ? 'border-red-300 bg-red-50' : 'border-white'}`}>
+                    <div key={i} className={`flex flex-col justify-between glass-panel p-3 md:p-5 rounded-2xl shadow-sm border gap-3 md:gap-1 ${isDeleted ? 'border-gray-300 bg-gray-50' : isItemSoldOut ? 'border-red-300 bg-red-50' : 'border-white'}`}>
                       <div className="flex items-center gap-3 md:gap-4">
                         <div className="relative">
                             <img src={item.image} className={`w-14 h-14 md:w-20 md:h-20 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none ${isDeleted ? 'grayscale blur-[2px] opacity-70' : ''}`} />
@@ -1784,7 +1784,7 @@
                         </div>
                       </div>
                       
-                      <div className={`flex flex-col items-start justify-center w-full mt-2 md:mt-3 border-t border-gray-100 pt-2 md:pt-3 ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
+                      <div className={`flex flex-col items-start justify-center w-full mt-2 md:mt-1 border-t border-gray-100 pt-2 md:pt-1 ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
                         
                         {/* OLD PRICE ROW (UPAR) */}
                         {cOld && cLive && Number(cOld) > Number(cLive) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
@@ -1797,7 +1797,7 @@
                         ) : null}
 
                        {/* NEW PRICE + QTY + ACTIONS ROW (NEECHE EK LINE MEIN) */}
-                       <div className="flex flex-row items-center justify-between gap-2 md:gap-4 w-full flex-wrap mt-1 md:mt-2"> 
+                       <div className="flex flex-row items-center justify-between gap-2 md:gap-4 w-full flex-wrap mt-1 md:mt-0"> 
                             
                             {/* NAYA PRICE (KATEGA NAHI CHAHE SOLD OUT HO) */}
                             <p className="font-black text-lg md:text-2xl text-gray-900">
