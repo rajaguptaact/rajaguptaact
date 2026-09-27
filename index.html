@@ -1770,21 +1770,23 @@
 
                   
                   return (
-                    <div key={i} className={`flex flex-col justify-between glass-panel p-3 md:p-5 rounded-2xl shadow-sm border gap-3 md:gap-4 ${isDeleted ? 'border-gray-300 bg-gray-50' : isItemSoldOut ? 'border-red-300 bg-red-50' : 'border-white'}`}>
+                    <div key={i} className={`flex flex-col justify-between glass-panel p-3 md:p-4 rounded-2xl shadow-sm border gap-2 md:gap-3 ${isDeleted ? 'border-gray-300 bg-gray-50' : isItemSoldOut ? 'border-red-300 bg-red-50' : 'border-white'}`}>
                       <div className="flex items-center gap-3 md:gap-4">
                         <div className="relative">
-                            <img src={item.image} className={`w-14 h-14 md:w-20 md:h-20 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none ${isDeleted ? 'grayscale blur-[2px] opacity-70' : ''}`} />
+                            {/* Image ko thoda chhota kiya hai taaki lamba na ho */}
+                            <img src={item.image} className={`w-14 h-14 md:w-16 md:h-16 object-cover rounded-xl shadow-md border-2 border-white pointer-events-none ${isDeleted ? 'grayscale blur-[2px] opacity-70' : ''}`} />
                             {isDeleted && <div className="absolute inset-0 bg-black/10 rounded-xl"></div>}
                         </div>
                         <div>
-                           <h4 className={`font-black text-sm md:text-lg line-clamp-1 ${isDeleted ? 'text-gray-500 line-through' : isItemSoldOut ? 'text-red-800' : 'text-gray-900'}`}>{item.title}</h4>
-                           <p className={`text-[10px] md:text-sm font-bold ${isDeleted ? 'text-gray-400' : 'text-purple-600'}`}>{item.selectedSize}</p>
+                           <h4 className={`font-black text-sm md:text-base line-clamp-1 ${isDeleted ? 'text-gray-500 line-through' : isItemSoldOut ? 'text-red-800' : 'text-gray-900'}`}>{item.title}</h4>
+                           <p className={`text-[10px] md:text-xs font-bold ${isDeleted ? 'text-gray-400' : 'text-purple-600'}`}>{item.selectedSize}</p>
                            {isDeleted && <span className="text-[9px] md:text-[10px] bg-gray-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block shadow-sm">Artwork Deleted</span>}
                            {!isDeleted && isItemSoldOut && <span className="text-[9px] md:text-[10px] bg-red-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block animate-pulse shadow-sm">Sold Out</span>}
                         </div>
                       </div>
                       
-                      <div className={`flex flex-col items-start justify-center w-full mt-2 md:mt-3 border-t border-gray-100 pt-2 md:pt-3 ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
+                      {/* Gap aur Padding ko Desktop (md:) ke liye kam kiya gaya hai taaki line paas-paas aa jayein */}
+                      <div className={`flex flex-col items-start justify-center w-full mt-2 md:mt-2 border-t border-gray-100 pt-2 md:pt-2 ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
                         
                         {/* OLD PRICE ROW (UPAR) */}
                         {cOld && cLive && Number(cOld) > Number(cLive) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
@@ -1797,10 +1799,10 @@
                         ) : null}
 
                        {/* NEW PRICE + QTY + ACTIONS ROW (NEECHE EK LINE MEIN) */}
-                       <div className="flex flex-row items-center justify-between gap-2 md:gap-4 w-full flex-wrap mt-1 md:mt-2"> 
+                       <div className="flex flex-row items-center justify-between gap-2 md:gap-4 w-full flex-wrap mt-1 md:mt-1"> 
                             
                             {/* NAYA PRICE (KATEGA NAHI CHAHE SOLD OUT HO) */}
-                            <p className="font-black text-lg md:text-2xl text-gray-900">
+                            <p className="font-black text-lg md:text-xl text-gray-900">
                                 {getPrice((cLive || 0) * (item.qty || 1))}
                             </p>
 
