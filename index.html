@@ -3070,7 +3070,7 @@
           }
 
           if (editArtId && !isMediaModified) {
-              setUploadStatus("Live Updating..."); // Bas milliseconds ke liye dikhega
+              setUploadStatus("⚡ Fast Update Text Only"); // Pehla message
               
               const quickData = {
                   title: uploadData.title, desc: uploadData.desc, 
@@ -3080,23 +3080,28 @@
                   fakeLikes: Number(uploadData.fakeLikes) || 0
               };
 
-              // Direct Live Server par bhej rahe hain .then() ke sath
-              db.collection('RajaStudio').doc(editArtId).update(quickData)
-              .then(() => {
-                  showToast("✅ Live Updated on All Devices Instantly!");
-                  setEditArtId(null); 
-                  setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
-                  setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); 
-                  setUploadStatus(""); 
-                  setIsMediaModified(false);
-              })
-              .catch(e => {
-                  showToast("❌ ERROR: Network problem. Data not saved.");
-                  setUploadStatus("");
-              });
+              // Thodi der baad Live Updating dikhane ke liye delay
+              setTimeout(() => {
+                 setUploadStatus("Live Updating...");
+                 
+                 db.collection('RajaStudio').doc(editArtId).update(quickData)
+                 .then(() => {
+                     showToast("✅ Live Updated on All Devices Instantly!");
+                     setEditArtId(null); 
+                     setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
+                     setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); 
+                     setUploadStatus(""); 
+                     setIsMediaModified(false);
+                 })
+                 .catch(e => {
+                     showToast("❌ ERROR: Network problem. Data not saved.");
+                     setUploadStatus("");
+                 });
+              }, 600); // 0.6 second ka smooth gap
               
               return;
           }
+
 
 
 
