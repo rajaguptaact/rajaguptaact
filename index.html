@@ -3274,6 +3274,14 @@
           setAnnHours('0'); 
           setAnnShowTimer(ann.showTimer || false);
           setAnnCustomDate('');
+          
+          setTimeout(() => {
+              const formBox = document.getElementById('announcementFormBox');
+              if(formBox) {
+                  const y = formBox.getBoundingClientRect().top + window.scrollY - 80;
+                  window.scrollTo({top: y, behavior: 'smooth'});
+              }
+          }, 150);
         };
 
         const handleTouchStart = (e) => {
