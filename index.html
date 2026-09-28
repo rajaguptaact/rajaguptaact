@@ -3285,7 +3285,7 @@
             }
         };
 
-        const handleTouchMove = (e) => {
+          const handleTouchMove = (e) => {
             if (!dragStart) return;
             if (e.cancelable) e.preventDefault(); 
             
@@ -3298,9 +3298,9 @@
             } else if (dragStart.type === 'zoom' && e.touches.length === 2) {
                 const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
                 const newScale = dragStart.origScale * (dist / dragStart.dist);
-                setBgCropAdj(prev => ({...prev, scale: Math.min(300, Math.max(100, newScale))}));
+                setBgCropAdj(prev => ({...prev, scale: Math.min(200, Math.max(1, newScale))}));
             }
-        };
+        }; 
         const handleTouchEnd = () => setDragStart(null);
 
         const handleArtTouchStart = (e, bgId, adj) => {
