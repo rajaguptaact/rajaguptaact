@@ -3597,7 +3597,7 @@
                              <div className="mt-2 space-y-2">
                                 {selectedBgs.map((bgId, index) => {
                                     const bg = savedBackgrounds.find(b => b.id === bgId);
-                                    const adj = bgAdjustments[bgId] || {x:50, y:50, scale:40, rotate:0, shadow:true, locked:false};
+                                    const adj = bgAdjustments[bgId] || {x:50, y:50, scale:50, rotate:0, shadow:true, locked:false};
                                     const setAdj = (newAdj) => { setIsMediaModified(true); setBgAdjustments({...bgAdjustments, [bgId]: {...adj, ...newAdj}}); setPreviewMockups([]); };
                                     if(!bg) return null;
                                     return <CollapsibleBgItem key={bgId} bgId={bgId} bgIndex={index} bg={bg} uploadData={uploadData} adj={adj} setAdj={setAdj} handleArtTouchStart={handleArtTouchStart} handleArtTouchMove={handleArtTouchMove} handleArtTouchEnd={handleArtTouchEnd} />;
