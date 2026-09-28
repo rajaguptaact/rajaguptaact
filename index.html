@@ -3141,7 +3141,7 @@
                       for (let bgId of selectedBgs) {
                           const bgDoc = savedBackgrounds.find(b => b.id === bgId);
                           if(bgDoc) {
-                              const adj = bgAdjustments[bgId] || {x:50, y:50, scale:40, rotate:0, shadow:true, locked:false};
+                              const adj = bgAdjustments[bgId] || {x:50, y:50, scale:50, rotate:0, shadow:true, locked:false};
                               const finalBase64 = await generateComposite(bgDoc.image, uploadData.image, adj);
                               mockupsToSave.push(finalBase64);
                           }
