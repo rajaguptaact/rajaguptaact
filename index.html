@@ -3470,19 +3470,19 @@
                           
                           <div className="space-y-4 mt-6 text-xs font-bold text-gray-700 px-2">
                               <label className="block flex gap-2 md:gap-3 items-center">
-                                  <span className="w-14 md:w-16 text-[10px] md:text-xs">Left/Right</span> 
-                                  <span className="w-8 md:w-10 text-emerald-700 font-black text-right text-[10px] md:text-xs">{bgCropAdj.x > 50 ? '+' : ''}{Math.round(bgCropAdj.x - 50)}%</span>
+                                  <span className="w-16 md:w-20 text-[10px] md:text-xs">Left/Right</span> 
+                                  <span className="w-10 md:w-12 text-emerald-700 font-black text-right text-[10px] md:text-xs">{bgCropAdj.x !== 50 ? (bgCropAdj.x > 50 ? '+' : '') + Math.round((bgCropAdj.x - 50) * 2) : '0'}%</span>
                                   <input type="range" min="0" max="100" value={bgCropAdj.x} onChange={e=>setBgCropAdj({...bgCropAdj, x:Number(e.target.value)})} className="flex-1 accent-emerald-600" />
                               </label>
                               <label className="block flex gap-2 md:gap-3 items-center">
-                                  <span className="w-14 md:w-16 text-[10px] md:text-xs">Top/Bottom</span> 
-                                  <span className="w-8 md:w-10 text-emerald-700 font-black text-right text-[10px] md:text-xs">{bgCropAdj.y > 50 ? '+' : ''}{Math.round(bgCropAdj.y - 50)}%</span>
+                                  <span className="w-16 md:w-20 text-[10px] md:text-xs">Top/Bottom</span> 
+                                  <span className="w-10 md:w-12 text-emerald-700 font-black text-right text-[10px] md:text-xs">{bgCropAdj.y !== 50 ? (bgCropAdj.y > 50 ? '+' : '') + Math.round((bgCropAdj.y - 50) * 2) : '0'}%</span>
                                   <input type="range" min="0" max="100" value={bgCropAdj.y} onChange={e=>setBgCropAdj({...bgCropAdj, y:Number(e.target.value)})} className="flex-1 accent-emerald-600" />
                               </label>
                               <label className="block flex gap-2 md:gap-3 items-center">
-                                  <span className="w-14 md:w-16 text-[10px] md:text-xs">Zoom In</span> 
-                                  <span className="w-12 md:w-16 text-emerald-700 font-black text-right text-[10px] md:text-xs">{Math.round(bgCropAdj.scale)}% Size</span>
-                                  <input type="range" min="100" max="300" value={bgCropAdj.scale} onChange={e=>setBgCropAdj({...bgCropAdj, scale:Number(e.target.value)})} className="flex-1 accent-emerald-600" />
+                                  <span className="w-16 md:w-20 text-[10px] md:text-xs">Zoom In/Out</span> 
+                                  <span className="w-10 md:w-12 text-emerald-700 font-black text-right text-[10px] md:text-xs">{Math.round(bgCropAdj.scale / 2)}%</span>
+                                  <input type="range" min="0" max="200" value={bgCropAdj.scale} onChange={e=>setBgCropAdj({...bgCropAdj, scale:Number(e.target.value)})} className="flex-1 accent-emerald-600" />
                               </label>
                           </div>
                           
