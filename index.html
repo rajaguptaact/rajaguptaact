@@ -3672,7 +3672,7 @@
                     )}
 
                     <button type="submit" disabled={!!uploadStatus} className={`w-full py-2 md:py-4 rounded-md md:rounded-xl font-black text-xs md:text-lg mt-2 md:mt-0 shadow-sm md:shadow-lg transition ${uploadStatus ? 'bg-gray-400 text-gray-700 cursor-wait' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white cursor-pointer hover:shadow-xl'}`}>
-                      {uploadStatus ? uploadStatus : (editArtId && !isMediaModified ? "⚡ Fast Update Text Only" : (editArtId ? "✅ Update Artwork" : "✅ Publish Artwork"))}
+                      {uploadStatus ? uploadStatus : (editArtId ? "✅ Update Artwork" : "✅ Publish Artwork")}
                     </button>
                   </form>
                 </div>
