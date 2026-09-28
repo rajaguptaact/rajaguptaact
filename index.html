@@ -3303,13 +3303,14 @@
         }; 
         const handleTouchEnd = () => setDragStart(null);
 
-        const handleArtTouchStart = (e, bgId, adj) => {
+          const handleArtTouchStart = (e, bgId, adj) => {
             if (adj.locked) return;
             if (e.touches.length === 1) {
                 setArtDragStart({ type: 'pan', id: bgId, x: e.touches[0].clientX, y: e.touches[0].clientY, origX: adj.x, origY: adj.y });
             } else if (e.touches.length === 2) {
                 const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                setArtDragStart({ type: 'zoom', id: bgId, dist, origScale: adj.scale });
+                const angle = Math.atan2(e.touches[1].clientY - e.touches[0].clientY, e.touches[1].clientX - e.touches[0].clientX) * (180 / Math.PI);
+                setArtDragStart({ type: 'zoomRotate', id: bgId, dist, origScale: adj.scale, startAngle: angle, origRotate: adj.rotate || 0 });
             }
         };
 
@@ -3324,14 +3325,21 @@
                 
                 setIsMediaModified(true);
                 setAdj({ x: Math.min(100, Math.max(0, newX)), y: Math.min(100, Math.max(0, newY)) });
-            } else if (artDragStart.type === 'zoom' && e.touches.length === 2) {
+            } else if (artDragStart.type === 'zoomRotate' && e.touches.length === 2) {
                 const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
                 const newScale = artDragStart.origScale * (dist / artDragStart.dist);
                 
+                const angle = Math.atan2(e.touches[1].clientY - e.touches[0].clientY, e.touches[1].clientX - e.touches[0].clientX) * (180 / Math.PI);
+                let newRotate = artDragStart.origRotate + (angle - artDragStart.startAngle);
+                
+                if (newRotate > 360) newRotate -= 360;
+                if (newRotate < -360) newRotate += 360;
+
                 setIsMediaModified(true);
-                setAdj({ scale: Math.min(150, Math.max(10, newScale)) });
+                setAdj({ scale: Math.min(150, Math.max(10, newScale)), rotate: Math.round(newRotate) });
             }
         };
+
         const handleArtTouchEnd = () => setArtDragStart(null);
 
         return (
