@@ -3163,17 +3163,21 @@
                       });
                   });
 
-                  await Promise.all(uploadPromises);
+                   await Promise.all(uploadPromises);
               }
 
-              showToast(editArtId ? "✅ Artwork Media Updated Successfully!" : "✅ Artwork Uploaded Globally!");
-              setEditArtId(null); 
-              setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
-              setSelectedBgs([]);
-              setBgAdjustments({});
-              setPreviewMockups([]);
-              setUploadStatus(""); 
-              setIsMediaModified(false);
+              setUploadStatus("Live Updating...");
+              
+              setTimeout(() => {
+                  showToast(editArtId ? "✅ Artwork Media Updated Successfully!" : "✅ Artwork Uploaded Globally!");
+                  setEditArtId(null); 
+                  setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
+                  setSelectedBgs([]);
+                  setBgAdjustments({});
+                  setPreviewMockups([]);
+                  setUploadStatus(""); 
+                  setIsMediaModified(false);
+              }, 800); // 0.8s tak live updating dikhega taaki real feel aaye
           } catch (err) {
               console.error(err);
               showToast("❌ ERROR: Failed to upload. System memory might be full.");
