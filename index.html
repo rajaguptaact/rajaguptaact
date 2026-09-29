@@ -3735,6 +3735,7 @@
                   </h3>
                   
                   <form onSubmit={postAnnouncement} className="space-y-1.5 md:space-y-4">
+                      <fieldset disabled={!!uploadStatus} className={`w-full border-none p-0 m-0 ${!!uploadStatus ? 'opacity-60 pointer-events-none' : ''}`}>
                      <input required placeholder="Announcement Title" value={annTitle} onChange={e=>setAnnTitle(e.target.value)} className="w-full border-2 p-1.5 md:p-4 rounded-md md:rounded-xl bg-white font-bold text-[10px] md:text-base"/>
                      <div>
                        <textarea required maxLength={2000} placeholder="Message details (Max 2000 characters)..." value={annMsg} onChange={e=>setAnnMsg(e.target.value.slice(0, 2000))} className={`w-full border-2 p-1.5 md:p-4 rounded-md md:rounded-xl font-medium select-text text-[10px] md:text-base transition-colors outline-none ${(annMsg || '').length >= 2000 ? 'border-red-400 bg-red-50 focus:border-red-500' : 'bg-white border-gray-200 focus:border-pink-500'}`} rows="3"></textarea>
@@ -3768,10 +3769,11 @@
                          </div>
                      </div>
 
-                     <button type="submit" className="w-full bg-gray-900 text-white py-2 md:py-4 rounded-md md:rounded-xl font-black text-xs md:text-lg shadow-sm md:shadow-lg hover:bg-gray-800 transition cursor-pointer mt-2 md:mt-0">
-                       {editAnnId ? "✅ Update Announcement" : "✅ Publish Announcement"}
+                     <button type="submit" disabled={!!uploadStatus} className={`w-full text-white py-2 md:py-4 rounded-md md:rounded-xl font-black text-xs md:text-lg shadow-sm md:shadow-lg transition mt-2 md:mt-0 ${uploadStatus ? 'bg-gray-400 cursor-wait' : 'bg-gray-900 hover:bg-gray-800 cursor-pointer'}`}>
+                       {uploadStatus ? uploadStatus : (editAnnId ? "✅ Update Announcement" : "✅ Publish Announcement")}
                      </button>
-                  </form>
+                  </fieldset>
+                </form>
                 </div>
 
                 <div className="glass-panel p-5 md:p-6 rounded-3xl shadow-sm border border-gray-200 mt-6 md:mt-8">
