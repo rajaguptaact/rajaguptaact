@@ -3227,11 +3227,10 @@
           let finalExpireAt = null;
           let deleteExpire = false;
 
-          // Custom Date Check
           if (annHours === 'custom' && annCustomDate) {
               finalExpireAt = new Date(annCustomDate).getTime();
           } else if (annHours === '-1') {
-              deleteExpire = true; // Permanent
+              deleteExpire = true; 
           } else if (annHours !== '0') {
               finalExpireAt = Date.now() + (Number(annHours) * 60 * 60 * 1000);
           }
@@ -3254,13 +3253,11 @@
                  updateData.expireAt = finalExpireAt;
              }
 
-             // 🚨 PROCESSING START 🚨
-             setUploadStatus("Processing...");
+             setAnnUploadStatus("Processing...");
 
              db.collection('announcements').doc(editAnnId).update(updateData).then(() => {
                  showToast("✅ Notification Updated Globally on all devices!");
-                 // 🚨 PROCESSING END (Form unlock and clear) 🚨
-                 setUploadStatus("");
+                 setAnnUploadStatus("");
                  setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
              });
           } else {
@@ -3269,18 +3266,16 @@
                  newData.expireAt = finalExpireAt;
              }
              
-             // 🚨 PROCESSING START 🚨
-             setUploadStatus("Publishing...");
+             setAnnUploadStatus("Publishing...");
 
              db.collection('announcements').add(newData).then(() => {
                  showToast("✅ Notification Posted Globally on all devices!");
-                 // 🚨 PROCESSING END (Form unlock and clear) 🚨
-                 setUploadStatus("");
+                 setAnnUploadStatus("");
                  setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
              });
           }
         };
-
+          
 
         const startEditAnn = (ann) => {
           setEditAnnId(ann.id);
