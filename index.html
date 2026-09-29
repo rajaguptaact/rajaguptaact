@@ -3075,6 +3075,7 @@
 
           if (editArtId && !isMediaModified) {
               setArtUploadStatus("⚡ Fast Update Text Only"); 
+              artCancelFlag.current = false; // 🚩 Process start hote hi flag down
               
               const quickData = {
                   title: uploadData.title, desc: uploadData.desc, 
