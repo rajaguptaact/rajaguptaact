@@ -3555,20 +3555,22 @@
                   <h3 className="text-base md:text-xl font-black mb-3 text-gray-900 flex justify-between items-center">
                     {editArtId ? "✏️ Edit Artwork" : "Upload Artwork"}
                     
-                    <button type="button" onClick={() => { 
-                        // 🔴 NAYA LOGIC: Check agar form pehle se khali hai
-                        const isEmpty = !uploadData.title && !uploadData.desc && !uploadData.image && !uploadData.priceOriginalOld && !uploadData.priceA3;
-                        if (isEmpty && !editArtId) {
-                            showToast("⚠️ Form is already empty! Nothing to clear.");
-                        } else {
-                            setEditArtId(null); 
-                            setUploadData({title:'',desc:'',image:'',priceOriginal:'',priceOriginalOld:'',priceA3:'',priceA4:'',priceA5:'', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
-                            setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); setIsMediaModified(false); setUploadStatus("");
-                            showToast("🧹 Form cleared successfully!");
-                        }
-                    }} className="text-[10px] md:text-xs text-red-500 underline font-bold cursor-pointer hover:text-red-700">
-                        {editArtId ? "Cancel Edit" : "Clear Form"}
-                    </button>
+                    {!uploadStatus && (
+                        <button type="button" onClick={() => { 
+                            // 🔴 NAYA LOGIC: Check agar form pehle se khali hai
+                            const isEmpty = !uploadData.title && !uploadData.desc && !uploadData.image && !uploadData.priceOriginalOld && !uploadData.priceA3;
+                            if (isEmpty && !editArtId) {
+                                showToast("⚠️ Form is already empty! Nothing to clear.");
+                            } else {
+                                setEditArtId(null); 
+                                setUploadData({title:'',desc:'',image:'',priceOriginal:'',priceOriginalOld:'',priceA3:'',priceA4:'',priceA5:'', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
+                                setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); setIsMediaModified(false); setUploadStatus("");
+                                showToast("🧹 Form cleared successfully!");
+                            }
+                        }} className="text-[10px] md:text-xs text-red-500 underline font-bold cursor-pointer hover:text-red-700">
+                            {editArtId ? "Cancel Edit" : "Clear Form"}
+                        </button>
+                    )}
                   </h3>
                   
                   <form onSubmit={saveArtwork} className="space-y-2.5">
