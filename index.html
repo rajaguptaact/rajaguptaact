@@ -3723,9 +3723,8 @@
                  <div id="announcementFormBox" className="glass-panel p-3 md:p-8 rounded-2xl md:rounded-3xl shadow-xl border-t-4 border-t-pink-500">
                   <h3 className="text-base md:text-2xl font-black text-gray-900 mb-3 md:mb-6 flex items-center justify-between">
                     <span>{editAnnId ? "Edit Announcement" : "Post Announcement"}</span>
-                    {!uploadStatus && (
+                    {!annUploadStatus && (
                         <button type="button" onClick={() => { 
-                            // 🔴 NAYA LOGIC: Button hamesha dikhega, aur check karega khali hai ya nahi
                             const isEmpty = !annTitle && !annMsg && annHours === '0' && !annShowTimer && !annCustomDate;
                             if (isEmpty && !editAnnId) {
                                 showToast("⚠️ Form is already empty! Nothing to clear.");
@@ -3740,7 +3739,7 @@
                   </h3>
                   
                   <form onSubmit={postAnnouncement} className="space-y-1.5 md:space-y-4">
-                      <fieldset disabled={!!uploadStatus} className={`w-full border-none p-0 m-0 ${!!uploadStatus ? 'opacity-60 pointer-events-none' : ''}`}>
+                      <fieldset disabled={!!annUploadStatus} className={`w-full border-none p-0 m-0 ${!!annUploadStatus ? 'opacity-60 pointer-events-none' : ''}`}>
                      <input required placeholder="Announcement Title" value={annTitle} onChange={e=>setAnnTitle(e.target.value)} className="w-full border-2 p-1.5 md:p-4 rounded-md md:rounded-xl bg-white font-bold text-[10px] md:text-base"/>
                      <div>
                        <textarea required maxLength={2000} placeholder="Message details (Max 2000 characters)..." value={annMsg} onChange={e=>setAnnMsg(e.target.value.slice(0, 2000))} className={`w-full border-2 p-1.5 md:p-4 rounded-md md:rounded-xl font-medium select-text text-[10px] md:text-base transition-colors outline-none ${(annMsg || '').length >= 2000 ? 'border-red-400 bg-red-50 focus:border-red-500' : 'bg-white border-gray-200 focus:border-pink-500'}`} rows="3"></textarea>
