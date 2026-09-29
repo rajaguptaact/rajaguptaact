@@ -3132,6 +3132,8 @@
           };
 
           try {
+              if (artCancelFlag.current) return; // 🚨 KILL PROCESS: Data Save hone se pehle check
+
               let artId = editArtId;
 
               if(editArtId) {
