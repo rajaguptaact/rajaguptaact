@@ -1398,7 +1398,7 @@
               if (snap) setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
             });
             
-            unsubAnn = db.collection("announcements").onSnapshot(snap => {
+            unsubAnn = db.collection("announcements").onSnapshot({ includeMetadataChanges: true }, snap => {
               if (snap) {
                 if (snap.metadata.hasPendingWrites) return; // 🚨 VIP Treatment Blocked
                 setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
