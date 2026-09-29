@@ -3263,12 +3263,18 @@
              }
 
              setAnnUploadStatus("Processing...");
+             annCancelFlag.current = false; // 🚩 Flag down
 
-             db.collection('announcements').doc(editAnnId).update(updateData).then(() => {
-                 showToast("✅ Notification Updated Globally on all devices!");
-                 setAnnUploadStatus("");
-                 setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
-             });
+             setTimeout(() => {
+                 if (annCancelFlag.current) return; // 🚨 KILL PROCESS
+
+                 db.collection('announcements').doc(editAnnId).update(updateData).then(() => {
+                     if (annCancelFlag.current) return; // 🚨 Success Message Blocked
+                     showToast("✅ Notification Updated Globally on all devices!");
+                     setAnnUploadStatus("");
+                     setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
+                 });
+             }, 2500); // 2.5 second buffer
           } else {
              let newData = { title: annTitle, message: annMsg, showTimer: annShowTimer, date: new Date().toLocaleDateString('en-IN'), createdAt: Date.now() };
              if (finalExpireAt) {
@@ -3276,12 +3282,18 @@
              }
              
              setAnnUploadStatus("Publishing...");
+             annCancelFlag.current = false; // 🚩 Flag down
 
-             db.collection('announcements').add(newData).then(() => {
-                 showToast("✅ Notification Posted Globally on all devices!");
-                 setAnnUploadStatus("");
-                 setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
-             });
+             setTimeout(() => {
+                 if (annCancelFlag.current) return; // 🚨 KILL PROCESS
+
+                 db.collection('announcements').add(newData).then(() => {
+                     if (annCancelFlag.current) return; // 🚨 Success Message Blocked
+                     showToast("✅ Notification Posted Globally on all devices!");
+                     setAnnUploadStatus("");
+                     setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
+                 });
+             }, 2500); // 2.5 second buffer
           }
         };
           
