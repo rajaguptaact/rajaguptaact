@@ -1368,6 +1368,7 @@
         try {
             unsubArt = db.collection("RajaStudio").onSnapshot(snap => {
               if (!snap) return; 
+              if (snap.metadata.hasPendingWrites) return; // 🚨 VIP Treatment Blocked: Server success hone tak wait karega
               
               const fetchedArts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
               setArtworks(fetchedArts);
