@@ -3564,6 +3564,7 @@
                   </h3>
                   
                   <form onSubmit={saveArtwork} className="space-y-2.5">
+                      <fieldset disabled={!!uploadStatus} className={`w-full border-none p-0 m-0 ${!!uploadStatus ? 'opacity-60 pointer-events-none' : ''}`}>
                     <input required placeholder="Artwork Title" className="w-full border-2 p-2 md:p-2.5 rounded-lg bg-white font-bold text-xs md:text-sm" value={uploadData.title} onChange={e => setUploadData({...uploadData, title: e.target.value})} />
                     
                      <div>
@@ -3674,7 +3675,8 @@
                     <button type="submit" disabled={!!uploadStatus} className={`w-full py-2 md:py-4 rounded-md md:rounded-xl font-black text-xs md:text-lg mt-2 md:mt-0 shadow-sm md:shadow-lg transition ${uploadStatus ? 'bg-gray-400 text-gray-700 cursor-wait' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white cursor-pointer hover:shadow-xl'}`}>
                       {uploadStatus ? uploadStatus : (editArtId ? "✅ Update Artwork" : "✅ Publish Artwork")}
                     </button>
-                  </form>
+                  </fieldset>
+                </form>
                 </div>
                                
 
