@@ -3659,7 +3659,7 @@
 
                     {uploadData.image && selectedBgs.length > 0 && (
                         <div className="mt-2 border-t border-dashed border-gray-200 pt-2">
-                            <button type="button" onClick={handlePreview} disabled={isGeneratingPreview || !!uploadStatus} className={`w-full py-1.5 rounded-md font-black text-[10px] border-2 transition ${isGeneratingPreview || uploadStatus ? 'bg-gray-100 text-gray-500 border-gray-300 cursor-wait' : 'bg-indigo-50 text-indigo-700 border-indigo-300 hover:bg-indigo-100 cursor-pointer'}`}>
+                          <button type="button" onClick={handlePreview} disabled={isGeneratingPreview || !!artUploadStatus} className={`w-full py-1.5 rounded-md font-black text-[10px] border-2 transition ${isGeneratingPreview || artUploadStatus ? 'bg-gray-100 text-gray-500 border-gray-300 cursor-wait' : 'bg-indigo-50 text-indigo-700 border-indigo-300 hover:bg-indigo-100 cursor-pointer'}`}>
                               {isGeneratingPreview ? "⏳ Generating..." : "👁️ Live Preview"}
                             </button>
                         </div>
