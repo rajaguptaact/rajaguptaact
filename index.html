@@ -1136,6 +1136,9 @@
       const [isValidating, setIsValidating] = useState(false);
       const [artUploadStatus, setArtUploadStatus] = useState(''); // 🚨 Artwork ka apna switch
       const [annUploadStatus, setAnnUploadStatus] = useState(''); // 🚨 Announcement ka apna switch
+      
+      const artCancelFlag = useRef(false); // 🚩 Artwork Process Killer Flag
+      const annCancelFlag = useRef(false); // 🚩 Announcement Process Killer Flag
 
       const [currency, setCurrency] = useState('INR');
 
