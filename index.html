@@ -1398,7 +1398,10 @@
             });
             
             unsubAnn = db.collection("announcements").onSnapshot(snap => {
-              if (snap) setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+              if (snap) {
+                if (snap.metadata.hasPendingWrites) return; // 🚨 VIP Treatment Blocked
+                setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+              }
             });
             
             unsubBg = db.collection("RajaBackgrounds").onSnapshot(snap => {
