@@ -3686,6 +3686,15 @@
                       {uploadStatus ? uploadStatus : (editArtId ? "✅ Update Artwork" : "✅ Publish Artwork")}
                     </button>
                   </fieldset>
+
+                   {!!uploadStatus && (
+                      <button type="button" onClick={() => { 
+                          setUploadStatus(""); 
+                          showToast(editArtId ? "🛑 Update Process Cancelled" : "🛑 Publish Process Cancelled");  
+                      }} className="w-full bg-red-50 text-red-600 border border-red-200 py-2.5 md:py-3.5 rounded-md md:rounded-xl font-black text-xs md:text-lg mt-2.5 shadow-sm hover:bg-red-100 transition cursor-pointer">
+                          ❌ Cancel Process
+                      </button>
+                  )}
                 </form>
                 </div>
                                
