@@ -3553,16 +3553,15 @@
                   <h3 className="text-base md:text-xl font-black mb-3 text-gray-900 flex justify-between items-center">
                     {editArtId ? "✏️ Edit Artwork" : "Upload Artwork"}
                     
-                    {!uploadStatus && (
+                    {!artUploadStatus && (
                         <button type="button" onClick={() => { 
-                            // 🔴 NAYA LOGIC: Check agar form pehle se khali hai
                             const isEmpty = !uploadData.title && !uploadData.desc && !uploadData.image && !uploadData.priceOriginalOld && !uploadData.priceA3;
                             if (isEmpty && !editArtId) {
                                 showToast("⚠️ Form is already empty! Nothing to clear.");
                             } else {
                                 setEditArtId(null); 
                                 setUploadData({title:'',desc:'',image:'',priceOriginal:'',priceOriginalOld:'',priceA3:'',priceA4:'',priceA5:'', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
-                                setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); setIsMediaModified(false); setUploadStatus("");
+                                setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); setIsMediaModified(false); setArtUploadStatus("");
                                 showToast("🧹 Form cleared successfully!");
                             }
                         }} className="text-[10px] md:text-xs text-red-500 underline font-bold cursor-pointer hover:text-red-700">
@@ -3572,7 +3571,7 @@
                   </h3>
                   
                   <form onSubmit={saveArtwork} className="space-y-2.5">
-                      <fieldset disabled={!!uploadStatus} className={`w-full border-none p-0 m-0 ${!!uploadStatus ? 'opacity-60 pointer-events-none' : ''}`}>
+                      <fieldset disabled={!!artUploadStatus} className={`w-full border-none p-0 m-0 ${!!artUploadStatus ? 'opacity-60 pointer-events-none' : ''}`}>
                     <input required placeholder="Artwork Title" className="w-full border-2 p-2 md:p-2.5 rounded-lg bg-white font-bold text-xs md:text-sm" value={uploadData.title} onChange={e => setUploadData({...uploadData, title: e.target.value})} />
                     
                      <div>
