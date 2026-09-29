@@ -1134,10 +1134,11 @@
 
       const [checkoutData, setCheckoutData] = useState({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
       const [isValidating, setIsValidating] = useState(false);
-      const [uploadStatus, setUploadStatus] = useState(''); 
+      const [artUploadStatus, setArtUploadStatus] = useState(''); // 🚨 Artwork ka apna switch
+      const [annUploadStatus, setAnnUploadStatus] = useState(''); // 🚨 Announcement ka apna switch
 
       const [currency, setCurrency] = useState('INR');
-      
+
       const getPrice = (amtINR) => {
          if (!amtINR) return '';
          if (currency === 'USD') return '$' + Math.ceil(Number(amtINR) / 83.5).toLocaleString('en-US');
