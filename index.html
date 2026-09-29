@@ -4457,7 +4457,7 @@
                         </div>
                         <h2 className="font-black text-lg md:text-2xl mb-1 md:mb-2 text-gray-900">Admin Security</h2>
                         <p className="text-[10px] md:text-sm font-bold text-gray-500 mb-4 md:mb-8">Protected Access Only</p>
-                        <input type="password" placeholder="Enter Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border-2 border-gray-200 p-2.5 md:p-4 rounded-lg md:rounded-xl mb-3 md:mb-6 text-center tracking-widest font-black focus:border-gray-900 outline-none text-xs md:text-base" />
+                        <input type="password" disabled={isProcessingLogin} placeholder="Enter Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border-2 border-gray-200 p-2.5 md:p-4 rounded-lg md:rounded-xl mb-3 md:mb-6 text-center tracking-widest font-black focus:border-gray-900 outline-none text-xs md:text-base" />
                         <button onClick={handlePasswordSubmit} disabled={isProcessingLogin} className={`w-full text-white py-2.5 md:py-4 rounded-lg md:rounded-xl font-black text-xs md:text-base shadow-lg transition-all ${isProcessingLogin ? 'bg-gray-500 cursor-wait' : 'bg-gray-900 hover:shadow-xl cursor-pointer'}`}>
                            {isProcessingLogin ? 'Processing...' : 'Secure Login'}
                         </button>
