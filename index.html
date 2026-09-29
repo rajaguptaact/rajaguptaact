@@ -3256,25 +3256,33 @@
                  updateData.expireAt = finalExpireAt;
              }
 
-             // 🔴 SECURE CLOUD SYNC: Har device par instantly jayega
+             // 🚨 PROCESSING START 🚨
+             setUploadStatus("Processing...");
+
              db.collection('announcements').doc(editAnnId).update(updateData).then(() => {
                  showToast("✅ Notification Updated Globally on all devices!");
+                 // 🚨 PROCESSING END (Form unlock and clear) 🚨
+                 setUploadStatus("");
+                 setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
              });
           } else {
              let newData = { title: annTitle, message: annMsg, showTimer: annShowTimer, date: new Date().toLocaleDateString('en-IN'), createdAt: Date.now() };
              if (finalExpireAt) {
                  newData.expireAt = finalExpireAt;
              }
-             // 🔴 SECURE CLOUD SYNC
+             
+             // 🚨 PROCESSING START 🚨
+             setUploadStatus("Publishing...");
+
              db.collection('announcements').add(newData).then(() => {
                  showToast("✅ Notification Posted Globally on all devices!");
+                 // 🚨 PROCESSING END (Form unlock and clear) 🚨
+                 setUploadStatus("");
+                 setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
              });
           }
-
-          
-          // Form ko turant khali karega
-          setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
         };
+
 
         const startEditAnn = (ann) => {
           setEditAnnId(ann.id);
