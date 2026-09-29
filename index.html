@@ -3679,14 +3679,14 @@
                         </div>
                     )}
 
-                    <button type="submit" disabled={!!uploadStatus} className={`w-full py-2 md:py-4 rounded-md md:rounded-xl font-black text-xs md:text-lg mt-2 md:mt-0 shadow-sm md:shadow-lg transition ${uploadStatus ? 'bg-gray-400 text-gray-700 cursor-wait' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white cursor-pointer hover:shadow-xl'}`}>
-                      {uploadStatus ? uploadStatus : (editArtId ? "✅ Update Artwork" : "✅ Publish Artwork")}
+                    <button type="submit" disabled={!!artUploadStatus} className={`w-full py-2 md:py-4 rounded-md md:rounded-xl font-black text-xs md:text-lg mt-2 md:mt-0 shadow-sm md:shadow-lg transition ${artUploadStatus ? 'bg-gray-400 text-gray-700 cursor-wait' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white cursor-pointer hover:shadow-xl'}`}>
+                      {artUploadStatus ? artUploadStatus : (editArtId ? "✅ Update Artwork" : "✅ Publish Artwork")}
                     </button>
                   </fieldset>
 
-                   {!!uploadStatus && (
+                   {!!artUploadStatus && (
                       <button type="button" onClick={() => { 
-                          setUploadStatus(""); 
+                          setArtUploadStatus(""); 
                           showToast(editArtId ? "🛑 Update Process Cancelled" : "🛑 Publish Process Cancelled");  
                       }} className="w-full bg-red-50 text-red-600 border border-red-200 py-2.5 md:py-3.5 rounded-md md:rounded-xl font-black text-xs md:text-lg mt-2.5 shadow-sm hover:bg-red-100 transition cursor-pointer">
                           ❌ Cancel Process
