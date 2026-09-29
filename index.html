@@ -3810,8 +3810,15 @@
 
                   {!!annUploadStatus && (
                       <button type="button" onClick={() => { 
+                          annCancelFlag.current = true; // 🚩 SIGNAL KILL
                           setAnnUploadStatus(""); 
-                          showToast(editAnnId ? "🛑 Update Process Cancelled" : "🛑 Publish Process Cancelled"); 
+                          
+                          if (editAnnId) {
+                              setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
+                              showToast("🛑 Edit Cancelled & Form Cleared"); 
+                          } else {
+                              showToast("🛑 Upload Cancelled (Your typed data is safe)"); 
+                          }
                       }} className="w-full bg-red-50 text-red-600 border border-red-200 py-2.5 md:py-3.5 rounded-md md:rounded-xl font-black text-xs md:text-lg mt-2.5 shadow-sm hover:bg-red-100 transition cursor-pointer">
                           ❌ Cancel Process
                       </button>
