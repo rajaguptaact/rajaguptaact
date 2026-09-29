@@ -3114,6 +3114,7 @@
           }
 
           setArtUploadStatus("Uploading Main Artwork Details...");
+          artCancelFlag.current = false; // 🚩 Process start hote hi flag down
 
           const dataToSave = { 
               title: uploadData.title, 
