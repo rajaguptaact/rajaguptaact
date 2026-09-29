@@ -3702,8 +3702,17 @@
 
                    {!!artUploadStatus && (
                       <button type="button" onClick={() => { 
+                          artCancelFlag.current = true; // 🚩 SIGNAL KILL
                           setArtUploadStatus(""); 
-                          showToast(editArtId ? "🛑 Update Process Cancelled" : "🛑 Publish Process Cancelled");  
+                          
+                          if (editArtId) {
+                              setEditArtId(null); 
+                              setUploadData({title:'',desc:'',image:'',priceOriginal:'',priceOriginalOld:'',priceA3:'',priceA4:'',priceA5:'', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
+                              setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); setIsMediaModified(false);
+                              showToast("🛑 Edit Cancelled & Form Cleared");  
+                          } else {
+                              showToast("🛑 Upload Cancelled (Your typed data is safe)");  
+                          }
                       }} className="w-full bg-red-50 text-red-600 border border-red-200 py-2.5 md:py-3.5 rounded-md md:rounded-xl font-black text-xs md:text-lg mt-2.5 shadow-sm hover:bg-red-100 transition cursor-pointer">
                           ❌ Cancel Process
                       </button>
