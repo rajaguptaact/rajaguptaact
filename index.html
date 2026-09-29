@@ -4469,7 +4469,7 @@
                         </div>
                         <h2 className="font-black text-lg md:text-2xl mb-1 md:mb-2 text-blue-900">OTP Sent!</h2>
                         <p className="text-[10px] md:text-sm font-bold text-blue-600 mb-4 md:mb-8 leading-relaxed">Please check your Telegram for the 6-digit OTP to verify this new device.</p>
-                        <input type="number" placeholder="Enter 6-Digit OTP" value={otpInput} onChange={e => setOtpInput(e.target.value)} className="w-full border-2 border-blue-200 p-2.5 md:p-4 rounded-lg md:rounded-xl mb-3 md:mb-4 text-center tracking-widest font-black focus:border-blue-600 outline-none text-xs md:text-base" />
+                        <input type="number" disabled={isProcessingLogin} placeholder="Enter 6-Digit OTP" value={otpInput} onChange={e => setOtpInput(e.target.value)} className="w-full border-2 border-blue-200 p-2.5 md:p-4 rounded-lg md:rounded-xl mb-3 md:mb-4 text-center tracking-widest font-black focus:border-blue-600 outline-none text-xs md:text-base" />
                         
                         <button onClick={handlePinSubmit} disabled={isProcessingLogin} className={`w-full text-white py-2.5 md:py-4 rounded-lg md:rounded-xl font-black text-xs md:text-base shadow-lg transition-all mb-3 md:mb-4 ${isProcessingLogin ? 'bg-blue-400 cursor-wait' : 'bg-blue-600 hover:shadow-xl cursor-pointer'}`}>
                            {isProcessingLogin ? 'Verifying...' : 'Verify & Login'}
