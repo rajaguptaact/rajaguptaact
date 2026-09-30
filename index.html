@@ -3301,6 +3301,29 @@
                  }
              }
 
+          // 🚨 Strict Check: Duplicate Carbon Copy Block (New Upload ke liye)
+          if (!editAnnId) {
+             const isDuplicate = announcements.some(a => 
+                 a.title === annTitle && 
+                 a.message === annMsg
+             );
+             if (isDuplicate) {
+                 showPremiumAlert("⚠️ Duplicate Found: This Announcement is already uploaded! Please change details to upload as new.");
+                 return; // Form clear nahi hoga, bas process kill ho jayega
+             }
+          }
+
+          if(editAnnId) {
+             const orig = announcements.find(a => a.id === editAnnId);
+             if (orig) {
+                 const isChanged = (annTitle !== orig.title) || (annMsg !== orig.message) || (annShowTimer !== (orig.showTimer || false)) || (annHours !== '0') || (annHours === 'custom' && annCustomDate !== '');
+                 if (!isChanged) {
+                     showToast("⚠️ No changes detected. Edit cancelled.");
+                     setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
+                     return;
+                 }
+             }
+
              let updateData = { title: annTitle, message: annMsg, showTimer: annShowTimer };
              if (deleteExpire) {
                  updateData.expireAt = firebase.firestore.FieldValue.delete();
