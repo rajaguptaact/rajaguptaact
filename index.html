@@ -3829,7 +3829,7 @@
                 <div className="glass-panel p-5 md:p-6 rounded-3xl shadow-sm border border-gray-200 mt-6 md:mt-8">
                   <h3 className="text-lg md:text-xl font-black text-gray-900 mb-3 md:mb-4 flex items-center gap-2">Manage Announcements</h3>
                   
-                  {announcements.length > 0 ? (
+                  {announcements.length === 0 ? <div className="text-center p-6 border border-dashed border-gray-300 rounded-xl bg-gray-50"><p className="text-gray-500 font-bold text-sm md:text-base">No announcement available.</p></div> : announcements.length > 0 ? (
                     <div className="space-y-2 md:space-y-3 max-h-[300px] md:max-h-[400px] overflow-y-auto pr-2">
                       {announcements.map(ann => {
                         const isExpired = ann.expireAt && ann.expireAt < Date.now();
