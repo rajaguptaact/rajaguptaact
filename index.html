@@ -3893,7 +3893,17 @@
                       {announcements.map(ann => {
                         const isExpired = ann.expireAt && ann.expireAt < Date.now();
                         return (
-                        <div key={ann.id} className={`flex justify-between items-center p-2 md:p-3 rounded-xl shadow-sm border ${isExpired ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'} gap-2 md:gap-3`}>
+                        <div key={ann.id} className={`relative flex justify-between items-center p-2 md:p-3 rounded-xl shadow-sm border ${isExpired ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'} gap-2 md:gap-3 overflow-hidden ${pendingDeletes[ann.id] ? 'pointer-events-none' : ''}`}>
+                           
+                           {/* 🚨 BADA OVERLAY LABEL: Announcement card par bhi waisa hi deleting effect */}
+                           {pendingDeletes[ann.id] && (
+                               <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                                   <span className="bg-rose-500 text-white px-3 py-1 rounded-md font-black text-[10px] md:text-xs uppercase tracking-widest shadow-sm animate-pulse flex items-center gap-1.5">
+                                       <svg className="animate-spin w-3 h-3 md:w-4 md:h-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Deleting...
+                                   </span>
+                               </div>
+                           )}
+
                           <div className="flex items-center gap-2 md:gap-3 flex-1 overflow-hidden">
                               <div className="flex-1">
                                   <p className={`font-bold text-xs md:text-sm line-clamp-1 ${isExpired ? 'text-red-900 line-through' : 'text-gray-800'}`}>{ann.title}</p>
@@ -3912,18 +3922,19 @@
                                <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                              </button>
                              <button disabled={pendingDeletes[ann.id]} onClick={() => { 
-                                 if(window.confirm("Delete this Announcement globally?")) {
-                                     setPendingDeletes(prev => ({...prev, [ann.id]: true})); // Screen se nahi hatega
+                                 if(window.confirm("Delete this notification permanently?")) {
+                                     setPendingDeletes(prev => ({...prev, [ann.id]: true}));
+                                     // 🚨 PURE DATABASE LOGIC: Koi time limit nahi.
                                      db.collection('announcements').doc(ann.id).delete().then(() => {
                                          showToast("🗑️ Delete Successful");
-                                         setPendingDeletes(prev => ({...prev, [ann.id]: false}));
+                                         setPendingDeletes(prev => ({...prev, [ann.id]: false})); // Parda hatega aur card bhi gayab ho jayega
                                      }).catch(() => {
                                          showToast("❌ Failed to delete. Try again.");
                                          setPendingDeletes(prev => ({...prev, [ann.id]: false}));
                                      });
                                  } 
-                             }} className={`p-1.5 md:p-2 rounded-lg transition ${pendingDeletes[ann.id] ? 'bg-gray-200 text-gray-500 cursor-wait' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 cursor-pointer'}`}>
-                               {pendingDeletes[ann.id] ? <span className="text-[10px] font-black uppercase px-1">Deleting...</span> : <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>}
+                             }} className="p-1.5 md:p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 cursor-pointer">
+                               <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                              </button>
                           </div>
                         </div>
