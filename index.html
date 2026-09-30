@@ -1139,9 +1139,11 @@
       
       const artCancelFlag = useRef(false); // 🚩 Artwork Process Killer Flag
       const annCancelFlag = useRef(false); // 🚩 Announcement Process Killer Flag
+      
+      const [pendingDeletes, setPendingDeletes] = useState({}); // 🚨 Delete Loading State
 
       const [currency, setCurrency] = useState('INR');
-
+      
       const getPrice = (amtINR) => {
          if (!amtINR) return '';
          if (currency === 'USD') return '$' + Math.ceil(Number(amtINR) / 83.5).toLocaleString('en-US');
