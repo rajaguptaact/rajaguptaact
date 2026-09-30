@@ -3113,6 +3113,29 @@
               return;
           }
 
+          // 🚨 Strict Check: Form Jamming Rokne Ke Liye
+          if (!uploadData.image) {
+              showToast("⚠️ Please select a Main Artwork Image first.");
+              return;
+          }
+          if (selectedBgs.length !== 3) {
+              showPremiumAlert("⚠️ Action Required: You must select EXACTLY 3 backgrounds before publishing.");
+              return;
+          }
+
+          // 🚨 Strict Check: Duplicate Carbon Copy Block
+          if (!editArtId) {
+             const isDuplicate = artworks.some(a => 
+                 a.title === uploadData.title && 
+                 a.desc === uploadData.desc && 
+                 a.image === uploadData.image
+             );
+             if (isDuplicate) {
+                 showPremiumAlert("⚠️ Duplicate Found: This Artwork is already uploaded! Please change details to upload as new.");
+                 return; // Form clear nahi hoga, bas process kill ho jayega
+             }
+          }
+
           setArtUploadStatus("Uploading Main Artwork Details...");
           artCancelFlag.current = false; // 🚩 Process start hote hi flag down
 
