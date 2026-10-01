@@ -3638,7 +3638,7 @@
                     <div className="border-2 border-dashed border-purple-300 p-2 md:p-3 rounded-lg text-center bg-purple-50 cursor-pointer relative overflow-hidden hover:bg-purple-100 transition">
                       <label className="font-black text-purple-700 block cursor-pointer w-full h-full relative z-10 py-1 text-xs md:text-sm">
                         {uploadData.image ? "Change Main Artwork Image" : "+ Select Main Artwork Image"}
-                        <input type="file" accept="image/*" className="hidden" onChange={handleImage} required={!uploadData.image} />
+                        <input type="file" accept="image/*" className="hidden" onChange={handleImage} />
                       </label>
                     </div>
                     {uploadData.image ? <img src={uploadData.image} className="mt-2 h-20 md:h-28 mx-auto rounded-md shadow-sm object-contain border border-gray-200 pointer-events-none" /> : null}
