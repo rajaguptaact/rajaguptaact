@@ -3311,6 +3311,7 @@
              }
 
              setAnnUploadStatus("Processing...");
+             setPendingAnnUpdate(editAnnId);
              annCancelFlag.current = false; // 🚩 Flag down
 
              setTimeout(() => {
@@ -3319,6 +3320,7 @@
                  db.collection('announcements').doc(editAnnId).update(updateData).then(() => {
                      if (annCancelFlag.current) return; // 🚨 Success Message Blocked
                      showToast("✅ Notification Updated Globally on all devices!");
+                     setTimeout(() => setPendingAnnUpdate(null), 1500);
                      setAnnUploadStatus("");
                      setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
                  });
@@ -3330,6 +3332,7 @@
              }
              
              setAnnUploadStatus("Publishing...");
+             setPendingAnnPublish({ title: annTitle });
              annCancelFlag.current = false; // 🚩 Flag down
 
              setTimeout(() => {
@@ -3338,6 +3341,7 @@
                  db.collection('announcements').add(newData).then(() => {
                      if (annCancelFlag.current) return; // 🚨 Success Message Blocked
                      showToast("✅ Notification Posted Globally on all devices!");
+                     setTimeout(() => setPendingAnnPublish(null), 1500);
                      setAnnUploadStatus("");
                      setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
                  });
