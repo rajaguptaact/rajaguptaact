@@ -3921,7 +3921,7 @@
                                <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                              </button>
                              <button disabled={pendingDeletes[ann.id]} onClick={() => { 
-                                 if(window.confirm("Delete this notification permanently?")) {
+                                 if(window.confirm("Delete this Announcement globally?")) {
                                      setPendingDeletes(prev => ({...prev, [ann.id]: { ...ann, _isAnn: true }}));
                                      db.collection('announcements').doc(ann.id).delete().then(() => {
                                          showToast("🗑️ Delete Successful");
