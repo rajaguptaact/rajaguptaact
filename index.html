@@ -1957,8 +1957,13 @@
                   <form 
                     onInvalid={(e) => {
                         e.preventDefault();
-                        const fieldName = e.target.placeholder || e.target.name || "Required Field";
-                        showToast(`⚠️ [${fieldName}] : ${e.target.validationMessage}`);
+                        const form = e.currentTarget;
+                        const firstInvalid = form.querySelector(':invalid');
+                        if (firstInvalid && firstInvalid === e.target) {
+                            const fieldName = e.target.placeholder || e.target.name || "Required Field";
+                            showToast(`⚠️ [${fieldName}] : ${e.target.validationMessage}`);
+                            firstInvalid.focus();
+                        }
                     }}
                     onSubmit={(e) => { 
                       e.preventDefault(); 
