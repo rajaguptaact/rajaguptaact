@@ -1953,7 +1953,13 @@
                 </div>
 
                 <div className="glass-panel p-3 md:p-8 rounded-xl md:rounded-3xl shadow-xl">
-                  <form onSubmit={(e) => { 
+                  <form 
+                    onInvalid={(e) => {
+                        e.preventDefault();
+                        const fieldName = e.target.placeholder || e.target.name || "Required Field";
+                        showToast(`⚠️ [${fieldName}] : ${e.target.validationMessage}`);
+                    }}
+                    onSubmit={(e) => { 
                       e.preventDefault(); 
                       if (commissionInput.subject.trim().length < 5) {
                           showToast("❌ Please provide a detailed subject description (minimum 5 characters).");
@@ -1980,7 +1986,8 @@
 
                     <div>
                       <label className="font-black text-[9px] md:text-sm text-gray-800 uppercase tracking-wide">Select Paper Size</label>
-                      <select required value={commissionInput.size} onChange={e => setCommissionInput({...commissionInput, size: e.target.value})} className="w-full border-2 border-gray-200 px-2 py-1.5 md:p-4 rounded-md md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-0.5 md:mt-2 text-[11px] md:text-base">
+                      <select required name="Paper Size" value={commissionInput.size} onChange={e => setCommissionInput({...commissionInput, size: e.target.value})} className="w-full border-2 border-gray-200 px-2 py-1.5 md:p-4 rounded-md md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-0.5 md:mt-2 text-[11px] md:text-base">
+                        <option value="" disabled>Select Paper Size...</option>
                         <option value="A4 Colour Pencil">A4 Size (Medium)</option>
                         <option value="A3 Colour Pencil">A3 Size (Large)</option>
                       </select>
