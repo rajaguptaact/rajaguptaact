@@ -3787,14 +3787,13 @@
                              </button>
                              <button disabled={pendingDeletes[art.id]} onClick={() => { 
                                  if(window.confirm("Delete this Artwork globally?")) {
-                                     setPendingDeletes(prev => ({...prev, [art.id]: true}));
-                                     // 🚨 PURE DATABASE LOGIC: Koi time limit nahi. Jab tak server response na de, Deleting ghoomta rahega.
+                                     setPendingDeletes(prev => ({...prev, [art.id]: { ...art, _isArt: true }}));
                                      db.collection('RajaStudio').doc(art.id).delete().then(() => {
                                          showToast("🗑️ Delete Successful");
-                                         setPendingDeletes(prev => ({...prev, [art.id]: false})); // Parda hatega aur card bhi gayab ho jayega
+                                         setPendingDeletes(prev => { const newState = {...prev}; delete newState[art.id]; return newState; });
                                      }).catch(() => {
                                          showToast("❌ Failed to delete. Try again.");
-                                         setPendingDeletes(prev => ({...prev, [art.id]: false}));
+                                         setPendingDeletes(prev => { const newState = {...prev}; delete newState[art.id]; return newState; });
                                      });
                                  } 
                              }} className="p-1.5 md:p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 cursor-pointer">
