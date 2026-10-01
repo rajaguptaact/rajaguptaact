@@ -3146,6 +3146,8 @@
           }
 
           setArtUploadStatus("Uploading Main Artwork Details...");
+          if (editArtId) setPendingArtUpdate(editArtId);
+          else setPendingArtPublish({ title: uploadData.title, image: uploadData.image });
           artCancelFlag.current = false; // 🚩 Process start hote hi flag down
 
           const dataToSave = { 
@@ -3208,6 +3210,7 @@
               
               setTimeout(() => {
                   showToast(editArtId ? "✅ Artwork Media Updated Successfully!" : "✅ Artwork Uploaded Globally!");
+                  setTimeout(() => { setPendingArtUpdate(null); setPendingArtPublish(null); }, 1500);
                   setEditArtId(null); 
                   setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
                   setSelectedBgs([]);
@@ -3220,6 +3223,7 @@
               console.error(err);
               showToast("❌ ERROR: Failed to upload. System memory might be full.");
               setArtUploadStatus("");
+              setPendingArtUpdate(null); setPendingArtPublish(null);
           }
         };
 
