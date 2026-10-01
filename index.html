@@ -3080,8 +3080,9 @@
               }
           }
 
-          if (editArtId && !isMediaModified) {
+           if (editArtId && !isMediaModified) {
               setArtUploadStatus("⚡ Fast Update Text Only"); 
+              setPendingArtUpdate(editArtId);
               artCancelFlag.current = false; // 🚩 Process start hote hi flag down
               
               const quickData = {
@@ -3100,6 +3101,7 @@
                  .then(() => {
                      if (artCancelFlag.current) return; // 🚨 Success Message Blocked
                      showToast("✅ Live Updated on All Devices Instantly!");
+                     setTimeout(() => setPendingArtUpdate(null), 1500);
                      setEditArtId(null); 
                      setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
                      setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); 
