@@ -3771,16 +3771,36 @@
 
                 <div className="glass-panel p-5 md:p-6 rounded-3xl shadow-sm border border-gray-200">
                   <h3 className="text-lg md:text-xl font-black text-gray-900 mb-3 md:mb-4 flex items-center gap-2">Manage Artworks</h3>
-                  {artworks.length === 0 && !Object.values(pendingDeletes).some(p => p && p._isArt) ? <div className="text-center p-6 border border-dashed border-gray-300 rounded-xl bg-gray-50"><p className="text-gray-500 font-bold text-sm md:text-base">No artwork available.</p></div> : (
+                  {artworks.length === 0 && !Object.values(pendingDeletes).some(p => p && p._isArt) && !pendingArtPublish ? <div className="text-center p-6 border border-dashed border-gray-300 rounded-xl bg-gray-50"><p className="text-gray-500 font-bold text-sm md:text-base">No artwork available.</p></div> : (
                     <div className="space-y-2 md:space-y-3 max-h-[300px] md:max-h-[400px] overflow-y-auto pr-2">
+                      {pendingArtPublish && (
+                         <div className="relative flex justify-between items-center bg-white p-2 md:p-3 rounded-xl shadow-sm border border-indigo-200 overflow-hidden pointer-events-none">
+                            <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                               <span className="bg-indigo-500 text-white px-3 py-1 rounded-md font-black text-[10px] md:text-xs uppercase tracking-widest shadow-sm animate-pulse flex items-center gap-1.5">
+                                   <svg className="animate-spin w-3 h-3 md:w-4 md:h-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Publishing...
+                               </span>
+                            </div>
+                            <div className="flex items-center gap-2 md:gap-3">
+                              <img src={pendingArtPublish.image} className="w-10 h-10 md:w-12 md:h-12 object-cover rounded-lg border border-gray-200 pointer-events-none" />
+                              <div><p className="font-bold text-xs md:text-sm text-gray-800 line-clamp-1">{pendingArtPublish.title}</p></div>
+                            </div>
+                         </div>
+                      )}
                       {[...artworks, ...Object.values(pendingDeletes).filter(p => p && p._isArt && !artworks.some(a => a.id === p.id))].sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)).map(art => (
-                        <div key={art.id} className={`relative flex justify-between items-center bg-white p-2 md:p-3 rounded-xl shadow-sm border border-gray-100 overflow-hidden ${pendingDeletes[art.id] ? 'pointer-events-none' : ''}`}>
+                        <div key={art.id} className={`relative flex justify-between items-center bg-white p-2 md:p-3 rounded-xl shadow-sm border border-gray-100 overflow-hidden ${(pendingDeletes[art.id] || pendingArtUpdate === art.id) ? 'pointer-events-none' : ''}`}>
                            
-                           {/* 🚨 BADA OVERLAY LABEL: Pura card delete hote time ruk jayega */}
+                           {/* 🚨 OVERLAYS: Deleting & Updating */}
                            {pendingDeletes[art.id] && (
                                <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center">
                                    <span className="bg-rose-500 text-white px-3 py-1 rounded-md font-black text-[10px] md:text-xs uppercase tracking-widest shadow-sm animate-pulse flex items-center gap-1.5">
                                        <svg className="animate-spin w-3 h-3 md:w-4 md:h-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Deleting...
+                                   </span>
+                               </div>
+                           )}
+                           {pendingArtUpdate === art.id && (
+                               <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                                   <span className="bg-blue-500 text-white px-3 py-1 rounded-md font-black text-[10px] md:text-xs uppercase tracking-widest shadow-sm animate-pulse flex items-center gap-1.5">
+                                       <svg className="animate-spin w-3 h-3 md:w-4 md:h-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Updating...
                                    </span>
                                </div>
                            )}
