@@ -3922,14 +3922,26 @@
                 <div className="glass-panel p-5 md:p-6 rounded-3xl shadow-sm border border-gray-200 mt-6 md:mt-8">
                   <h3 className="text-lg md:text-xl font-black text-gray-900 mb-3 md:mb-4 flex items-center gap-2">Manage Announcements</h3>
                   
-                  {announcements.length === 0 && !Object.values(pendingDeletes).some(p => p && p._isAnn) ? <div className="text-center p-6 border border-dashed border-gray-300 rounded-xl bg-gray-50"><p className="text-gray-500 font-bold text-sm md:text-base">No announcement available.</p></div> : (announcements.length > 0 || Object.values(pendingDeletes).some(p => p && p._isAnn)) ? (
+                  {announcements.length === 0 && !Object.values(pendingDeletes).some(p => p && p._isAnn) && !pendingAnnPublish ? <div className="text-center p-6 border border-dashed border-gray-300 rounded-xl bg-gray-50"><p className="text-gray-500 font-bold text-sm md:text-base">No announcement available.</p></div> : (announcements.length > 0 || Object.values(pendingDeletes).some(p => p && p._isAnn) || pendingAnnPublish) ? (
                     <div className="space-y-2 md:space-y-3 max-h-[300px] md:max-h-[400px] overflow-y-auto pr-2">
+                      {pendingAnnPublish && (
+                          <div className="relative flex justify-between items-center p-2 md:p-3 rounded-xl shadow-sm border border-indigo-200 bg-white gap-2 md:gap-3 overflow-hidden pointer-events-none">
+                             <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                                 <span className="bg-indigo-500 text-white px-3 py-1 rounded-md font-black text-[10px] md:text-xs uppercase tracking-widest shadow-sm animate-pulse flex items-center gap-1.5">
+                                     <svg className="animate-spin w-3 h-3 md:w-4 md:h-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Publishing...
+                                 </span>
+                             </div>
+                             <div className="flex items-center gap-2 md:gap-3 flex-1 overflow-hidden">
+                                <div className="flex-1"><p className="font-bold text-xs md:text-sm line-clamp-1 text-gray-800">{pendingAnnPublish.title}</p></div>
+                             </div>
+                          </div>
+                      )}
                       {[...announcements, ...Object.values(pendingDeletes).filter(p => p && p._isAnn && !announcements.some(a => a.id === p.id))].sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)).map(ann => {
                         const isExpired = ann.expireAt && ann.expireAt < Date.now();
                         return (
-                        <div key={ann.id} className={`relative flex justify-between items-center p-2 md:p-3 rounded-xl shadow-sm border ${isExpired ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'} gap-2 md:gap-3 overflow-hidden ${pendingDeletes[ann.id] ? 'pointer-events-none' : ''}`}>
+                        <div key={ann.id} className={`relative flex justify-between items-center p-2 md:p-3 rounded-xl shadow-sm border ${isExpired ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'} gap-2 md:gap-3 overflow-hidden ${(pendingDeletes[ann.id] || pendingAnnUpdate === ann.id) ? 'pointer-events-none' : ''}`}>
                            
-                           {/* 🚨 BADA OVERLAY LABEL: Announcement card par bhi waisa hi deleting effect */}
+                           {/* 🚨 OVERLAYS: Deleting & Updating */}
                            {pendingDeletes[ann.id] && (
                                <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center">
                                    <span className="bg-rose-500 text-white px-3 py-1 rounded-md font-black text-[10px] md:text-xs uppercase tracking-widest shadow-sm animate-pulse flex items-center gap-1.5">
@@ -3937,6 +3949,14 @@
                                    </span>
                                </div>
                            )}
+                           {pendingAnnUpdate === ann.id && (
+                               <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                                   <span className="bg-blue-500 text-white px-3 py-1 rounded-md font-black text-[10px] md:text-xs uppercase tracking-widest shadow-sm animate-pulse flex items-center gap-1.5">
+                                       <svg className="animate-spin w-3 h-3 md:w-4 md:h-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Updating...
+                                   </span>
+                               </div>
+                           )}
+
 
                           <div className="flex items-center gap-2 md:gap-3 flex-1 overflow-hidden">
                               <div className="flex-1">
