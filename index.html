@@ -1170,6 +1170,11 @@
 
       const [editArtId, setEditArtId] = useState(null);
       const [editAnnId, setEditAnnId] = useState(null);
+      
+      const [pendingArtPublish, setPendingArtPublish] = useState(null);
+      const [pendingArtUpdate, setPendingArtUpdate] = useState(null);
+      const [pendingAnnPublish, setPendingAnnPublish] = useState(null);
+      const [pendingAnnUpdate, setPendingAnnUpdate] = useState(null);
 
       // 🚨 MASTER FIX 1: OFFLINE TELEGRAM QUEUE (No Missing, No Double Messages) 🚨
       const processTelegramQueue = async () => {
