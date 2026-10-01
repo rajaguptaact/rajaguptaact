@@ -1918,15 +1918,16 @@
 
       const CommissionView = () => {
         const handleCommissionBack = () => {
-           if (commissionInput.subject.trim() !== '' || commissionInput.budget !== '' || commissionInput.instagram.trim() !== '') {
+           if (commissionInput.subject.trim() !== '' || commissionInput.budget !== '' || commissionInput.instagram.trim() !== '' || commissionInput.size !== '') {
                if (window.confirm("⚠️ WARNING: Navigating away will discard all the details you have entered. Are you sure you want to go back?")) {
-                   setCommissionInput({ subject: '', size: 'A4 Colour Pencil', budget: '', instagram: '' });
+                   setCommissionInput({ subject: '', size: '', budget: '', instagram: '' });
                    nav('gallery');
                }
            } else {
                nav('gallery');
            }
         };
+
 
         return (
           <div className="p-4 md:p-8 max-w-6xl mx-auto min-h-screen space-y-5 md:space-y-8">
