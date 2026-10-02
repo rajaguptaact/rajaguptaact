@@ -2637,10 +2637,20 @@
                   e.preventDefault();
                   const form = e.currentTarget;
                   const firstInvalid = form.querySelector(':invalid');
+                  
                   if (firstInvalid && firstInvalid === e.target) {
+                      // Purane laal boxes ko normal karein
+                      form.querySelectorAll('.error-glow').forEach(el => el.classList.remove('error-glow'));
+                      
+                      // Sirf current error wale box ko laal karein
+                      firstInvalid.classList.add('error-glow');
+                      
+                      // Type karte hi laal rang hata dein
+                      firstInvalid.addEventListener('input', () => firstInvalid.classList.remove('error-glow'), { once: true });
+
                       const fieldName = e.target.placeholder || e.target.name || "Required Field";
                       showToast(`⚠️ [${fieldName}] : ${e.target.validationMessage}`);
-                      firstInvalid.focus();
+                      document.activeElement.blur(); // 🚨 Keyboard ko band karega
                   }
               }}
               className="glass-panel p-4 md:p-8 rounded-xl md:rounded-3xl shadow-xl space-y-3 md:space-y-5" 
