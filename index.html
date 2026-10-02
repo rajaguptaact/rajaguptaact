@@ -1965,15 +1965,24 @@
                     onInvalid={(e) => {
                         e.preventDefault();
                         const form = e.currentTarget;
-                        form.classList.add('show-form-errors'); // 🚨 Galti wale box ko Laal karega
                         const firstInvalid = form.querySelector(':invalid');
+                        
                         if (firstInvalid && firstInvalid === e.target) {
+                            // Purane laal boxes ko normal karein
+                            form.querySelectorAll('.error-glow').forEach(el => el.classList.remove('error-glow'));
+                            
+                            // Sirf current error wale box ko laal karein
+                            firstInvalid.classList.add('error-glow');
+                            
+                            // Type karte hi laal rang hata dein
+                            firstInvalid.addEventListener('input', () => firstInvalid.classList.remove('error-glow'), { once: true });
+
                             const fieldName = e.target.placeholder || e.target.name || "Required Field";
                             showToast(`⚠️ [${fieldName}] : ${e.target.validationMessage}`);
-                            document.activeElement.blur(); // 🚨 Keyboard ko turant band (close) karega
+                            document.activeElement.blur(); // 🚨 Keyboard ko band karega
                         }
                     }}
-                    onSubmit={(e) => {  
+                    onSubmit={(e) => { 
                       e.preventDefault(); 
                       if (commissionInput.subject.trim().length < 5) {
                           showToast("❌ Please provide a detailed subject description (minimum 5 characters).");
