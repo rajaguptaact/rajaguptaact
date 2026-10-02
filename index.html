@@ -1967,14 +1967,15 @@
                     onInvalid={(e) => {
                         e.preventDefault();
                         const form = e.currentTarget;
+                        form.classList.add('show-form-errors'); // 🚨 Galti wale box ko Laal karega
                         const firstInvalid = form.querySelector(':invalid');
                         if (firstInvalid && firstInvalid === e.target) {
                             const fieldName = e.target.placeholder || e.target.name || "Required Field";
                             showToast(`⚠️ [${fieldName}] : ${e.target.validationMessage}`);
-                            firstInvalid.focus();
+                            document.activeElement.blur(); // 🚨 Keyboard ko turant band (close) karega
                         }
                     }}
-                    onSubmit={(e) => { 
+                    onSubmit={(e) => {  
                       e.preventDefault(); 
                       if (commissionInput.subject.trim().length < 5) {
                           showToast("❌ Please provide a detailed subject description (minimum 5 characters).");
