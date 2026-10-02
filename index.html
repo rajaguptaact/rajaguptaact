@@ -2541,7 +2541,8 @@
         const canSubmit = isEmailValidNow && isPhoneValidNow && isPinValidNow && isAddressValidNow && isNameValidNow;
 
         const handleEmailChange = (e) => {
-          setCheckoutData({...checkoutData, email: e.target.value});
+          // Auto-lowercase aur auto-space remove karega
+          setCheckoutData({...checkoutData, email: e.target.value.toLowerCase().trim()});
         };
 
         const handlePhoneChange = (e) => {
