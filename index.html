@@ -57,6 +57,15 @@
     .animate-toast {
       animation: popupToast 5s cubic-bezier(0.16, 1, 0.3, 1) forwards; /* 🚨 5 seconds ka time de diya */
     }
+
+    /* 🚨 SMART ERROR HIGHLIGHTER (Galti wale box ko automatic Laal karne ke liye) 🚨 */
+    .show-form-errors input:invalid, 
+    .show-form-errors select:invalid, 
+    .show-form-errors textarea:invalid {
+        border-color: #ef4444 !important; 
+        background-color: #fef2f2 !important;
+        transition: all 0.3s ease;
+    }
   </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 text-gray-900 font-sans antialiased selection:bg-purple-300">
