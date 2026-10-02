@@ -2500,13 +2500,14 @@
 
       const CheckoutForm = () => {
         
-        const isEmailValidNow = checkoutData.email ? /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(checkoutData.email) : false;
-        const currentEmailError = (checkoutData.email && !isEmailValidNow) ? "❌ Enter a valid email (e.g. name@gmail.com)" : "";
+        // 🚨 STRICT EMAIL LOCK: Sirf perfect spelling allow karega (@gmail.com, @yahoo.com etc.)
+        const isEmailValidNow = checkoutData.email ? /^[a-z0-9._%+-]+@(gmail\.com|yahoo\.com|yahoo\.in|outlook\.com|hotmail\.com|icloud\.com)$/.test(checkoutData.email) : false;
+        const currentEmailError = (checkoutData.email && !isEmailValidNow) ? "❌ Exact format required (e.g. name@gmail.com)" : "";
 
         let isPhoneValidNow = false;
         let currentPhoneError = '';
         const cleanedPhone = checkoutData.phone.replace(/[\s-]/g, '');
-        
+
         if (cleanedPhone) {
             if (checkoutData.country === 'India') {
                 if (!cleanedPhone.startsWith('+91')) {
