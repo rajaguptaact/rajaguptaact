@@ -2758,7 +2758,7 @@
                         }).catch(e => { console.log(e); setLoadingLoc(false); });
                     }} className="w-full border-2 border-gray-200 px-3 py-2 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none font-medium text-xs md:text-base mt-1">
                        <option value="" disabled>Select State...</option>
-                       {apiCountries.find(c => c.name === 'India')?.states.map(s => (
+                       {(apiCountries.find(c => c.name === 'India')?.states || []).map(s => (
                           <option key={s.name} value={s.name}>{s.name}</option>
                        ))}
                     </select>
