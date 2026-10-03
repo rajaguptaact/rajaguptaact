@@ -2570,9 +2570,10 @@
           setCheckoutData({...checkoutData, phone: val});
         };
 
-        const handlePinChange = async (e) => {
+          const handlePinChange = async (e) => {
           const val = e.target.value.replace(/[^0-9A-Za-z\s-]/g, '');
-          setCheckoutData(prev => ({...prev, pin: val, city: '', state: ''}));
+          // NAYE DROP-DOWN FORM KE LIYE: Yahan se city/state clear karna hata diya gaya hai
+          setCheckoutData(prev => ({...prev, pin: val})); 
           
           if (checkoutData.country === 'India' && val.length === 6 && /^\d+$/.test(val)) {
               setIsValidating(true);
@@ -2581,7 +2582,8 @@
                 const data = await res.json();
                 if (data && data[0] && data[0].Status === "Success") {
                   const details = data[0].PostOffice[0];
-                  setCheckoutData(prev => ({...prev, pin: val, city: details.District, state: details.State}));
+                  // Yahan hum PIN ka location bas silent Telegram message ke liye save kar rahe hain
+                  setCheckoutData(prev => ({...prev, pin: val, pinCity: details.District, pinState: details.State}));
                 }
               } catch (err) { console.log(err); }
               setIsValidating(false);
