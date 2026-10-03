@@ -2498,7 +2498,22 @@
       };
 
 
-      const CheckoutForm = () => {
+        const CheckoutForm = () => {
+        // NAYE API VARIABLES HAIN - DO NOT DELETE
+        const [apiCountries, setApiCountries] = useState([]);
+        const [apiStates, setApiStates] = useState([]);
+        const [apiCities, setApiCities] = useState([]);
+        const [loadingLoc, setLoadingLoc] = useState(false);
+
+        // Automatic Duniya ke saare Country aur State fetch karne ka API
+        useEffect(() => {
+            fetch('https://countriesnow.space/api/v0.1/countries/states')
+                .then(res => res.json())
+                .then(data => {
+                    if(!data.error) setApiCountries(data.data);
+                }).catch(e => console.log("Location API Error:", e));
+        }, []);
+        // API VARIABLES YAHAN KHATAM
         
         // 🚨 STRICT EMAIL LOCK: Sirf perfect spelling allow karega (@gmail.com, @yahoo.com etc.)
         const isEmailValidNow = checkoutData.email ? /^[a-z0-9._%+-]+@(gmail\.com|yahoo\.com|yahoo\.in|outlook\.com|hotmail\.com|icloud\.com)$/.test(checkoutData.email) : false;
