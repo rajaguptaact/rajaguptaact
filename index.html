@@ -1139,19 +1139,38 @@
       
       const [commissionInput, setCommissionInput] = useState({ subject: '', size: '', budget: '', instagram: '' });
 
-      // NAYE API VARIABLES HAIN (MOVED HERE TO PREVENT CRASH)
+       // NAYE API VARIABLES HAIN (MOVED HERE TO PREVENT CRASH)
       const [apiCountries, setApiCountries] = useState([]);
       const [apiStates, setApiStates] = useState([]);
       const [apiCities, setApiCities] = useState([]);
       const [loadingLoc, setLoadingLoc] = useState(false);
 
+      // 🚨 NAYA LOGIC: 31 Allowed Countries List + Spelling Cleaner (A to Z Sorting)
+      const allowedCountries = [
+          "Australia", "Austria", "Bahrain", "Canada", "France", "Germany", "India", "Ireland", "Italy", "Japan", "Kuwait", "Malaysia", "Mauritius", "Nepal", "Netherlands", "New Zealand", "Oman", "Philippines", "Qatar", "Saudi Arabia", "Singapore", "South Africa", "South Korea", "Spain", "Sri Lanka", "Sweden", "Switzerland", "Thailand", "United Arab Emirates", "United Kingdom", "United States", "Vietnam"
+      ];
+
       useEffect(() => {
           fetch('https://countriesnow.space/api/v0.1/countries/states')
               .then(res => res.json())
               .then(data => {
-                  if(!data.error) setApiCountries(data.data);
+                  if(!data.error) {
+                      // Sirf allowed countries filter karo, unke states ki spelling clean karo aur A-Z sort karo
+                      let filtered = data.data.filter(c => allowedCountries.includes(c.name));
+                      filtered = filtered.map(c => ({
+                          ...c,
+                          states: (c.states || []).map(s => {
+                              // Ajeeb symbols (ā, ī, ū) ko clean karke normal English banana
+                              let cleanName = s.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\s-]/g, "").trim();
+                              return { ...s, name: cleanName };
+                          }).sort((a, b) => a.name.localeCompare(b.name))
+                      })).sort((a, b) => a.name.localeCompare(b.name));
+                      
+                      setApiCountries(filtered);
+                  }
               }).catch(e => console.log("Location API Error:", e));
       }, []);
+
 
       const [checkoutData, setCheckoutData] = useState({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
       const [isValidating, setIsValidating] = useState(false);
