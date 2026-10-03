@@ -1139,6 +1139,20 @@
       
       const [commissionInput, setCommissionInput] = useState({ subject: '', size: '', budget: '', instagram: '' });
 
+      // NAYE API VARIABLES HAIN (MOVED HERE TO PREVENT CRASH)
+      const [apiCountries, setApiCountries] = useState([]);
+      const [apiStates, setApiStates] = useState([]);
+      const [apiCities, setApiCities] = useState([]);
+      const [loadingLoc, setLoadingLoc] = useState(false);
+
+      useEffect(() => {
+          fetch('https://countriesnow.space/api/v0.1/countries/states')
+              .then(res => res.json())
+              .then(data => {
+                  if(!data.error) setApiCountries(data.data);
+              }).catch(e => console.log("Location API Error:", e));
+      }, []);
+
       const [checkoutData, setCheckoutData] = useState({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
       const [isValidating, setIsValidating] = useState(false);
       const [artUploadStatus, setArtUploadStatus] = useState(''); // 🚨 Artwork ka apna switch
