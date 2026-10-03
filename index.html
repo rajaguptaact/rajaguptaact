@@ -1303,16 +1303,19 @@
         msg += `*WhatsApp:* ${orderInfo.phone}\n`;
         if (orderInfo.instagram) msg += `*Insta:* ${orderInfo.instagram}\n`;
         msg += `*Email:* ${orderInfo.email}\n`;
-        msg += `*Country:* ${orderInfo.country}\n\n`;
+        msg += `*Country:* ${orderInfo.exactCountry || orderInfo.country}\n\n`;
         
         msg += `*Delivery Details:*\n`;
         msg += `*Address:* ${orderInfo.address}\n`;
-        if (orderInfo.city) {
-           msg += `*City/State:* ${orderInfo.city}, ${orderInfo.state}\n`;
-           msg += `*PIN Code:* ${orderInfo.pin}\n\n`;
-        } else {
-           msg += `*ZIP/Postal:* ${orderInfo.pin}\n\n`;
+        msg += `*State:* ${orderInfo.state || 'N/A'}\n`;
+        if (orderInfo.city) msg += `*City/District:* ${orderInfo.city}\n`;
+        msg += `*ZIP/PIN Code:* ${orderInfo.pin}\n\n`;
+        
+        // Agar PIN Code Indian hai aur verify ho gaya, toh yeh detail jayegi
+        if (orderInfo.pinCity && orderInfo.pinState) {
+            msg += `*🔒 API PIN Verified Location:*\nCity: ${orderInfo.pinCity}\nState: ${orderInfo.pinState}\n\n`;
         }
+
         
         if (orderInfo.itemDetails && orderInfo.itemDetails.length > 0) {
            msg += `*Order Items/Subject:*\n`;
