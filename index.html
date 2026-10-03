@@ -2757,7 +2757,7 @@
 
               {checkoutData.country === 'India' && (
                 <>
-                  {/* INDIA: STATE SELECTION */}
+                 {/* INDIA: STATE SELECTION */}
                   <div>
                     <select required value={checkoutData.state} onChange={e => {
                         const selectedS = e.target.value;
@@ -2771,7 +2771,18 @@
                         })
                         .then(res => res.json())
                         .then(data => {
-                            if(!data.error) setApiCities(data.data);
+                            if(!data.error) {
+                                // 🚨 NAYA LOGIC: Cities ka spelling clean karna, duplicate hatana aur A to Z sort karna
+                                const cleanedCities = data.data
+                                    .map(city => {
+                                        if (!city) return "";
+                                        return city.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\s-]/g, "").trim();
+                                    })
+                                    .filter((city, index, self) => city !== "" && self.indexOf(city) === index) // Duplicate block karega
+                                    .sort((a, b) => a.localeCompare(b));
+                                
+                                setApiCities(cleanedCities);
+                            }
                             setLoadingLoc(false);
                         }).catch(e => { console.log(e); setLoadingLoc(false); });
                     }} className="w-full border-2 border-gray-200 px-3 py-2 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none font-medium text-xs md:text-base mt-1">
