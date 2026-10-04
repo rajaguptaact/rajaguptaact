@@ -2775,12 +2775,11 @@
                     <select required value={checkoutData.exactCountry || ''} onChange={e => {
                         const selectedC = e.target.value;
                         setCheckoutData({...checkoutData, exactCountry: selectedC, state: '', city: ''});
-                        const cData = apiCountries.find(c => c.name === selectedC);
-                        setApiStates(cData ? cData.states : []);
+                        setStaticStates(staticLocationData[selectedC] || []);
                     }} className="w-full border-2 border-gray-200 px-3 py-2 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none font-medium text-xs md:text-base mt-1">
                        <option value="" disabled>Select Country...</option>
-                       {apiCountries.filter(c => c.name !== 'India').map(c => (
-                          <option key={c.name} value={c.name}>{c.name}</option>
+                       {staticCountries.filter(c => c !== 'India').map(c => (
+                          <option key={c} value={c}>{c}</option>
                        ))}
                     </select>
                   </div>
@@ -2789,9 +2788,9 @@
                   {checkoutData.exactCountry && (
                     <div>
                       <select required value={checkoutData.state} onChange={e => setCheckoutData({...checkoutData, state: e.target.value})} className="w-full border-2 border-gray-200 px-3 py-2 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none font-medium text-xs md:text-base mt-1">
-                         <option value="" disabled>Select State...</option>
-                         {apiStates.length > 0 ? apiStates.map(s => (
-                            <option key={s.name} value={s.name}>{s.name}</option>
+                         <option value="" disabled>Select State/Province...</option>
+                         {staticStates.length > 0 ? staticStates.map(s => (
+                            <option key={s} value={s}>{s}</option>
                          )) : <option value="Other">Other / Not Listed</option>}
                       </select>
                     </div>
