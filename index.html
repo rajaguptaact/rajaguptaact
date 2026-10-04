@@ -2798,40 +2798,18 @@
                 </>
               )}
 
-              {checkoutData.country === 'India' && (
+             {checkoutData.country === 'India' && (
                 <>
                  {/* INDIA: STATE SELECTION */}
                   <div>
                     <select required value={checkoutData.state} onChange={e => {
                         const selectedS = e.target.value;
                         setCheckoutData({...checkoutData, state: selectedS, city: ''});
-                        setLoadingLoc(true);
-                        // Jab state select hoga, toh automatically uske cities layega
-                        fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({ country: 'India', state: selectedS })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if(!data.error) {
-                                // 🚨 NAYA LOGIC: Cities ka spelling clean karna, duplicate hatana aur A to Z sort karna
-                                const cleanedCities = data.data
-                                    .map(city => {
-                                        if (!city) return "";
-                                        return city.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\s-]/g, "").trim();
-                                    })
-                                    .filter((city, index, self) => city !== "" && self.indexOf(city) === index) // Duplicate block karega
-                                    .sort((a, b) => a.localeCompare(b));
-                                
-                                setApiCities(cleanedCities);
-                            }
-                            setLoadingLoc(false);
-                        }).catch(e => { console.log(e); setLoadingLoc(false); });
+                        setStaticCities(staticLocationData["India"][selectedS] || []);
                     }} className="w-full border-2 border-gray-200 px-3 py-2 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none font-medium text-xs md:text-base mt-1">
                        <option value="" disabled>Select State...</option>
-                       {(apiCountries.find(c => c.name === 'India')?.states || []).map(s => (
-                          <option key={s.name} value={s.name}>{s.name}</option>
+                       {Object.keys(staticLocationData["India"]).sort().map(s => (
+                          <option key={s} value={s}>{s}</option>
                        ))}
                     </select>
                   </div>
@@ -2840,8 +2818,8 @@
                   {checkoutData.state && (
                     <div>
                       <select required value={checkoutData.city} onChange={e => setCheckoutData({...checkoutData, city: e.target.value})} className="w-full border-2 border-gray-200 px-3 py-2 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none font-medium text-xs md:text-base mt-1">
-                         <option value="" disabled>{loadingLoc ? "Loading Cities..." : "Select City / District..."}</option>
-                         {apiCities.length > 0 ? apiCities.map(city => (
+                         <option value="" disabled>Select City / District...</option>
+                         {staticCities.length > 0 ? staticCities.map(city => (
                             <option key={city} value={city}>{city}</option>
                          )) : <option value="Other">Other / Not Listed</option>}
                       </select>
@@ -2849,6 +2827,7 @@
                   )}
                 </>
               )}
+
 
               <div>
                  <input required value={checkoutData.pin} placeholder={checkoutData.country === "India" ? "6-Digit Indian PIN Code" : "Zip Code / Postal Code"} className={`w-full border-2 px-3 py-2 md:p-4 rounded-lg md:rounded-xl font-medium outline-none text-xs md:text-base ${(!isPinValidNow && checkoutData.pin.length > 0) ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-gray-200 focus:border-purple-500 bg-white'}`} onChange={handlePinChange} />
