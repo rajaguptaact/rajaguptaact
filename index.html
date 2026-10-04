@@ -2609,10 +2609,23 @@
         }
 
         let isPinValidNow = false;
+        let isIntlApiSupported = false;
+
         if (checkoutData.country === 'India') {
-            isPinValidNow = checkoutData.pin.length === 6 && checkoutData.city !== '';
+            // India ka purana logic same hai
+            isPinValidNow = checkoutData.pin.length === 6 && checkoutData.pinCity && checkoutData.pinCity !== '';
         } else {
-            isPinValidNow = checkoutData.pin.length >= 3;
+            // International desho ka API support list
+            const intlIsoCodes = { "Australia": "au", "Austria": "at", "Canada": "ca", "France": "fr", "Germany": "de", "Italy": "it", "Japan": "jp", "Netherlands": "nl", "New Zealand": "nz", "South Africa": "za", "Spain": "es", "Sweden": "se", "Switzerland": "ch", "United Kingdom": "gb", "United States": "us" };
+            
+            if (checkoutData.exactCountry && intlIsoCodes[checkoutData.exactCountry]) {
+                isIntlApiSupported = true;
+                // API supported desh ke liye, jab API city fetch karegi tabhi valid hoga
+                isPinValidNow = checkoutData.pinCity && checkoutData.pinCity !== '';
+            } else {
+                // Gulf countries ya unsupported desho ke liye simple length check (taaki customer fasa na rahe)
+                isPinValidNow = checkoutData.pin.length >= 3;
+            }
         }
 
         const isAddressValidNow = checkoutData.address.trim().length >= 10;
