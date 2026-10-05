@@ -2609,29 +2609,28 @@
         }
 
         let isPinValidNow = false;
-        let isIntlApiSupported = false;
+        let isLocationMatched = true;
 
         if (checkoutData.country === 'India') {
-            // India ka purana logic same hai
+            // India ke liye API verify hona zaroori hai
             isPinValidNow = checkoutData.pin.length === 6 && checkoutData.pinCity && checkoutData.pinCity !== '';
-        } else {
-            // International desho ka API support list
-            const intlIsoCodes = { "Australia": "au", "Austria": "at", "Canada": "ca", "France": "fr", "Germany": "de", "Italy": "it", "Japan": "jp", "Netherlands": "nl", "New Zealand": "nz", "South Africa": "za", "Spain": "es", "Sweden": "se", "Switzerland": "ch", "United Kingdom": "gb", "United States": "us" };
             
-            if (checkoutData.exactCountry && intlIsoCodes[checkoutData.exactCountry]) {
-                isIntlApiSupported = true;
-                // API supported desh ke liye, jab API city fetch karegi tabhi valid hoga
-                isPinValidNow = checkoutData.pinCity && checkoutData.pinCity !== '';
-            } else {
-                // Gulf countries ya unsupported desho ke liye simple length check (taaki customer fasa na rahe)
-                isPinValidNow = checkoutData.pin.length >= 3;
+            // STRICT MATCH: Agar user manually state/city badalta hai toh match hona chahiye
+            if (isPinValidNow && checkoutData.state && checkoutData.city) {
+                if (checkoutData.state !== checkoutData.pinState || checkoutData.city !== checkoutData.pinCity) {
+                    isLocationMatched = false;
+                }
             }
+        } else {
+            // International ke liye koi api error nahi, bas 3 digit ka hona chahiye
+            isPinValidNow = checkoutData.pin.trim().length >= 3;
+            isLocationMatched = true;
         }
 
         const isAddressValidNow = checkoutData.address.trim().length >= 10;
         const isNameValidNow = checkoutData.name.trim().length >= 3;
 
-        const canSubmit = isEmailValidNow && isPhoneValidNow && isPinValidNow && isAddressValidNow && isNameValidNow;
+        const canSubmit = isEmailValidNow && isPhoneValidNow && isPinValidNow && isAddressValidNow && isNameValidNow && isLocationMatched;
 
         const handleEmailChange = (e) => {
           // Auto-lowercase aur auto-space remove karega
