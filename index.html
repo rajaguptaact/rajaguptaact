@@ -2651,7 +2651,7 @@
           const val = e.target.value.replace(/[^0-9A-Za-z\s-]/g, '');
           setCheckoutData(prev => ({...prev, pin: val, pinCity: '', pinState: ''})); 
           
-          // --- INDIA API LOGIC (WITH SMART FUZZY MATCH) ---
+          // --- INDIA API LOGIC (WITH ULTIMATE SMART MATCH) ---
           if (checkoutData.country === 'India' && val.length === 6 && /^\d+$/.test(val)) {
               setIsValidating(true);
               try {
@@ -2662,43 +2662,61 @@
                   let fetchedState = details.State;
                   let fetchedCity = details.District;
                   
-                  let cityList = staticLocationData["India"][fetchedState] || [];
+                  const clean = s => s.toLowerCase().replace(/[^a-z]/g, '');
+
+                  // 🚨 1. SMART MATCHING FOR STATE 🚨
+                  let allStates = Object.keys(staticLocationData["India"]);
+                  let smartState = fetchedState;
+                  let targetState = clean(fetchedState);
+                  let maxStateSim = 0;
+
+                  for (let state of allStates) {
+                      const current = clean(state);
+                      if (current === targetState) { smartState = state; maxStateSim = 1; break; }
+                      
+                      let matchCount = 0; let searchTarget = targetState;
+                      for (let char of current) {
+                          if (searchTarget.includes(char)) { matchCount++; searchTarget = searchTarget.replace(char, ''); }
+                      }
+                      let sim = matchCount / Math.max(current.length, targetState.length);
+                      if (sim > maxStateSim) { maxStateSim = sim; smartState = state; }
+                  }
+                  // API vs List State Spelling Fix (e.g., "&" vs "and")
+                  if (maxStateSim >= 0.65) {
+                      fetchedState = smartState;
+                  }
+
+                  // 🚨 2. SMART MATCHING FOR CITY/DISTRICT 🚨
+                  let cityList = [...(staticLocationData["India"][fetchedState] || [])]; // Array ko copy kiya
                   let smartCity = fetchedCity;
 
-                  // 🚨 SMART MATCHING LOGIC START 🚨
                   if (cityList.length > 0) {
-                      const clean = s => s.toLowerCase().replace(/[^a-z]/g, '');
-                      const target = clean(fetchedCity);
-                      let maxSim = 0;
+                      const targetCity = clean(fetchedCity);
+                      let maxCitySim = 0;
                       
                       for (let city of cityList) {
                           const current = clean(city);
-                          if (current === target) { 
-                              smartCity = city; // Exact Match mil gaya
-                              break; 
-                          }
+                          if (current === targetCity) { smartCity = city; maxCitySim = 1; break; }
                           
-                          // Agar Exact Match nahi mila, toh letters ko percentage mein match karega
-                          let matchCount = 0; 
-                          let searchTarget = target;
+                          let matchCount = 0; let searchTarget = targetCity;
                           for (let char of current) {
-                              if (searchTarget.includes(char)) {
-                                  matchCount++;
-                                  searchTarget = searchTarget.replace(char, '');
-                              }
+                              if (searchTarget.includes(char)) { matchCount++; searchTarget = searchTarget.replace(char, ''); }
                           }
-                          let sim = matchCount / Math.max(current.length, target.length);
-                          if (sim > maxSim) { 
-                              maxSim = sim; 
-                              smartCity = city; 
-                          }
+                          let sim = matchCount / Math.max(current.length, targetCity.length);
+                          if (sim > maxCitySim) { maxCitySim = sim; smartCity = city; }
                       }
-                      // Agar 70% se zyada similarity hai, toh List wala original naam use karega (Jaise Jhunjhunu)
-                      if (maxSim >= 0.70) {
-                          fetchedCity = smartCity;
+                      
+                      if (maxCitySim >= 0.70) {
+                          fetchedCity = smartCity; // Minor spelling mismatch solve
+                      } else {
+                          // NAYA DISTRICT: Agar API se koi bilkul naya district aaya jo aapki list mein nahi hai
+                          // Toh usko temporary list mein add karke allow kar dega taaki error na aaye
+                          if (!cityList.includes(fetchedCity)) {
+                              cityList.push(fetchedCity);
+                              cityList.sort(); // List ko alphabet-wise theek kar dega
+                          }
                       }
                   }
-                  // 🚨 SMART MATCHING LOGIC END 🚨
 
                   setCheckoutData(prev => ({
                       ...prev, 
