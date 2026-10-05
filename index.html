@@ -2800,6 +2800,25 @@
                  </select>
               </div>
 
+              {/* 🚨 PIN CODE BOX SHIFTED UP HERE 🚨 */}
+               <div>
+                 <input required value={checkoutData.pin} placeholder={checkoutData.country === "India" ? "6-Digit Indian PIN Code" : "Zip Code / Postal Code"} className={`w-full border-2 px-3 py-2 md:p-4 rounded-lg md:rounded-xl font-medium outline-none text-xs md:text-base ${(!isPinValidNow && checkoutData.pin.length > 0 && !isValidating) ? 'border-red-400 focus:border-red-500 bg-red-50' : (isPinValidNow ? 'border-green-400 focus:border-green-500 bg-green-50' : 'border-gray-200 focus:border-purple-500 bg-white')}`} onChange={handlePinChange} />
+                 
+                 {isValidating && <p className="text-[9px] md:text-xs text-blue-500 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">⏳ Verifying PIN...</p>}
+                 
+                 {checkoutData.country === 'India' && checkoutData.pin.length > 0 && !isPinValidNow && !isValidating && <p className="text-[9px] md:text-xs text-red-500 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">❌ Invalid 6-Digit Indian PIN.</p>}
+
+                 {isPinValidNow && !isValidating && (
+                     <p className="text-[9px] md:text-xs text-green-600 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">
+                         ✅ Valid {checkoutData.country === 'India' ? 'Indian PIN' : 'Postal Code'} 
+                         {checkoutData.pinCity ? ` (${checkoutData.pinCity}, ${checkoutData.pinState})` : ''}
+                     </p>
+                 )}
+                 {!isLocationMatched && checkoutData.country === 'India' && (
+                     <p className="text-[9px] md:text-xs text-red-500 font-bold mt-1 ml-1.5">❌ PIN Code does not match selected State/City.</p>
+                 )}
+              </div>
+
               {/* 🚨 DYNAMIC BOXES FOR INDIA & INTERNATIONAL 🚨 */}
               
               {checkoutData.country === 'International' && (
@@ -2840,7 +2859,7 @@
                         const selectedS = e.target.value;
                         setCheckoutData({...checkoutData, state: selectedS, city: ''});
                         setStaticCities(staticLocationData["India"][selectedS] || []);
-                    }} className="w-full border-2 border-gray-200 px-3 py-2 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none font-medium text-xs md:text-base mt-1">
+                    }} className={`w-full border-2 px-3 py-2 md:p-4 rounded-lg md:rounded-xl outline-none font-medium text-xs md:text-base mt-1 ${!isLocationMatched ? 'border-red-400 bg-red-50 focus:border-red-500' : 'border-gray-200 bg-white focus:border-purple-500'}`}>
                        <option value="" disabled>Select State...</option>
                        {Object.keys(staticLocationData["India"]).sort().map(s => (
                           <option key={s} value={s}>{s}</option>
@@ -2851,7 +2870,7 @@
                   {/* INDIA: CITY / DISTRICT SELECTION */}
                   {checkoutData.state && (
                     <div>
-                      <select required value={checkoutData.city} onChange={e => setCheckoutData({...checkoutData, city: e.target.value})} className="w-full border-2 border-gray-200 px-3 py-2 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none font-medium text-xs md:text-base mt-1">
+                      <select required value={checkoutData.city} onChange={e => setCheckoutData({...checkoutData, city: e.target.value})} className={`w-full border-2 px-3 py-2 md:p-4 rounded-lg md:rounded-xl outline-none font-medium text-xs md:text-base mt-1 ${!isLocationMatched ? 'border-red-400 bg-red-50 focus:border-red-500' : 'border-gray-200 bg-white focus:border-purple-500'}`}>
                          <option value="" disabled>Select City / District...</option>
                          {staticCities.length > 0 ? staticCities.map(city => (
                             <option key={city} value={city}>{city}</option>
@@ -2861,24 +2880,6 @@
                   )}
                 </>
               )}
-
-
-               <div>
-                 <input required value={checkoutData.pin} placeholder={checkoutData.country === "India" ? "6-Digit Indian PIN Code" : "Zip Code / Postal Code"} className={`w-full border-2 px-3 py-2 md:p-4 rounded-lg md:rounded-xl font-medium outline-none text-xs md:text-base ${(!isPinValidNow && checkoutData.pin.length > 0 && !isValidating) ? 'border-red-400 focus:border-red-500 bg-red-50' : (isPinValidNow ? 'border-green-400 focus:border-green-500 bg-green-50' : 'border-gray-200 focus:border-purple-500 bg-white')}`} onChange={handlePinChange} />
-                 
-                 {isValidating && <p className="text-[9px] md:text-xs text-blue-500 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">⏳ Verifying Postal Code...</p>}
-                 
-                 {checkoutData.country === 'India' && checkoutData.pin.length > 0 && !isPinValidNow && !isValidating && <p className="text-[9px] md:text-xs text-red-500 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">❌ Invalid 6-Digit Indian PIN.</p>}
-                 
-                 {checkoutData.country === 'International' && checkoutData.pin.length > 3 && isIntlApiSupported && !isPinValidNow && !isValidating && <p className="text-[9px] md:text-xs text-red-500 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">❌ Invalid Postal Code for {checkoutData.exactCountry}.</p>}
-
-                 {isPinValidNow && !isValidating && (
-                     <p className="text-[9px] md:text-xs text-green-600 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">
-                         ✅ Valid {checkoutData.country === 'India' ? 'Indian PIN' : 'Postal Code'} 
-                         {checkoutData.pinCity ? ` (${checkoutData.pinCity})` : ''}
-                     </p>
-                 )}
-              </div>
 
               
               <textarea required minLength="10" value={checkoutData.address} placeholder="Complete Delivery Address (House No, Street Area, Landmark)" className="w-full border-2 border-gray-200 px-3 py-2 md:p-4 rounded-lg md:rounded-xl font-medium focus:border-purple-500 outline-none text-xs md:text-base" rows="3" onChange={e => setCheckoutData({...checkoutData, address: e.target.value})}></textarea>
