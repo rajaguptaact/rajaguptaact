@@ -2651,6 +2651,7 @@
         const handlePinChange = async (e) => {
           const val = e.target.value.replace(/[^0-9A-Za-z\s-]/g, '');
           setCheckoutData(prev => ({...prev, pin: val, pinCity: '', pinState: ''})); 
+          setLocalAreas([]); // 🚨 NAYA: Naya PIN type karte hi purani list hata dega
           
           // --- INDIA API LOGIC (WITH ULTIMATE SMART MATCH) ---
           if (checkoutData.country === 'India' && val.length === 6 && /^\d+$/.test(val)) {
@@ -2659,7 +2660,81 @@
                 const res = await fetch(`https://api.postalpincode.in/pincode/${val}`);
                 const data = await res.json();
                 if (data && data[0] && data[0].Status === "Success") {
-                  const details = data[0].PostOffice[0];
+                  const postOffices = data[0].PostOffice; // 🚨 NAYA: Saare Post Offices nikal liye
+                  const details = postOffices[0];
+                  let fetchedState = details.State;
+                  let fetchedCity = details.District;
+                  
+                  const clean = s => s.toLowerCase().replace(/[^a-z]/g, '');
+
+                  // 🚨 1. SMART MATCHING FOR STATE 🚨
+                  let allStates = Object.keys(staticLocationData["India"]);
+                  let smartState = fetchedState;
+                  let targetState = clean(fetchedState);
+                  let maxStateSim = 0;
+
+                  for (let state of allStates) {
+                      const current = clean(state);
+                      if (current === targetState) { smartState = state; maxStateSim = 1; break; }
+                      
+                      let matchCount = 0; let searchTarget = targetState;
+                      for (let char of current) {
+                          if (searchTarget.includes(char)) { matchCount++; searchTarget = searchTarget.replace(char, ''); }
+                      }
+                      let sim = matchCount / Math.max(current.length, targetState.length);
+                      if (sim > maxStateSim) { maxStateSim = sim; smartState = state; }
+                  }
+                  if (maxStateSim >= 0.65) {
+                      fetchedState = smartState;
+                  }
+
+                  // 🚨 2. SMART MATCHING FOR CITY/DISTRICT 🚨
+                  let cityList = [...(staticLocationData["India"][fetchedState] || [])]; 
+                  let smartCity = fetchedCity;
+
+                  if (cityList.length > 0) {
+                      const targetCity = clean(fetchedCity);
+                      let maxCitySim = 0;
+                      
+                      for (let city of cityList) {
+                          const current = clean(city);
+                          if (current === targetCity) { smartCity = city; maxCitySim = 1; break; }
+                          
+                          let matchCount = 0; let searchTarget = targetCity;
+                          for (let char of current) {
+                              if (searchTarget.includes(char)) { matchCount++; searchTarget = searchTarget.replace(char, ''); }
+                          }
+                          let sim = matchCount / Math.max(current.length, targetCity.length);
+                          if (sim > maxCitySim) { maxCitySim = sim; smartCity = city; }
+                      }
+                      
+                      if (maxCitySim >= 0.70) {
+                          fetchedCity = smartCity; 
+                      } else {
+                          if (!cityList.includes(fetchedCity)) {
+                              cityList.push(fetchedCity);
+                              cityList.sort(); 
+                          }
+                      }
+                  }
+
+                  setCheckoutData(prev => ({
+                      ...prev, 
+                      pin: val, 
+                      pinCity: fetchedCity, 
+                      pinState: fetchedState,
+                      state: fetchedState,
+                      city: fetchedCity
+                  }));
+                  
+                  setStaticCities(cityList);
+                  setLocalAreas(postOffices.map(po => po.Name)); // 🚨 NAYA: Mohallo ki list save kar li
+                }
+              } catch (err) { console.log(err); }
+              setIsValidating(false);
+          }
+        };
+
                   let fetchedState = details.State;
                   let fetchedCity = details.District;
                   
