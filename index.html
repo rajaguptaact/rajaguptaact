@@ -1215,6 +1215,7 @@
       const [staticCountries, setStaticCountries] = useState(Object.keys(staticLocationData).sort());
       const [staticStates, setStaticStates] = useState([]);
       const [staticCities, setStaticCities] = useState([]);
+      const [localAreas, setLocalAreas] = useState([]); // 🚨 NAYA: Local Areas ki list ke liye
 
       const [checkoutData, setCheckoutData] = useState({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
       const [isValidating, setIsValidating] = useState(false);
