@@ -2628,7 +2628,9 @@
             isLocationMatched = true;
         }
 
-        const isAddressValidNow = checkoutData.address.trim().length >= 10;
+        // 🚨 NAYA: Minimum 15 letters aur kam se kam 2 spaces (3 words) hone chahiye
+        const spaceCount = (checkoutData.address.match(/ /g) || []).length;
+        const isAddressValidNow = checkoutData.address.trim().length >= 15 && spaceCount >= 2;
         const isNameValidNow = checkoutData.name.trim().length >= 3;
 
         const canSubmit = isEmailValidNow && isPhoneValidNow && isPinValidNow && isAddressValidNow && isNameValidNow && isLocationMatched;
