@@ -2689,6 +2689,11 @@
 
         const handleShippingSubmit = (e) => {
           e.preventDefault();
+          if (checkoutData.country === 'India' && !isLocationMatched) {
+             showPremiumAlert(`❌ LOCATION MISMATCH ERROR\n\nThe PIN Code you entered (${checkoutData.pin}) belongs to:\n📍 City: ${checkoutData.pinCity}\n📍 State: ${checkoutData.pinState}\n\nBut you have manually selected:\n📍 City: ${checkoutData.city}\n📍 State: ${checkoutData.state}\n\nPlease make sure both match exactly to proceed.`);
+             return;
+          }
+
           if (!canSubmit) {
              showPremiumAlert("❌ Details verification failed. Please check all the red error messages and fix them.");
              return;
