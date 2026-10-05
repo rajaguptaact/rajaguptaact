@@ -2650,10 +2650,9 @@
 
         const handlePinChange = async (e) => {
           const val = e.target.value.replace(/[^0-9A-Za-z\s-]/g, '');
-          // Jaise hi user type karega, purani fetch ki hui details clear hongi
           setCheckoutData(prev => ({...prev, pin: val, pinCity: '', pinState: ''})); 
           
-          // --- INDIA API LOGIC (100% UNTOUCHED) ---
+          // --- INDIA API LOGIC (WITH AUTO-FILL) ---
           if (checkoutData.country === 'India' && val.length === 6 && /^\d+$/.test(val)) {
               setIsValidating(true);
               try {
@@ -2661,32 +2660,29 @@
                 const data = await res.json();
                 if (data && data[0] && data[0].Status === "Success") {
                   const details = data[0].PostOffice[0];
-                  setCheckoutData(prev => ({...prev, pin: val, pinCity: details.District, pinState: details.State}));
+                  const fetchedState = details.State;
+                  const fetchedCity = details.District;
+                  
+                  // Naya Logic: State aur City ko auto-fill karna
+                  setCheckoutData(prev => ({
+                      ...prev, 
+                      pin: val, 
+                      pinCity: fetchedCity, 
+                      pinState: fetchedState,
+                      state: fetchedState,
+                      city: fetchedCity
+                  }));
+                  
+                  // District List ko background mein update karna
+                  if (staticLocationData["India"][fetchedState]) {
+                      setStaticCities(staticLocationData["India"][fetchedState]);
+                  }
                 }
               } catch (err) { console.log(err); }
               setIsValidating(false);
           }
-          // --- INTERNATIONAL API LOGIC (NEW Zippopotam API) ---
-          else if (checkoutData.country === 'International' && val.length >= 3 && checkoutData.exactCountry) {
-              const intlIsoCodes = { "Australia": "au", "Austria": "at", "Canada": "ca", "France": "fr", "Germany": "de", "Italy": "it", "Japan": "jp", "Netherlands": "nl", "New Zealand": "nz", "South Africa": "za", "Spain": "es", "Sweden": "se", "Switzerland": "ch", "United Kingdom": "gb", "United States": "us" };
-              const cCode = intlIsoCodes[checkoutData.exactCountry];
-              
-              if (cCode) {
-                 setIsValidating(true);
-                 try {
-                    const safeVal = val.replace(/\s+/g, ''); // UK/Canada format fix
-                    const res = await fetch(`https://api.zippopotam.us/${cCode}/${safeVal}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data && data.places && data.places.length > 0) {
-                            const details = data.places[0];
-                            setCheckoutData(prev => ({...prev, pin: val, pinCity: details["place name"], pinState: details["state"]}));
-                        }
-                    }
-                 } catch(err) { console.log(err); }
-                 setIsValidating(false);
-              }
-          }
+          // --- INTERNATIONAL LOGIC ---
+          // International ke liye API check hata diya gaya hai taaki customer fase nahi
         };
 
         const shippingFeeBase = checkoutData.country === 'International' ? 700 : 100;
