@@ -2346,9 +2346,9 @@
                <div className={`px-5 md:px-8 pb-6 md:pb-8 pt-2 ${isRecoverOpen ? 'block' : 'hidden'}`}>
                    <p className="text-xs md:text-sm font-bold text-gray-500 mb-5 md:mb-6 text-center">Enter the exact WhatsApp number used during checkout to retrieve your complete order history.</p>
                    
-                   <form onSubmit={handleRecoverOrders} className="flex flex-col md:flex-row gap-3 max-w-2xl mx-auto">
+                   <form onSubmit={handleRecoverOrders} className="flex flex-col md:flex-row gap-2.5 max-w-2xl mx-auto">
                        <div className="relative flex-grow">
-                           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                           <div className="absolute inset-y-0 left-0 pl-3 md:pl-4 flex items-center pointer-events-none">
                                <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                            </div>
                            <input 
@@ -2357,14 +2357,14 @@
                               placeholder="e.g. +91 98765..." 
                               value={searchWaInput} 
                               onChange={(e) => setSearchWaInput(e.target.value)}
-                              className="w-full pl-10 md:pl-12 pr-4 py-3 md:py-4 rounded-xl border-2 border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-200 outline-none font-black text-sm md:text-base text-gray-800 transition-all bg-white"
+                              className="w-full pl-9 md:pl-12 pr-3 md:pr-4 py-2 md:py-3.5 rounded-lg md:rounded-xl border-2 border-purple-200 focus:border-purple-600 focus:ring-2 focus:ring-purple-200 outline-none font-bold text-sm md:text-base text-gray-800 transition-all bg-white"
                            />
                        </div>
-                       <button type="submit" className="bg-purple-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-black text-sm md:text-base tracking-wide hover:bg-purple-700 shadow-md hover:shadow-xl transition-all active:scale-95 whitespace-nowrap">
+                       <button type="submit" className="bg-purple-600 text-white px-5 md:px-8 py-2 md:py-3.5 rounded-lg md:rounded-xl font-bold text-sm md:text-base tracking-wide hover:bg-purple-700 shadow-md hover:shadow-xl transition-all active:scale-95 whitespace-nowrap">
                            Search Orders
                        </button>
                    </form>
-
+  
                    {hasSearched && recoveredOrders.length === 0 && (
                        <div className="mt-5 md:mt-6 p-3 md:p-4 bg-red-50 border border-red-200 rounded-xl text-center animate-pulse">
                            <p className="font-black text-red-700 text-xs md:text-sm">No results found. Please verify the WhatsApp number used during checkout.</p>
