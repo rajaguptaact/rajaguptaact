@@ -1887,11 +1887,12 @@
                         </div>
                       </div>
                       
-                      <div className={`flex flex-col items-start justify-center w-full mt-2 md:mt-2 border-t border-gray-100 pt-2 md:pt-2 ${isDeleted ? 'grayscale opacity-50' : ''}`}>
+                      {/* 🚀 FIX START: Ab Parent se grey filter hata diya gaya hai, taaki Remove button LAL (Red) dikhe */}
+                      <div className="flex flex-col items-start justify-center w-full mt-2 md:mt-2 border-t border-gray-100 pt-2 md:pt-2">
                         
                         {/* OLD PRICE ROW (UPAR) */}
                         {cOld && cLive && Number(cOld) > Number(cLive) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
-                          <div className="flex items-center gap-2 mb-1 w-full justify-start">
+                          <div className={`flex items-center gap-2 mb-1 w-full justify-start ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
                             <span className="line-through text-gray-400 text-[10px] md:text-sm font-bold">{getPrice((cOld || 0) * (item.qty || 1))}</span>
                             <span className="bg-yellow-400 text-gray-900 text-[8px] md:text-[10px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide shadow-sm">
                               {Math.round(((Number(cOld) - Number(cLive)) / Number(cOld)) * 100)}% OFF
@@ -1902,13 +1903,13 @@
                        {/* NEW PRICE + QTY + ACTIONS ROW (NEECHE EK LINE MEIN) */}
                        <div className="flex flex-row items-center justify-between gap-2 md:gap-4 w-full flex-wrap mt-1 md:mt-1"> 
 
-                            {/* NAYA PRICE (KATEGA NAHI CHAHE SOLD OUT HO) */}
-                            <p className="font-black text-lg md:text-2xl text-gray-900">
+                            {/* NAYA PRICE (Grey ho jayega delete hone par) */}
+                            <p className={`font-black text-lg md:text-2xl text-gray-900 ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
                                 {getPrice((cLive || 0) * (item.qty || 1))}
                             </p>
 
-                            {/* QTY BOX (HAMESHA DIKHEGA, SOLD OUT PAR BHI) */}
-                            <div className={`flex items-center gap-1.5 md:gap-2 border-l border-gray-200 pl-2 md:pl-4 h-full ${isDeleted ? 'pointer-events-none' : ''}`}>
+                            {/* QTY BOX (Grey aur Lock ho jayega delete hone par) */}
+                            <div className={`flex items-center gap-1.5 md:gap-2 border-l border-gray-200 pl-2 md:pl-4 h-full ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
                                 <span className="text-[9px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Qty:</span>
                                 {(!item.selectedSize || !item.selectedSize.includes('Original')) ? (
                                   <div className="flex items-center gap-1.5">
@@ -1965,12 +1966,13 @@
                                
                                <span className="text-gray-300">|</span>
                                
+                               {/* 🚀 LAL RANG WALA BUTTON: Yeh ab 100% red aur active dikhega */}
                                <button onClick={() => {
                                    const updatedCart = cart.filter(c => c.cartId !== item.cartId);
                                    setCart(updatedCart);
                                    try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
                                    showToast("🗑️ Item removed from Cart"); 
-                               }} className={`text-rose-500 text-[9px] md:text-xs font-bold hover:underline cursor-pointer bg-rose-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md ${isDeleted ? 'pointer-events-auto grayscale-0 opacity-100' : ''}`}>Remove</button>
+                               }} className="text-rose-500 text-[9px] md:text-xs font-bold hover:underline cursor-pointer bg-rose-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md">Remove</button>
                             </div>
                         </div>
                       </div>
