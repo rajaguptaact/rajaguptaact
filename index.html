@@ -1887,7 +1887,7 @@
                         </div>
                       </div>
                       
-                      <div className={`flex flex-col items-start justify-center w-full mt-2 md:mt-2 border-t border-gray-100 pt-2 md:pt-2 ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
+                      <div className={`flex flex-col items-start justify-center w-full mt-2 md:mt-2 border-t border-gray-100 pt-2 md:pt-2 ${isDeleted ? 'grayscale opacity-50' : ''}`}>
                         
                         {/* OLD PRICE ROW (UPAR) */}
                         {cOld && cLive && Number(cOld) > Number(cLive) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1 ? (
@@ -1908,7 +1908,7 @@
                             </p>
 
                             {/* QTY BOX (HAMESHA DIKHEGA, SOLD OUT PAR BHI) */}
-                            <div className="flex items-center gap-1.5 md:gap-2 border-l border-gray-200 pl-2 md:pl-4 h-full">
+                            <div className={`flex items-center gap-1.5 md:gap-2 border-l border-gray-200 pl-2 md:pl-4 h-full ${isDeleted ? 'pointer-events-none' : ''}`}>
                                 <span className="text-[9px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Qty:</span>
                                 {(!item.selectedSize || !item.selectedSize.includes('Original')) ? (
                                   <div className="flex items-center gap-1.5">
@@ -1970,7 +1970,7 @@
                                    setCart(updatedCart);
                                    try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
                                    showToast("🗑️ Item removed from Cart"); 
-                               }} className="text-rose-500 text-[9px] md:text-xs font-bold hover:underline cursor-pointer bg-rose-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md">Remove</button>
+                               }} className={`text-rose-500 text-[9px] md:text-xs font-bold hover:underline cursor-pointer bg-rose-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md ${isDeleted ? 'pointer-events-auto grayscale-0 opacity-100' : ''}`}>Remove</button>
                             </div>
                         </div>
                       </div>
