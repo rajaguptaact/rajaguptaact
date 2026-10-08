@@ -1977,6 +1977,7 @@
                     </div>
                   );
                 })}
+         
                 
                 {hasDeletedItems && (
                     <div className="bg-red-50 text-red-700 p-3 md:p-4 rounded-xl text-xs md:text-sm font-bold border border-red-200 mt-6 text-center shadow-sm">
@@ -1991,8 +1992,8 @@
                     </div>
                 )}
                 
-                {/* 🚨 Spacer: Taki form ka aakhri hissa floating bar ke peeche na chhupe 🚨 */}
-                <div className="pb-24"></div>
+                {/* 🚨 Spacer: Taki footer ko scroll karne par pura jagah mile aur floating bar ke peeche kuch na chhupe 🚨 */}
+                <div className="pb-36 md:pb-32"></div>
 
               </div>
             )}
@@ -2009,12 +2010,12 @@
                         </div>
 
                         {/* RIGHT SIDE: CHECKOUT BUTTON */}
+                        {/* 🚨 BUTTON LOGIC FIXED: "disabled" hata diya gaya hai taki click ho aur alert dikhe 🚨 */}
                         <button 
                             onClick={() => startCheckout(cart, 'Gallery Purchase', {})} 
-                            disabled={validItems.length === 0 || hasDeletedItems || hasSoldOutItems}
                             className={`flex-1 md:flex-none md:w-auto px-5 md:px-10 py-3 md:py-3.5 rounded-xl font-black text-xs md:text-base shadow-md transition-all active:scale-95 flex justify-center items-center gap-2 ${
                                 (validItems.length === 0 || hasDeletedItems || hasSoldOutItems) 
-                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300' 
+                                ? 'bg-gray-200 text-gray-500 cursor-pointer border border-gray-300' 
                                 : 'bg-gradient-to-r from-purple-700 to-pink-600 text-white cursor-pointer hover:shadow-lg'
                             }`}
                         >
@@ -2025,8 +2026,8 @@
             )}
           </div>
         );
-      };
-                            
+      };     
+                               
 
       const CommissionView = () => {
         const handleCommissionBack = () => {
