@@ -1992,14 +1992,17 @@
                     </div>
                 )}
                 
-                {/* 🚨 Spacer: Taki footer ko scroll karne par pura jagah mile aur floating bar ke peeche kuch na chhupe 🚨 */}
-                <div className="pb-36 md:pb-32"></div>
+                <div className="pb-10"></div>
 
               </div>
             )}
 
             {/* 🚨 NAYA: FLOATING CHECKOUT BAR (SIRF CART KE LIYE LOCKED) 🚨 */}
             {view === 'cart' && !isLoadingGallery && isDataLoaded && cart.length > 0 && (
+                <>
+                {/* 🚨 MAGIC FIX: Ye code Footer ko bar ke upar chadhne se rokega aur usko theek bar ke niche set karega 🚨 */}
+                <style>{`main { z-index: 50 !important; } body { padding-bottom: 90px !important; } @media (min-width: 768px) { body { padding-bottom: 110px !important; } }`}</style>
+                
                 <div className="fixed bottom-0 left-0 w-full z-[100] bg-white border-t border-gray-200 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] p-3 md:p-4">
                     <div className="max-w-3xl mx-auto flex items-center justify-between gap-3 md:gap-6">
                         
@@ -2010,7 +2013,7 @@
                         </div>
 
                         {/* RIGHT SIDE: CHECKOUT BUTTON */}
-                        {/* 🚨 BUTTON LOGIC FIXED: "disabled" hata diya gaya hai taki click ho aur alert dikhe 🚨 */}
+                        {/* 🚨 BUTTON LOGIC FIXED: "disabled" hata diya gaya hai taki aap click karein aur error message aaye 🚨 */}
                         <button 
                             onClick={() => startCheckout(cart, 'Gallery Purchase', {})} 
                             className={`flex-1 md:flex-none md:w-auto px-5 md:px-10 py-3 md:py-3.5 rounded-xl font-black text-xs md:text-base shadow-md transition-all active:scale-95 flex justify-center items-center gap-2 ${
@@ -2023,10 +2026,12 @@
                         </button>
                     </div>
                 </div>
+                </>
             )}
           </div>
         );
-      };     
+      };
+
                                
 
       const CommissionView = () => {
