@@ -2005,9 +2005,9 @@
                 {/* 🚨 THE ULTIMATE FIX: Menu Bar z-40 par hai, isliye main ko z-20 kiya. Footer ko z-0 kiya taki hamesha bar ke niche rahe 🚨 */}
                 <style>{`
                     main { z-index: 20 !important; } 
-                    footer { z-index: 0 !important; } 
-                    body { padding-bottom: 90px !important; } 
-                    @media (min-width: 768px) { body { padding-bottom: 110px !important; } }
+                    /* 🚀 FIX: Gap khatam karne ke liye padding body se hatakar seedha footer mein laga di gayi hai, ab border se border mil jayega */
+                    footer { z-index: 0 !important; padding-bottom: 90px !important; } 
+                    @media (min-width: 768px) { footer { padding-bottom: 110px !important; } }
                 `}</style>
                 
                 <div className="fixed bottom-0 left-0 w-full z-[100] bg-white border-t border-gray-200 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] p-3 md:p-4">
