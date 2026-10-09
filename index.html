@@ -5163,12 +5163,13 @@
        
 
           {toastMessage && (
-            <div key={toastKey} className="fixed bottom-6 md:bottom-10 left-1/2 z-[100] animate-toast w-[90%] sm:w-auto flex justify-center">
-              <div className="bg-gray-900 text-white px-5 py-3 md:py-4 rounded-2xl shadow-2xl font-black text-xs md:text-sm flex items-start gap-3 border border-gray-700 max-w-[90vw] sm:max-w-sm md:max-w-md text-left leading-relaxed">
+            <div key={toastKey} className="fixed bottom-6 md:bottom-12 left-1/2 z-[100] animate-toast w-[90%] sm:w-auto flex justify-center">
+              <div className="bg-gray-900 text-white px-5 py-3 md:px-8 md:py-5 rounded-2xl md:rounded-3xl shadow-2xl font-black text-xs md:text-lg lg:text-xl flex items-start gap-3 md:gap-4 border border-gray-700 max-w-[90vw] sm:max-w-sm md:max-w-2xl text-left leading-relaxed">
                 <span className="whitespace-normal break-words">{toastMessage}</span>
               </div>
             </div>
           )}
+
           
           {/* 🌟 PREMIUM CENTER ALERT BOX 🌟 */}
           {premiumAlert && (
