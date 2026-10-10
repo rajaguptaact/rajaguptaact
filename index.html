@@ -4844,15 +4844,15 @@
           
           {/* 🛠️ BUG FIX 1: Header Fixed to Top */}
           <header className="glass-panel fixed top-0 w-full z-40 shadow-sm border-b border-gray-100">
-            <div className="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
-              <div className="text-xl md:text-3xl font-black text-gray-900 tracking-tighter cursor-pointer flex items-center gap-1.5" onClick={() => nav('gallery')}>
+            <div className="max-w-7xl mx-auto px-3 md:px-8 h-14 md:h-20 flex items-center justify-between">
+              <div className="text-lg md:text-3xl font-black text-gray-900 tracking-tighter cursor-pointer flex items-center gap-1.5" onClick={() => nav('gallery')}>
                 <span className="uppercase">RAJA GUPTA ACT</span>
               </div>
               <div className="flex gap-2 md:gap-4 items-center">
-                 <button onClick={() => setCurrency(currency === 'INR' ? 'USD' : 'INR')} className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300 font-black px-3 md:px-4 py-2 rounded-xl shadow-inner hover:bg-gray-200 transition cursor-pointer flex items-center gap-1 text-sm md:text-base">
+                 <button onClick={() => setCurrency(currency === 'INR' ? 'USD' : 'INR')} className="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300 font-black px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl shadow-inner hover:bg-gray-200 transition cursor-pointer flex items-center gap-1 text-xs md:text-base">
                     {currency === 'INR' ? '₹ INR' : '$ USD'}
                  </button>
-                 <button onClick={() => setMenuOpen(!menuOpen)} className="bg-gradient-to-r from-purple-600 to-pink-500 text-white font-black px-4 md:px-6 py-2.5 rounded-xl shadow-lg flex items-center gap-2 hover:opacity-90 transition cursor-pointer">
+                 <button onClick={() => setMenuOpen(!menuOpen)} className="bg-gradient-to-r from-purple-600 to-pink-500 text-white font-black px-3.5 md:px-6 py-1.5 md:py-2.5 rounded-lg md:rounded-xl shadow-md md:shadow-lg flex items-center gap-2 hover:opacity-90 transition cursor-pointer text-xs md:text-base">
                    {menuOpen ? "CLOSE" : "MENU"}
                  </button>
               </div>
