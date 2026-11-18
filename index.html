@@ -639,6 +639,7 @@
 
       const [blockUntil, setBlockUntil] = useState(() => Number(window.localStorage.getItem('raja_admin_block')) || 0);
       const [resendTimer, setResendTimer] = useState(0);
+      const [otpTimeLeft, setOtpTimeLeft] = useState(0);
       const [isCheckingSecurity, setIsCheckingSecurity] = useState(true); // 🚨 NAYA: Security Loader
 
 
@@ -652,6 +653,17 @@
           }
           return () => clearInterval(interval);
       }, [resendTimer]);
+
+      // ⏳ OTP Expiry Live Timer
+      useEffect(() => {
+          let interval = null;
+          if (otpTimeLeft > 0) {
+              interval = setInterval(() => {
+                  setOtpTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
+              }, 1000);
+          }
+          return () => clearInterval(interval);
+      }, [otpTimeLeft]);
 
       const [artworks, setArtworks] = useState([]);
 
