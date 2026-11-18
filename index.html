@@ -2250,7 +2250,7 @@
 
       
       const MyOrdersView = () => {
-        const handleRecoverOrders = (e) => {
+        const handleRecoverOrders = async (e) => {
             e.preventDefault();
             if (!searchWaInput || searchWaInput.trim().length < 5) {
                 setRecoveredOrders([]); 
@@ -2258,14 +2258,25 @@
                 return;
             }
             
-            const cleanSearch = searchWaInput.replace(/[\s\+\-]/g, '');
-            const matched = orders.filter(o => {
-                if (!o.phone) return false;
-                const cleanStored = o.phone.replace(/[\s\+\-]/g, '');
-                return cleanStored === cleanSearch;
-            });
-            
-            setRecoveredOrders(matched);
+            const raw = searchWaInput.trim();
+            const digits = raw.replace(/[\s\+\-]/g, '');
+            const variants = Array.from(new Set([
+                raw,
+                '+' + digits,
+                digits,
+                '+91' + digits.slice(-10),
+                '+91 ' + digits.slice(-10)
+            ])).slice(0, 10);
+
+            try {
+                const snap = await db.collection("orders").where("phone", "in", variants).get();
+                const matched = snap.docs
+                    .map(doc => ({ id: doc.id, ...doc.data() }))
+                    .sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+                setRecoveredOrders(matched);
+            } catch (err) {
+                setRecoveredOrders([]);
+            }
             setHasSearched(true);
         };
 
