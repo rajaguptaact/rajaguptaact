@@ -72,23 +72,9 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
     
-    // --- SECURITY CREDENTIALS ---
-    const verifyAdmin = (input) => {
-        const secret = [87, 70, 79, 70, 100, 70, 73, 82, 78, 83, 100, 55, 53, 55, 59];
-        if (!input || input.length !== secret.length) return false;
-        for (let i = 0; i < input.length; i++) {
-            if (input.charCodeAt(i) + 5 !== secret[i]) return false;
-        }
-        return true;
-    };
-
     // =======================================================
-    // 🚨 TELEGRAM OFFICIAL BOT API 🚨
-    const ORDER_BOT_TOKEN = "8750639740:AAGh9V-GKW9ofq4eOT73ZMcxGcZxF03NcFI"; 
-    const ORDER_CHAT_ID = "8846198339"; 
-    
-    const SECURITY_BOT_TOKEN = "8948300649:AAFZ2vdLvEzWvLWUu9qkKQ8MXpKpSV30aVA"; 
-    const SECURITY_CHAT_ID = "8846198339"; 
+    // 🚨 SECURE GOOGLE BACKEND BRIDGE URL 🚨
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxEPpRLaabXs2s_N3_xbxy2tQ5xMVH3VAvxe00QKmkGqjrTfZEfjCmbx3ocQOXhhp0w/exec";
     // =======================================================
 
     // --- FIREBASE INITIALIZATION & OFFLINE PERSISTENCE ---
