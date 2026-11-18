@@ -1346,7 +1346,7 @@
             msg += `<b>Location:</b> ${dev.location}\n`;
             msg += `<b>Network/ISP:</b> ${dev.org}\n`;
 
-            const safeMsg = encodeURIComponent(msg);
+            const safeMsg = msg;
             
             // 🚨 Queue the message and process instantly
             let queue = [];
