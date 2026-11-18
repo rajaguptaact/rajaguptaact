@@ -4673,14 +4673,30 @@
 
         if (blockUntil > Date.now()) { setIsProcessingLogin(false); return; }
 
+        // 🌐 STEP 1: Basic System Offline Check
+        if (!navigator.onLine) {
+            showToast("⚠️ No Internet Connection: Please check your network and try again.");
+            setIsProcessingLogin(false);
+            return;
+        }
 
-         if (verifyAdmin(password)) {
-          // 🌐 STEP 1: Basic System Offline Check
-          if (!navigator.onLine) {
-              showToast("⚠️ No Internet Connection: Please check your network and try again.");
-              setIsProcessingLogin(false);
-              return;
-          }
+        let isPasswordValid = false;
+        try {
+            const passRes = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'verify_password', password: password })
+            });
+            const passData = await passRes.json();
+            if (passData && passData.status === 'valid') {
+                isPasswordValid = true;
+            }
+        } catch (err) {
+            showToast("⚠️ Connection Error: Unable to verify password. Please try again.");
+            setIsProcessingLogin(false);
+            return;
+        }
+
+         if (isPasswordValid) {
 
           let hasSession = false;
           let currentDevId = null;
