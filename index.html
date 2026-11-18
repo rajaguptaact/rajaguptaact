@@ -4796,16 +4796,23 @@
                 try {
                     const otpRes = await fetch(GAS_WEB_APP_URL, {
                         method: 'POST',
-                        body: JSON.stringify({ action: 'generate_otp', resends: '1' })
+                        body: JSON.stringify({ action: 'generate_otp', password: password, resends: '1' })
                     });
                     const otpData = await otpRes.json();
-                    if (otpData && otpData.status === 'sent' && otpData.otp) {
-                        setLiveOTP(otpData.otp);
+                    if (otpData && otpData.status === 'sent') {
+                        const secs = otpData.expiresAt ? Math.max(0, Math.ceil((otpData.expiresAt - Date.now()) / 1000)) : 60;
+                        setOtpTimeLeft(secs);
                         setAdminStep(2); 
                         setResendTimer(30); 
                         window.localStorage.setItem('raja_admin_fails', '0'); 
                         window.localStorage.setItem('raja_otp_resends', '1'); 
                         window.localStorage.setItem('raja_otp_fails', '0');
+                    } else if (otpData && otpData.status === 'blocked') {
+                        const bTime = otpData.blockedUntil || (Date.now() + 15 * 60 * 1000);
+                        setBlockUntil(bTime);
+                        window.localStorage.setItem('raja_admin_block', bTime);
+                        setAdminStep(1);
+                        setPassword('');
                     } else {
                         showToast("⚠️ Failed to send OTP. Please try again.");
                     }
