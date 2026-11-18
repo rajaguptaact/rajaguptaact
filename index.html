@@ -4699,6 +4699,16 @@
                 body: JSON.stringify({ action: 'verify_password', password: password })
             });
             const passData = await passRes.json();
+            if (passData && passData.status === 'blocked') {
+                const bTime = passData.blockedUntil || (Date.now() + 15 * 60 * 1000);
+                setBlockUntil(bTime);
+                window.localStorage.setItem('raja_admin_block', bTime);
+                setAdminStep(1);
+                setPassword('');
+                setIsProcessingLogin(false);
+                showToast("🚫 Too many failed attempts. Blocked for 15 minutes.");
+                return;
+            }
             if (passData && passData.status === 'valid') {
                 isPasswordValid = true;
             }
