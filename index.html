@@ -1259,17 +1259,21 @@
           let failed = [];
           for (let item of queue) {
               try {
-                  const url = `https://api.telegram.org/bot${SECURITY_BOT_TOKEN}/sendMessage?chat_id=${SECURITY_CHAT_ID}&text=${item.text}&parse_mode=HTML`;
-                  const res = await fetch(url);
-                  if (!res.ok) {
-                      const fallback = await fetch(url.replace('&parse_mode=HTML', ''));
-                      if (!fallback.ok) failed.push(item);
-                  }
+                  const res = await fetch(GAS_WEB_APP_URL, {
+                      method: 'POST',
+                      body: JSON.stringify({
+                          action: 'send_alert',
+                          type: 'security',
+                          message: item.text,
+                          parse_mode: 'HTML'
+                      })
+                  });
+                  if (!res.ok) failed.push(item);
               } catch(e) {
                   failed.push(item); 
               }
           }
-
+       
           // Jo net na hone se fail huye, sirf unhe wapas line me lagao (Purane aur naye mix karke)
           if (failed.length > 0) {
               let currentQueue = [];
