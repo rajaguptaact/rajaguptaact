@@ -1488,9 +1488,7 @@
                 setIsSlowNetwork(true); 
             });
 
-            unsubOrd = db.collection("orders").onSnapshot(snap => {
-              if (snap) setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
-            });
+            // Orders ab sirf Admin Login ke baad hi load honge
             
             unsubAnn = db.collection("announcements").onSnapshot({ includeMetadataChanges: true }, snap => {
               if (snap) {
@@ -1513,6 +1511,18 @@
             unsubArt(); unsubOrd(); unsubAnn(); unsubBg(); 
         };
       }, []);
+
+      // 🔒 ADMIN ONLY ORDERS (Aam visitors ke browser mein orders download nahi honge)
+      useEffect(() => {
+        if (!isAdmin) {
+            setOrders([]);
+            return;
+        }
+        const unsubAdminOrders = db.collection("orders").onSnapshot(snap => {
+            if (snap) setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+        });
+        return () => unsubAdminOrders();
+      }, [isAdmin]);
         
       
       // 🚨 FIX 1: GLOBAL ONLINE/OFFLINE TRACKER (Bounce Glitch Fixed)
