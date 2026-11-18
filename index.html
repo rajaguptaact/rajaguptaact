@@ -4771,15 +4771,25 @@
                     sendLoginAlert('SUCCESS_TRUSTED', 'Logged in via saved trusted device', devDetails);
                 });
             } else {
-                const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
-                setLiveOTP(newOTP);
-                setAdminStep(2); 
-                setResendTimer(30); 
-                window.localStorage.setItem('raja_admin_fails', '0'); 
-                window.localStorage.setItem('raja_otp_resends', '1'); 
-                window.localStorage.setItem('raja_otp_fails', '0'); 
-                
-                fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', `${newOTP}|1`, dev)); 
+                try {
+                    const otpRes = await fetch(GAS_WEB_APP_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'generate_otp', resends: '1' })
+                    });
+                    const otpData = await otpRes.json();
+                    if (otpData && otpData.status === 'sent' && otpData.otp) {
+                        setLiveOTP(otpData.otp);
+                        setAdminStep(2); 
+                        setResendTimer(30); 
+                        window.localStorage.setItem('raja_admin_fails', '0'); 
+                        window.localStorage.setItem('raja_otp_resends', '1'); 
+                        window.localStorage.setItem('raja_otp_fails', '0');
+                    } else {
+                        showToast("⚠️ Failed to send OTP. Please try again.");
+                    }
+                } catch (e) {
+                    showToast("⚠️ Network error while sending OTP.");
+                }
             }
           }
         } else {
