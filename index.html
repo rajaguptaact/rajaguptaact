@@ -4854,7 +4854,7 @@
       };
         
 
-      const handleResendOTP = () => {
+         const handleResendOTP = async () => {
          if (resendTimer > 0 || isProcessingLogin) return;
          setIsProcessingLogin(true);
 
@@ -4872,12 +4872,23 @@
              setLiveOTP('');
          } else {
              window.localStorage.setItem('raja_admin_fails', '0'); 
-             const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
-             setLiveOTP(newOTP);
-             setResendTimer(30);
-             fetchDeviceDetails().then(dev => sendLoginAlert('SEND_OTP', `${newOTP}|${resends}`, dev)); 
-             showToast(`✅ New 6-Digit OTP Sent! (Resend ${resends}/3)`);
-      }
+             try {
+                 const otpRes = await fetch(GAS_WEB_APP_URL, {
+                     method: 'POST',
+                     body: JSON.stringify({ action: 'generate_otp', resends: String(resends) })
+                 });
+                 const otpData = await otpRes.json();
+                 if (otpData && otpData.status === 'sent' && otpData.otp) {
+                     setLiveOTP(otpData.otp);
+                     setResendTimer(30);
+                     showToast(`✅ New 6-Digit OTP Sent! (Resend ${resends}/3)`);
+                 } else {
+                     showToast("⚠️ Failed to resend OTP. Please try again.");
+                 }
+             } catch (e) {
+                 showToast("⚠️ Network error while resending OTP.");
+             }
+         }
          setIsProcessingLogin(false);
       };
             
