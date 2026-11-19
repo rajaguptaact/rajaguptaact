@@ -139,11 +139,21 @@
        return true;
     }
 
-    // 🚀 REDIRECT BACKUP (Sirf tab chalega jab browser popup block kare)
+    let hasRedirected = false;
+    function goHome() {
+        if (hasRedirected) return;
+        hasRedirected = true;
+        btnText.innerText = "Login Successful! Redirecting...";
+        // 300ms wait taaki browser session properly save kar le
+        setTimeout(() => {
+            window.location.replace("index.html");
+        }, 300);
+    }
+
+    // 🚀 REDIRECT BACKUP
     getRedirectResult(auth).then((result) => {
         if (result && result.user) {
-            btnText.innerText = "Login Successful! Redirecting...";
-            window.location.replace("index.html");
+            goHome();
         }
     }).catch((error) => {
         showError("Login Error: " + error.message);
@@ -152,44 +162,43 @@
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            window.location.replace("index.html"); 
+            goHome();
         }
     });
 
-    // 🚀 1-TAP GOOGLE LOGIN FIX (Fast Popup + Auto Redirect Backup, No Loop)
+    // 🚀 1-TAP GOOGLE LOGIN FIX (Direct Synchronous Popup — No await before popup)
     const googleBtn = document.getElementById('googleLoginBtn');
-    googleBtn.addEventListener('click', async (e) => {
+    googleBtn.addEventListener('click', (e) => {
         e.preventDefault();
         if (!checkTerms()) return;
         
         googleBtn.disabled = true;
         btnText.innerText = "Opening Google...";
         
-        try {
-            await setPersistence(auth, browserLocalPersistence);
-            const result = await signInWithPopup(auth, provider);
-            if (result && result.user) {
-                btnText.innerText = "Login Successful! Redirecting...";
-                window.location.replace("index.html");
-            }
-        } catch (error) {
-            if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
-                btnText.innerText = "Redirecting to Google...";
-                signInWithRedirect(auth, provider).catch((err) => {
-                    showError("Browser Error: " + err.message);
-                    btnText.innerText = "Continue with Google";
-                    googleBtn.disabled = false;
-                });
-                return;
-            }
-            if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-                showError("Login cancelled. Please try again.");
-            } else {
-                showError("Login Error: " + error.message);
-            }
-            btnText.innerText = "Continue with Google";
-            googleBtn.disabled = false;
-        }
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                if (result && result.user) {
+                    goHome();
+                }
+            })
+            .catch((error) => {
+                if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
+                    btnText.innerText = "Redirecting to Google...";
+                    signInWithRedirect(auth, provider).catch((err) => {
+                        showError("Browser Error: " + err.message);
+                        btnText.innerText = "Continue with Google";
+                        googleBtn.disabled = false;
+                    });
+                    return;
+                }
+                if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+                    showError("Login cancelled. Please try again.");
+                } else {
+                    showError("Login Error: " + error.message);
+                }
+                btnText.innerText = "Continue with Google";
+                googleBtn.disabled = false;
+            });
     });
 
 
