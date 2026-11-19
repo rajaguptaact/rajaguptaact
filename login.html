@@ -107,6 +107,7 @@
 
   <script>
     const GOOGLE_CLIENT_ID = "9946165167-rnq7dirshmi8thut5dueo92hmulsv1pr.apps.googleusercontent.com";
+    const REDIRECT_URI = "https://rajaguptaact.github.io/rajaguptaact/login.html";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBCX9rALYZSxzYvawPexwXIHTSA3uhU24E",
@@ -127,9 +128,7 @@
     const errorText = document.getElementById('errorText');
     const emailInput = document.getElementById('emailInput');
     const passInput = document.getElementById('passInput');
-    const googleTermsGuard = document.getElementById('googleTermsGuard');
-    const googleSignInDiv = document.getElementById('googleSignInDiv');
-    const googleBtnWrapper = document.getElementById('googleBtnWrapper');
+    const googleBtn = document.getElementById('googleLoginBtn');
 
     const statusModal = document.getElementById('statusModal');
     const statusCard = document.getElementById('statusCard');
@@ -202,24 +201,6 @@
         return (error && error.message) ? error.message : "Login failed. Please try again.";
     }
 
-    // Unlock real Google button only when Terms checkbox is ticked
-    function updateTermsGuard() {
-        if (termsCheck.checked) {
-            googleTermsGuard.classList.add('hidden');
-            errorText.classList.add('hidden');
-        } else {
-            googleTermsGuard.classList.remove('hidden');
-        }
-    }
-    termsCheck.addEventListener('change', updateTermsGuard);
-    googleTermsGuard.addEventListener('click', () => {
-        if (!navigator.onLine) {
-            showStatus('error', 'No Internet Connection', 'Please turn on mobile data or Wi-Fi and try again.');
-            return;
-        }
-        checkTerms();
-    });
-
     async function goHome(user) {
         if (hasRedirected) return;
         hasRedirected = true;
@@ -232,71 +213,82 @@
         }, 600);
     }
 
-    // If user is already logged in, redirect straight to home
+    // 🚀 DIRECT SAME-TAB GOOGLE TOKEN HANDLER (Zero Popups, Zero White Screen, Passkey Safe)
+    async function handleGoogleReturn() {
+        const rawHash = window.location.hash ? window.location.hash.substring(1) : "";
+        if (!rawHash) return;
+
+        const hashParams = new URLSearchParams(rawHash);
+        const idToken = hashParams.get("id_token");
+        const oauthError = hashParams.get("error");
+
+        // Address bar se token turant saaf karein
+        window.history.replaceState(null, document.title, window.location.pathname);
+
+        if (oauthError) {
+            showStatus('error', 'Login Cancelled', 'Google sign-in was cancelled or blocked. Please try again.');
+            return;
+        }
+
+        if (idToken) {
+            if (!navigator.onLine) {
+                showStatus('error', 'No Internet Connection', 'Your internet is disconnected. Please reconnect and try again.');
+                return;
+            }
+            showStatus('loading', 'Verifying Account...', 'Signing in securely with Google. Please wait...');
+            try {
+                const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
+                const result = await withTimeout(auth.signInWithCredential(credential), 15000);
+                if (result && result.user) {
+                    goHome(result.user);
+                } else {
+                    showStatus('error', 'Login Failed', 'Could not verify your Google account. Please try again.');
+                }
+            } catch (error) {
+                showStatus('error', 'Login Failed', getFriendlyError(error));
+            }
+        }
+    }
+
+    handleGoogleReturn();
+
+    // Agar user pehle se logged in hai toh seedha home bhej do
     auth.onAuthStateChanged((user) => {
         if (user) {
             goHome(user);
         }
     });
 
-    // OFFICIAL GOOGLE IDENTITY SERVICES CALLBACK (1st-Try Login for Old & New Gmail)
-    async function handleGoogleCredential(response) {
+    // 🚀 1-TAP DIRECT GOOGLE LOGIN (Opens in the SAME tab — 100% 1st Try Success)
+    googleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!checkTerms()) return;
         if (!navigator.onLine) {
-            showStatus('error', 'No Internet Connection', 'Your internet is disconnected. Please reconnect and try again.');
-            return;
-        }
-        if (!response || !response.credential) {
-            showStatus('error', 'Login Failed', 'Google did not return login verification. Please try again.');
+            showStatus('error', 'No Internet Connection', 'Please turn on mobile data or Wi-Fi and try again.');
             return;
         }
 
-        showStatus('loading', 'Verifying Account...', 'Signing in securely with Google. Please wait...');
+        showStatus('loading', 'Opening Google...', 'Please wait while we connect you to Google Sign-In...');
 
+        let nonce = "";
         try {
-            const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
-            const result = await withTimeout(auth.signInWithCredential(credential), 15000);
-            if (result && result.user) {
-                goHome(result.user);
-            } else {
-                showStatus('error', 'Login Failed', 'Unable to verify your Google account. Please try again.');
-            }
-        } catch (error) {
-            showStatus('error', 'Login Failed', getFriendlyError(error));
+            const arr = new Uint8Array(16);
+            window.crypto.getRandomValues(arr);
+            nonce = Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+        } catch(err) {
+            nonce = Math.random().toString(36).substring(2) + Date.now().toString(36);
         }
-    }
 
-    function initGoogleSignIn(attempt = 0) {
-        if (window.google && window.google.accounts && window.google.accounts.id) {
-            try {
-                window.google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
-                    callback: handleGoogleCredential,
-                    auto_select: false,
-                    cancel_on_tap_outside: true,
-                    itp_support: true
-                });
-                googleSignInDiv.innerHTML = '';
-                const btnW = Math.min(340, Math.max(240, Math.floor(googleBtnWrapper.offsetWidth || 300)));
-                window.google.accounts.id.renderButton(googleSignInDiv, {
-                    theme: 'outline',
-                    size: 'large',
-                    shape: 'pill',
-                    text: 'continue_with',
-                    width: btnW
-                });
-                updateTermsGuard();
-            } catch (e) {
-                googleSignInDiv.innerHTML = `<button type="button" onclick="window.location.reload()" class="w-full py-3 bg-red-50 border-2 border-red-200 text-red-600 rounded-xl font-black text-xs cursor-pointer">⚠️ Google Sign-In Error. Tap to Retry</button>`;
-            }
-        } else if (attempt < 25) {
-            setTimeout(() => initGoogleSignIn(attempt + 1), 250);
-        } else {
-            googleSignInDiv.innerHTML = `<button type="button" onclick="window.location.reload()" class="w-full py-3 bg-red-50 border-2 border-red-200 text-red-600 rounded-xl font-black text-xs cursor-pointer">⚠️ Slow/No Internet. Tap to Reload Google Sign-In</button>`;
-            googleTermsGuard.classList.add('hidden');
-        }
-    }
+        const oauthUrl = "https://accounts.google.com/o/oauth2/v2/auth"
+            + "?client_id=" + encodeURIComponent(GOOGLE_CLIENT_ID)
+            + "&redirect_uri=" + encodeURIComponent(REDIRECT_URI)
+            + "&response_type=id_token"
+            + "&scope=" + encodeURIComponent("openid email profile")
+            + "&nonce=" + encodeURIComponent(nonce)
+            + "&prompt=select_account";
 
-    window.addEventListener('load', () => initGoogleSignIn(0));
+        window.location.href = oauthUrl;
+    });
 
     // EMAIL LOGIN LOGIC
     document.getElementById('emailLoginBtn').addEventListener('click', async (e) => {
