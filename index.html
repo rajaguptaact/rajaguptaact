@@ -2371,7 +2371,7 @@
                                setMyLocalOrders([]);
                                try { window.localStorage.removeItem('raja_my_orders_v1'); } catch(e){}
                                
-                               const activeId = deviceFingerprint || window.localStorage.getItem("art_guest_id");
+                               const activeId = activeUserId || window.localStorage.getItem("art_guest_id");
                                if (activeId) {
                                    db.collection('UserOrders').doc(activeId).delete().catch(e=>{});
                                }
