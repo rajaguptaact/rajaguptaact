@@ -2326,33 +2326,31 @@
       
       const MyOrdersView = () => {
         const handleRecoverOrders = async (e) => {
-            e.preventDefault();
-            if (!searchWaInput || searchWaInput.trim().length < 5) {
-                setRecoveredOrders([]); 
-                setHasSearched(true); 
+            if (e && e.preventDefault) e.preventDefault();
+            if (!currentUser) {
+                showToast("⚠️ Please login with Gmail first to recover your orders.");
                 return;
             }
-            
-            const raw = searchWaInput.trim();
-            const digits = raw.replace(/[\s\+\-]/g, '');
-            const variants = Array.from(new Set([
-                raw,
-                '+' + digits,
-                digits,
-                '+91' + digits.slice(-10),
-                '+91 ' + digits.slice(-10)
-            ])).slice(0, 10);
-
+            const userEmail = (currentUser.email || '').toLowerCase().trim();
             try {
-                const snap = await db.collection("orders").where("phone", "in", variants).get();
-                const matched = snap.docs
-                    .map(doc => ({ id: doc.id, ...doc.data() }))
-                    .sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+                const queries = [db.collection("orders").where("userId", "==", currentUser.uid).get()];
+                if (currentUser.emailVerified && userEmail) {
+                    queries.push(db.collection("orders").where("email", "==", userEmail).get());
+                }
+                const results = await Promise.allSettled(queries);
+                const ordMap = new Map();
+                results.forEach(r => {
+                    if (r.status === 'fulfilled' && r.value) {
+                        r.value.docs.forEach(doc => ordMap.set(doc.id, { id: doc.id, ...doc.data() }));
+                    }
+                });
+                const matched = Array.from(ordMap.values()).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
                 setRecoveredOrders(matched);
+                setHasSearched(true);
             } catch (err) {
                 setRecoveredOrders([]);
+                setHasSearched(true);
             }
-            setHasSearched(true);
         };
 
         return (
