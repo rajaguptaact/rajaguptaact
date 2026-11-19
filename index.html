@@ -3163,6 +3163,7 @@
               date: new Date().toLocaleDateString('en-IN'),
               time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), 
               createdAt: Date.now(),
+              userId: currentUser ? currentUser.uid : null,
               ...checkoutData,
               amount: finalAmountBase,
               displayAmount: getPrice(finalAmountBase)
