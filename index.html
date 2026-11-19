@@ -2036,7 +2036,7 @@
                                        } else {
                                            const newList = [{ ...liveArt, savedSize: item.selectedSize }, ...wishlist];
                                            setWishlist(newList);
-                                           if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
+                                           if(activeUserId) db.collection('UserSaves').doc(activeUserId).set({ wishlist: newList, expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true }).catch(e=>{});
                                            showToast(`🔖 Moved ${item.selectedSize} to Wishlist!`);
                                        }
                                    }
