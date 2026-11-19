@@ -1185,22 +1185,18 @@
       });
 
       useEffect(() => {
+        if (!isDataLoaded || isHydratingRef.current || isLoggingOutRef.current || !activeUserId) return;
         try {
           if (cart && Array.isArray(cart)) {
              window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(cart));
-             if (deviceFingerprint) {
-                 if (cart.length === 0) {
-                     db.collection('RecoveredCarts').doc(deviceFingerprint).delete().catch(e=>{});
-                 } else {
-                     db.collection('RecoveredCarts').doc(deviceFingerprint).set({ 
-                         items: cart, 
-                         updatedAt: Date.now() 
-                     }).catch(e => console.log("Cloud Backup Ignored"));
-                 }
-             }
+             db.collection('RecoveredCarts').doc(activeUserId).set({ 
+                 items: cart,
+                 expireAt: getExpiry(),
+                 updatedAt: Date.now() 
+             }, { merge: true }).catch(e => console.log("Cloud Backup Ignored"));
           }
         } catch(e) {}
-      }, [cart, deviceFingerprint]);
+      }, [cart, activeUserId, isDataLoaded]);
       
       const [commissionInput, setCommissionInput] = useState({ subject: '', size: '', budget: '', instagram: '' });
 
