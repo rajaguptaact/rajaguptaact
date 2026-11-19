@@ -2099,25 +2099,20 @@
                                 {(!item.selectedSize || !item.selectedSize.includes('Original')) ? (
                                   <div className="flex items-center gap-1.5">
                                     <button onClick={() => {
-                                        setCart(prevCart => {
-                                            const updated = prevCart.map(c => c.cartId === item.cartId && (c.qty || 1) > 1 ? { ...c, qty: (c.qty || 1) - 1 } : c);
-                                            try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updated)); } catch(e){}
-                                            return updated;
-                                        });
+                                        setCart(prevCart => prevCart.map((c, idx) => idx === i && (c.qty || 1) > 1 ? { ...c, qty: (c.qty || 1) - 1 } : c));
                                     }} className="text-gray-500 hover:text-purple-600 font-black text-sm md:text-base cursor-pointer px-1 active:scale-95 transition">-</button>
                                     <span className="text-[10px] md:text-sm font-black text-gray-900 w-2.5 md:w-3 text-center">{item.qty || 1}</span>
                                     <button onClick={() => {
                                         setCart(prevCart => {
                                             let allowed = true;
-                                            const updated = prevCart.map(c => {
-                                                if (c.cartId === item.cartId) {
+                                            const updated = prevCart.map((c, idx) => {
+                                                if (idx === i) {
                                                     if ((c.qty || 1) < 5) return { ...c, qty: (c.qty || 1) + 1 };
                                                     else { allowed = false; return c; }
                                                 }
                                                 return c;
                                             });
-                                            if(!allowed) setTimeout(() => showToast("⚠️ Maximum 5 quantity allowed per item."), 0);
-                                            else { try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updated)); } catch(e){} }
+                                            if (!allowed) setTimeout(() => showToast("⚠️ Maximum 5 quantity allowed per item."), 0);
                                             return updated;
                                         });
                                     }} className="text-gray-500 hover:text-purple-600 font-black text-sm md:text-base cursor-pointer px-1 active:scale-95 transition">+</button>
@@ -2130,32 +2125,39 @@
                             {/* ACTIONS (WISHLIST + REMOVE) */}
                             <div className="flex items-center gap-1.5 md:gap-3 border-l border-gray-200 pl-2 md:pl-4 h-full ml-auto">
                           
-                               <button disabled={isDeleted} onClick={() => {
+                               <button disabled={isDeleted} onClick={async () => {
                                    const liveArt = artworks.find(a => a.id === item.id);
                                    if (liveArt) {
-                                       const isWishlisted = wishlist.some(w => w.id === liveArt.id && w.savedSize === item.selectedSize);
+                                       const isWishlisted = wishlist.some(w => w.id === liveArt.id && (w.savedSize || 'Original A4 Colour Pencil') === item.selectedSize);
                                        if (isWishlisted) {
                                            showToast("⚠️ This item is already in your Wishlist.");
                                            return; 
                                        } else {
-                                           const newList = [{ ...liveArt, savedSize: item.selectedSize }, ...wishlist];
-                                           setWishlist(newList);
-                                           if(activeUserId) db.collection('UserSaves').doc(activeUserId).set({ wishlist: newList, expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true }).catch(e=>{});
+                                           const tinyImg = await makeTinyThumb(liveArt.image);
+                                           const slimItem = {
+                                               id: String(liveArt.id),
+                                               title: String(liveArt.title || ''),
+                                               savedSize: String(item.selectedSize),
+                                               image: tinyImg,
+                                               priceOriginal: liveArt.priceOriginal ?? '',
+                                               priceOriginalOld: liveArt.priceOriginalOld ?? '',
+                                               priceA3: liveArt.priceA3 ?? '',
+                                               priceA4: liveArt.priceA4 ?? '',
+                                               priceA5: liveArt.priceA5 ?? '',
+                                               isSold: Boolean(liveArt.isSold)
+                                           };
+                                           setWishlist(prev => sanitizeWishlistList([slimItem, ...prev]));
                                            showToast(`🔖 Moved ${item.selectedSize} to Wishlist!`);
                                        }
                                    }
-                                   const updatedCart = cart.filter(c => c.cartId !== item.cartId);
-                                   setCart(updatedCart);
-                                   try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
+                                   setCart(prev => prev.filter((_, idx) => idx !== i));
                                }} className={`text-[9px] md:text-xs font-bold ${isDeleted ? 'text-gray-400 cursor-not-allowed grayscale opacity-50' : 'text-purple-600 hover:underline cursor-pointer'}`}>Move to Wishlist</button>
                                
                                <span className="text-gray-300">|</span>
                                
                                {/* 🚀 LAL RANG WALA BUTTON: Yeh ab 100% red aur active dikhega */}
                                <button onClick={() => {
-                                   const updatedCart = cart.filter(c => c.cartId !== item.cartId);
-                                   setCart(updatedCart);
-                                   try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(updatedCart)); } catch(e){}
+                                   setCart(prev => prev.filter((_, idx) => idx !== i));
                                    showToast("🗑️ Item removed from Cart"); 
                                }} className="text-rose-500 text-[9px] md:text-xs font-bold hover:underline cursor-pointer bg-rose-50 px-1.5 md:px-2 py-0.5 md:py-1 rounded-md">Remove</button>
                             </div>
