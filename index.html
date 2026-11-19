@@ -3193,8 +3193,8 @@
 
           setCart([]); 
           try { window.localStorage.removeItem('raja_cart_live_v1'); } catch(e){}
-          if(deviceFingerprint) {
-              db.collection('RecoveredCarts').doc(deviceFingerprint).delete().catch(e=>{});
+          if(activeUserId) {
+              db.collection('RecoveredCarts').doc(activeUserId).set({ items: [], expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true }).catch(e=>{});
           }
           setIsOrderPlaced(true); 
         };
