@@ -2671,7 +2671,7 @@
                                        if (isAdded !== false) {
                                            const newList = wishlist.filter(item => !(item.id === currentArt.id && item.savedSize === wItem.savedSize));
                                            setWishlist(newList);
-                                           if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
+                                           if(activeUserId) db.collection('UserSaves').doc(activeUserId).set({ wishlist: newList, expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true }).catch(e=>{});
                                        }
                                    }
                                }} className={`text-[10px] md:text-xs font-bold ${isDeleted ? 'text-gray-400 cursor-not-allowed grayscale opacity-50' : 'text-purple-600 hover:underline cursor-pointer'}`}>Add to Cart</button>
