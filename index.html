@@ -1288,16 +1288,18 @@
 
       useEffect(() => {
         if (!isDataLoaded || isHydratingRef.current || isLoggingOutRef.current || !activeUserId) return;
-        try {
-          if (cart && Array.isArray(cart)) {
-             window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(cart));
-             db.collection('RecoveredCarts').doc(activeUserId).set({ 
-                 items: cart,
-                 expireAt: getExpiry(),
-                 updatedAt: Date.now() 
-             }, { merge: true }).catch(e => console.log("Cloud Backup Ignored"));
-          }
-        } catch(e) {}
+        const cleanCart = sanitizeCartList(cart);
+        const now = Date.now();
+        lastCartWriteRef.current = now;
+        try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(cleanCart)); } catch(e) {}
+        db.collection('RecoveredCarts').doc(activeUserId).set({ 
+            items: cleanCart,
+            expireAt: getExpiry(),
+            updatedAt: now
+        }, { merge: true }).catch(e => {
+            console.error("Cart Cloud Save Error:", e);
+            if (navigator.onLine) showToast("⚠️ Could not sync Cart. Please retry.");
+        });
       }, [cart, activeUserId, isDataLoaded]);
       
       const [commissionInput, setCommissionInput] = useState({ subject: '', size: '', budget: '', instagram: '' });
