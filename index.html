@@ -1055,6 +1055,7 @@
       const [toastKey, setToastKey] = useState(0); // Animation restart karne ke liye
       // 🌟 PREMIUM CENTER ALERT LOGIC 🌟
       const [premiumAlert, setPremiumAlert] = useState(null);
+      const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
       const showPremiumAlert = (msg) => {
           setPremiumAlert(msg);
       };
