@@ -63,14 +63,14 @@
         <div class="flex-1 h-px bg-gray-200"></div>
      </div>
 
-     <div id="googleBtnWrapper" class="relative w-full mb-6 min-h-[46px] flex items-center justify-center">
-        <div id="googleTermsGuard" class="absolute inset-0 z-10 cursor-pointer rounded-xl"></div>
-        <div id="googleSignInDiv" class="w-full flex justify-center">
-           <div class="w-full py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-center text-xs font-bold text-gray-500 animate-pulse">
-              ⏳ Loading Google Sign-In...
-           </div>
-        </div>
-     </div>
+     <button 
+        type="button" 
+        id="googleLoginBtn" 
+        class="w-full py-3.5 bg-white border-2 border-gray-200 rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-gray-50 transition-all font-black text-gray-700 text-sm mb-6 active:scale-95 cursor-pointer"
+     >
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5">
+        <span id="googleBtnText">Continue with Google</span>
+     </button>
 
      <div class="flex items-start gap-3 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
         <input type="checkbox" id="termsCheck" class="w-5 h-5 mt-0.5 accent-purple-600 cursor-pointer">
