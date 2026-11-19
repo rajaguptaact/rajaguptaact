@@ -4528,7 +4528,7 @@
                                       try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(updatedLocal)); } catch(e){}
                                       
                                       // 🚨 3. Ghost Sync block (Refresh par wapas aane se rokega)
-                                      const activeId = deviceFingerprint || window.localStorage.getItem("art_guest_id");
+                                      const activeId = activeUserId || window.localStorage.getItem("art_guest_id");
                                       if (activeId) {
                                           db.collection('UserOrders').doc(activeId).set({ orders: updatedLocal }).catch(e=>{});
                                       }
