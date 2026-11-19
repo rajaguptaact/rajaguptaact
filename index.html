@@ -678,7 +678,11 @@
       const [lastOrderId, setLastOrderId] = useState(null); 
 
       const [deviceFingerprint, setDeviceFingerprint] = useState(null);
+      const [activeUserId, setActiveUserId] = useState(null);
+      const isLoggingOutRef = useRef(false);
+      const isHydratingRef = useRef(true);
       const [currentUser, setCurrentUser] = useState(null);
+
       const [wishlist, setWishlist] = useState(() => {
         try {
           const savedWishlist = window.localStorage.getItem('raja_wishlist_live_v1');
@@ -690,44 +694,6 @@
         return [];
       });
       const [wishlistPopupArt, setWishlistPopupArt] = useState(null);
-      // 🔴 FIX: AUTO-SAVE WISHLIST TO LOCAL STORAGE & CLOUD (Cart + Gmail Logic)
-      useEffect(() => {
-        try {
-          if (wishlist && Array.isArray(wishlist)) {
-             window.localStorage.setItem('raja_wishlist_live_v1', JSON.stringify(wishlist));
-
-             // Logic: Check karega ki Gmail login hai ya Hardware Guest mode
-             const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : deviceFingerprint;
-
-             if (activeUid) {
-                 db.collection('UserSaves').doc(activeUid).set({
-                     wishlist: wishlist,
-                     expireAt: getExpiry(),
-                     updatedAt: Date.now()
-                 }, { merge: true }).catch(e=>{});
-             }
-          }
-        } catch(e) {}
-      }, [wishlist, deviceFingerprint]);
-
-      // 🔴 FIX: AUTO-SAVE LIKES TO CLOUD (Cart + Gmail Logic)
-      useEffect(() => {
-        try {
-          if (userLikes && Array.isArray(userLikes)) {
-             // Logic: Check karega ki Gmail login hai ya Hardware Guest mode
-             const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : deviceFingerprint;
-
-             if (activeUid) {
-                 db.collection('UserSaves').doc(activeUid).set({
-                     likes: userLikes,
-                     expireAt: getExpiry(),
-                     updatedAt: Date.now()
-                 }, { merge: true }).catch(e=>{});
-             }
-          }
-        } catch(e) {}
-      }, [userLikes, deviceFingerprint]);
-
 
       const [userLikes, setUserLikes] = useState(() => {
         try {
@@ -742,8 +708,40 @@
 
       const [isDataLoaded, setIsDataLoaded] = useState(false);
 
+      // 30 Days Expiry Logic for Guest Cloud Saves (Gmail users = Permanent)
+      const getExpiry = () => firebase.auth().currentUser ? null : Date.now() + (30 * 24 * 60 * 60 * 1000);
+
+      // AUTO-SAVE WISHLIST (Guarded against Logout / Load Wipe)
       useEffect(() => {
-          // T&C, Privacy aur Deep Linking (Direct Art open karna)
+        if (!isDataLoaded || isHydratingRef.current || isLoggingOutRef.current || !activeUserId) return;
+        try {
+          if (wishlist && Array.isArray(wishlist)) {
+             window.localStorage.setItem('raja_wishlist_live_v1', JSON.stringify(wishlist));
+             db.collection('UserSaves').doc(activeUserId).set({
+                 wishlist: wishlist,
+                 expireAt: getExpiry(),
+                 updatedAt: Date.now()
+             }, { merge: true }).catch(e=>{});
+          }
+        } catch(e) {}
+      }, [wishlist, activeUserId, isDataLoaded]);
+
+      // AUTO-SAVE LIKES (Guarded against Logout / Load Wipe)
+      useEffect(() => {
+        if (!isDataLoaded || isHydratingRef.current || isLoggingOutRef.current || !activeUserId) return;
+        try {
+          if (userLikes && Array.isArray(userLikes)) {
+             window.localStorage.setItem('raja_likes_live_v1', JSON.stringify(userLikes));
+             db.collection('UserSaves').doc(activeUserId).set({
+                 likes: userLikes,
+                 expireAt: getExpiry(),
+                 updatedAt: Date.now()
+             }, { merge: true }).catch(e=>{});
+          }
+        } catch(e) {}
+      }, [userLikes, activeUserId, isDataLoaded]);
+
+      useEffect(() => {
           const urlParams = new URLSearchParams(window.location.search);
           if (urlParams.get('open') === 'terms') setView('terms');
           if (urlParams.get('open') === 'privacy') setView('privacy');
@@ -755,110 +753,203 @@
           }
           if (urlParams.has('open')) window.history.replaceState({}, document.title, window.location.pathname);
 
-          const unsubAuth = firebase.auth().onAuthStateChanged(async (user) => {
-              setCurrentUser(user);
-              const activeId = user ? user.uid : (window.localStorage.getItem("art_guest_id") || "guest_" + Date.now());
-              setDeviceFingerprint(activeId);
+          let unsubCart = () => {};
+          let unsubOrders = () => {};
+          let unsubSaves = () => {};
 
-              // 🚀 GUEST DATA MERGE INTO GMAIL ACCOUNT
-              if (user && window.localStorage.getItem("art_guest_id")) {
-                  const oldGuestId = window.localStorage.getItem("art_guest_id");
-                  try {
-                      const guestSaves = await db.collection('UserSaves').doc(oldGuestId).get();
-                      const guestCart = await db.collection('RecoveredCarts').doc(oldGuestId).get();
-                      const guestOrders = await db.collection('UserOrders').doc(oldGuestId).get();
-                      
-                      if (guestSaves.exists) {
-                          await db.collection('UserSaves').doc(user.uid).set({ wishlist: guestSaves.data().wishlist || [], likes: guestSaves.data().likes || [], updatedAt: Date.now() }, { merge: true });
-                          await db.collection('UserSaves').doc(oldGuestId).delete(); 
-                      }
-                      if (guestCart.exists) {
-                          await db.collection('RecoveredCarts').doc(user.uid).set({ items: guestCart.data().items || [], updatedAt: Date.now() }, { merge: true });
-                          await db.collection('RecoveredCarts').doc(oldGuestId).delete();
-                      }
-                      if (guestOrders.exists) {
-                          await db.collection('UserOrders').doc(user.uid).set({ orders: guestOrders.data().orders || [], updatedAt: Date.now() }, { merge: true });
-                          await db.collection('UserOrders').doc(oldGuestId).delete();
-                      }
-                      window.localStorage.removeItem("art_guest_id");
-                  } catch(e) { console.log("Merge Error", e); }
+          const unsubAuth = firebase.auth().onAuthStateChanged(async (user) => {
+              unsubCart(); unsubOrders(); unsubSaves();
+              isHydratingRef.current = true;
+              setIsDataLoaded(false);
+              setCurrentUser(user);
+
+              let activeId;
+              if (user) {
+                  activeId = user.uid;
+                  // TRUE GUEST-TO-GMAIL MERGE (Combines Guest + Existing Gmail Data, Never Overwrites)
+                  const wasGuest = window.localStorage.getItem('raja_is_guest_session') === '1';
+                  const oldGuestId = window.localStorage.getItem('art_guest_id');
+                  if (wasGuest && oldGuestId) {
+                      try {
+                          const [gSaves, gCart, gOrders, uSaves, uCart, uOrders] = await Promise.all([
+                              db.collection('UserSaves').doc(oldGuestId).get(),
+                              db.collection('RecoveredCarts').doc(oldGuestId).get(),
+                              db.collection('UserOrders').doc(oldGuestId).get(),
+                              db.collection('UserSaves').doc(user.uid).get(),
+                              db.collection('RecoveredCarts').doc(user.uid).get(),
+                              db.collection('UserOrders').doc(user.uid).get()
+                          ]);
+
+                          const safeRead = (k) => { try { const v = JSON.parse(window.localStorage.getItem(k) || '[]'); return Array.isArray(v) ? v : []; } catch(e){ return []; } };
+                          const localCart = safeRead('raja_cart_live_v1');
+                          const localWish = safeRead('raja_wishlist_live_v1');
+                          const localLikes = safeRead('raja_likes_live_v1');
+                          const localOrders = safeRead('raja_my_orders_v1');
+
+                          // 1. Merge Wishlist & Likes
+                          const wishMap = new Map();
+                          [...(uSaves.exists ? (uSaves.data().wishlist || []) : []), ...(gSaves.exists ? (gSaves.data().wishlist || []) : []), ...localWish].forEach(w => {
+                              if (w && w.id) wishMap.set(`${w.id}_${w.savedSize || 'Original A4 Colour Pencil'}`, w);
+                          });
+                          const mergedWish = Array.from(wishMap.values());
+                          const mergedLikes = Array.from(new Set([
+                              ...(uSaves.exists ? (uSaves.data().likes || []) : []),
+                              ...(gSaves.exists ? (gSaves.data().likes || []) : []),
+                              ...localLikes
+                          ]));
+                          if (mergedWish.length > 0 || mergedLikes.length > 0) {
+                              await db.collection('UserSaves').doc(user.uid).set({ wishlist: mergedWish, likes: mergedLikes, expireAt: null, updatedAt: Date.now() }, { merge: true });
+                          }
+
+                          // 2. Merge Cart
+                          const cartMap = new Map();
+                          [...(uCart.exists ? (uCart.data().items || []) : []), ...(gCart.exists ? (gCart.data().items || []) : []), ...localCart].forEach(c => {
+                              if (!c || !c.id) return;
+                              const key = `${c.id}_${c.selectedSize || ''}`;
+                              if (cartMap.has(key)) {
+                                  if (!c.selectedSize || !c.selectedSize.includes('Original')) {
+                                      const ex = cartMap.get(key);
+                                      cartMap.set(key, { ...ex, qty: Math.min(5, (ex.qty || 1) + (c.qty || 1)) });
+                                  }
+                              } else {
+                                  cartMap.set(key, c);
+                              }
+                          });
+                          const mergedCart = Array.from(cartMap.values());
+                          if (mergedCart.length > 0) {
+                              await db.collection('RecoveredCarts').doc(user.uid).set({ items: mergedCart, expireAt: null, updatedAt: Date.now() }, { merge: true });
+                          }
+
+                          // 3. Merge Orders
+                          const ordMap = new Map();
+                          [...(uOrders.exists ? (uOrders.data().orders || []) : []), ...(gOrders.exists ? (gOrders.data().orders || []) : []), ...localOrders].forEach(o => {
+                              if (!o) return;
+                              const key = o.orderId || `${o.date}_${o.time}_${o.displayAmount}`;
+                              if (!ordMap.has(key)) ordMap.set(key, o);
+                          });
+                          const mergedOrders = Array.from(ordMap.values());
+                          if (mergedOrders.length > 0) {
+                              await db.collection('UserOrders').doc(user.uid).set({ orders: mergedOrders, expireAt: null, updatedAt: Date.now() }, { merge: true });
+                          }
+
+                          if (gSaves.exists) db.collection('UserSaves').doc(oldGuestId).delete().catch(e=>{});
+                          if (gCart.exists) db.collection('RecoveredCarts').doc(oldGuestId).delete().catch(e=>{});
+                          if (gOrders.exists) db.collection('UserOrders').doc(oldGuestId).delete().catch(e=>{});
+                      } catch(e) { console.log("Merge Error", e); }
+                  }
+                  window.localStorage.removeItem('raja_is_guest_session');
+                  window.localStorage.removeItem('art_guest_id');
+              } else {
+                  let guestId = window.localStorage.getItem('art_guest_id');
+                  if (!guestId) {
+                      guestId = 'guest_' + Date.now() + Math.random().toString(36).substring(2);
+                      window.localStorage.setItem('art_guest_id', guestId);
+                  }
+                  window.localStorage.setItem('raja_is_guest_session', '1');
+                  activeId = guestId;
               }
 
-               // 🚀 CLOUD-FIRST REAL-TIME LISTENERS (Fixed Infinite Loop & Blinking Glitch)
-              db.collection('RecoveredCarts').doc(activeId).onSnapshot(doc => {
-                  if (doc.exists) {
-                      const cloudItems = doc.data().items || [];
-                      setCart(prevCart => {
-                          // 🚨 MAIN FIX: Agar data same hai toh loop break kar do (No Blinking)
-                          if (JSON.stringify(prevCart) === JSON.stringify(cloudItems)) return prevCart;
-                          
-                          if (cloudItems.length > 0) return cloudItems; 
-                          if (cloudItems.length === 0 && prevCart.length > 0) {
-                              db.collection('RecoveredCarts').doc(activeId).set({ items: prevCart, updatedAt: Date.now() }, { merge: true });
-                              return prevCart;
-                          }
-                          return [];
-                      });
-                  }
-              });
+              // Initial Clean Hydration from Cloud BEFORE starting auto-save
+              try {
+                  const [cartDoc, ordDoc, saveDoc] = await Promise.all([
+                      db.collection('RecoveredCarts').doc(activeId).get(),
+                      db.collection('UserOrders').doc(activeId).get(),
+                      db.collection('UserSaves').doc(activeId).get()
+                  ]);
 
-              db.collection('UserOrders').doc(activeId).onSnapshot(doc => {
-                  if (doc.exists) {
-                      const cloudOrders = doc.data().orders || [];
-                      setMyLocalOrders(prevOrders => {
-                          if (JSON.stringify(prevOrders) === JSON.stringify(cloudOrders)) return prevOrders;
-                          window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(cloudOrders));
-                          return cloudOrders;
-                      });
-                  } else {
-                      // 🚨 IMPORTANT FIX: Agar cloud khali hua (delete ke karan), toh memory aur UI dono ko turant blank karo
+                  if (cartDoc.exists) {
+                      const items = cartDoc.data().items || [];
+                      setCart(items);
+                      try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(items)); } catch(e){}
+                  } else if (user) {
+                      setCart([]);
+                      try { window.localStorage.removeItem('raja_cart_live_v1'); } catch(e){}
+                  }
+
+                  if (ordDoc.exists) {
+                      const ords = ordDoc.data().orders || [];
+                      setMyLocalOrders(ords);
+                      try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(ords)); } catch(e){}
+                  } else if (user) {
                       setMyLocalOrders([]);
                       try { window.localStorage.removeItem('raja_my_orders_v1'); } catch(e){}
                   }
-              });
 
-
-              db.collection('UserSaves').doc(activeId).onSnapshot(doc => {
-                  if (doc.exists) {
-                      const cloudWishlist = doc.data().wishlist || [];
-                      const cloudLikes = doc.data().likes || [];
-                      
-                      setWishlist(prevWish => {
-                          if (JSON.stringify(prevWish) === JSON.stringify(cloudWishlist)) return prevWish;
-
-                          // Logic: Agar local khali hai aur cloud mein data hai (jaise Gmail login ke baad), tabhi cloud se download karo
-                          if (prevWish.length === 0 && cloudWishlist.length > 0) return cloudWishlist;
-                          
-                          // Logic: Agar user ne naya item add kiya hai, toh usko cloud par forcefully update karo, undo mat hone do
-                          if (prevWish.length > 0) {
-                              db.collection('UserSaves').doc(activeId).set({ wishlist: prevWish }, { merge: true }).catch(e=>{});
-                              return prevWish;
-                          }
-                          return [];
-                      });
-
-                      setUserLikes(prevLikes => {
-                          if (JSON.stringify(prevLikes) === JSON.stringify(cloudLikes)) return prevLikes;
-                          if (prevLikes.length === 0 && cloudLikes.length > 0) return cloudLikes;
-                          if (prevLikes.length > 0) {
-                              db.collection('UserSaves').doc(activeId).set({ likes: prevLikes }, { merge: true }).catch(e=>{});
-                              return prevLikes;
-                          }
-                          return [];
-                      });
+                  if (saveDoc.exists) {
+                      const w = saveDoc.data().wishlist || [];
+                      const l = saveDoc.data().likes || [];
+                      setWishlist(w);
+                      setUserLikes(l);
+                      try {
+                          window.localStorage.setItem('raja_wishlist_live_v1', JSON.stringify(w));
+                          window.localStorage.setItem('raja_likes_live_v1', JSON.stringify(l));
+                      } catch(e){}
+                  } else if (user) {
+                      setWishlist([]);
+                      setUserLikes([]);
+                      try {
+                          window.localStorage.removeItem('raja_wishlist_live_v1');
+                          window.localStorage.removeItem('raja_likes_live_v1');
+                      } catch(e){}
                   }
-                  setIsDataLoaded(true);  
-              });
+              } catch(e) { console.log("Hydration Error", e); }
+
+              setActiveUserId(activeId);
+
+              // Real-time Cross-Device Sync Listeners
+              unsubCart = db.collection('RecoveredCarts').doc(activeId).onSnapshot(doc => {
+                  if (isLoggingOutRef.current || !doc.exists) return;
+                  const cloudItems = doc.data().items || [];
+                  setCart(prev => {
+                      if (JSON.stringify(prev) === JSON.stringify(cloudItems)) return prev;
+                      try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(cloudItems)); } catch(e){}
+                      return cloudItems;
+                  });
+              }, () => {});
+
+              unsubOrders = db.collection('UserOrders').doc(activeId).onSnapshot(doc => {
+                  if (isLoggingOutRef.current) return;
+                  if (doc.exists) {
+                      const cloudOrders = doc.data().orders || [];
+                      setMyLocalOrders(prev => {
+                          if (JSON.stringify(prev) === JSON.stringify(cloudOrders)) return prev;
+                          try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(cloudOrders)); } catch(e){}
+                          return cloudOrders;
+                      });
+                  } else if (user) {
+                      setMyLocalOrders([]);
+                      try { window.localStorage.removeItem('raja_my_orders_v1'); } catch(e){}
+                  }
+              }, () => {});
+
+              unsubSaves = db.collection('UserSaves').doc(activeId).onSnapshot(doc => {
+                  if (isLoggingOutRef.current || !doc.exists) return;
+                  const cloudWishlist = doc.data().wishlist || [];
+                  const cloudLikes = doc.data().likes || [];
+                  setWishlist(prev => {
+                      if (JSON.stringify(prev) === JSON.stringify(cloudWishlist)) return prev;
+                      try { window.localStorage.setItem('raja_wishlist_live_v1', JSON.stringify(cloudWishlist)); } catch(e){}
+                      return cloudWishlist;
+                  });
+                  setUserLikes(prev => {
+                      if (JSON.stringify(prev) === JSON.stringify(cloudLikes)) return prev;
+                      try { window.localStorage.setItem('raja_likes_live_v1', JSON.stringify(cloudLikes)); } catch(e){}
+                      return cloudLikes;
+                  });
+              }, () => {});
+
+              setIsDataLoaded(true);
+              setTimeout(() => {
+                  isHydratingRef.current = false;
+                  isLoggingOutRef.current = false;
+              }, 150);
           });
 
-          return () => unsubAuth();
+          return () => { unsubCart(); unsubOrders(); unsubSaves(); unsubAuth(); };
       }, []);
 
-      // 30 Days Expiry Logic for Cloud Saves
-      const getExpiry = () => currentUser ? null : Date.now() + (30 * 24 * 60 * 60 * 1000);
-
-                  const toggleWishlist = (art, specificSize = null) => {
-          if (!deviceFingerprint) { showToast("⏳ Wait, connecting securely..."); return; }
+      const toggleWishlist = (art, specificSize = null) => {
+          if (!activeUserId) { showToast("⏳ Wait, connecting securely..."); return; }
           
           if (specificSize) {
               const isWishlisted = wishlist.some(item => item.id === art.id && item.savedSize === specificSize);
@@ -867,31 +958,25 @@
                   : [{ ...art, savedSize: specificSize }, ...wishlist];
         
               setWishlist(newList); 
-              if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
+              db.collection('UserSaves').doc(activeUserId).set({ wishlist: newList, expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true }).catch(e=>{});
               showToast(isWishlisted ? `🗑️ Removed ${specificSize} from Wishlist` : `🔖 Saved ${specificSize} to Wishlist!`);
           } else if (art.savedSize) {
               const newList = wishlist.filter(item => !(item.id === art.id && item.savedSize === art.savedSize));
               setWishlist(newList);
-              if(deviceFingerprint) db.collection('UserSaves').doc(deviceFingerprint).set({ wishlist: newList, expireAt: getExpiry() }, { merge: true });
+              db.collection('UserSaves').doc(activeUserId).set({ wishlist: newList, expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true }).catch(e=>{});
               showToast("🗑️ Item removed from Wishlist");
           }
       };
 
-
-     const handleLikeArt = (art) => {
-          if (!deviceFingerprint) { showToast("⏳ Wait, connecting securely..."); return; }
+      const handleLikeArt = (art) => {
+          if (!activeUserId) { showToast("⏳ Wait, connecting securely..."); return; }
 
           const isLiked = userLikes.includes(art.id);
           const newLikes = isLiked ? userLikes.filter(id => id !== art.id) : [...userLikes, art.id];
-          
-          // 1. INSTANT UI UPDATE (Bina kisi message ya lock ke, dil turant laal hoga)
           setUserLikes(newLikes); 
           
-          // 2. Cloud par Live Data bhejna
-          db.collection('UserSaves').doc(deviceFingerprint).set({ likes: newLikes, expireAt: getExpiry() }, { merge: true })
+          db.collection('UserSaves').doc(activeUserId).set({ likes: newLikes, expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true })
             .then(() => {
-                // 3. THE MAGIC: Jab Cloud update success ho jaye, TABHI local memory mein save karo! 
-                // Isse agar koi hacker jaldi se refresh marega, toh minus (-) wala glitch zindagi mein nahi aayega.
                 try { window.localStorage.setItem('raja_likes_live_v1', JSON.stringify(newLikes)); } catch(e){} 
             }).catch(e => console.log(e));
 
@@ -908,9 +993,7 @@
         }
       };
 
-
-      
-      // 🚨 FIX 1: UNBREAKABLE CANVAS & HARDWARE FINGERPRINT (BRAHMASTRA)
+      // HARDWARE FINGERPRINT (Strictly for Security / BlockedHackers Only)
       useEffect(() => {
         let isMounted = true;
         const initializeFingerprint = async () => {
@@ -940,28 +1023,12 @@
             for (let i = 0; i < rawString.length; i++) { finalHash = ((finalHash << 5) - finalHash) + rawString.charCodeAt(i); finalHash |= 0; }
             
             const secureFp = 'HW_' + canvasHash + '_' + Math.abs(finalHash).toString(36);
-            
-            if (isMounted) {
-                setDeviceFingerprint(secureFp);
-                const localCartStr = window.localStorage.getItem('raja_cart_live_v1');
-                let localCartItems = [];
-                try { if(localCartStr) localCartItems = JSON.parse(localCartStr); } catch(e){}
-
-                db.collection('RecoveredCarts').doc(secureFp).get().then(doc => {
-                    if (doc.exists && isMounted) {
-                        const cloudCart = doc.data().items || [];
-                        if (localCartItems.length === 0 && cloudCart.length > 0) {
-                            setCart(cloudCart); window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(cloudCart));
-                        }
-                    }
-                }).catch(e => console.log("Cart Recovery Bypass"));
-            }
+            if (isMounted) setDeviceFingerprint(secureFp);
         };
         initializeFingerprint();
         return () => { isMounted = false; };
       }, []);
-            
-      
+
       const [myLocalOrders, setMyLocalOrders] = useState(() => {
           try {
               const saved = window.localStorage.getItem('raja_my_orders_v1');
@@ -975,12 +1042,12 @@
           setMyLocalOrders(newOrders);
           try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(newOrders)); } catch(e){}
           
-          // 🚨 BUG FIX: Ab cloud mein activeUid par save hoga, taaki HW_ clash na kare!
-          const activeUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : (window.localStorage.getItem("art_guest_id") || deviceFingerprint);
-          if (activeUid) {
-              db.collection('UserOrders').doc(activeUid).set({ orders: newOrders, expireAt: getExpiry() }, { merge: true }).catch(e=>{});
+          const targetId = firebase.auth().currentUser ? firebase.auth().currentUser.uid : (activeUserId || window.localStorage.getItem("art_guest_id"));
+          if (targetId) {
+              db.collection('UserOrders').doc(targetId).set({ orders: newOrders, expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true }).catch(e=>{});
           }
       };
+
 
 
       const toastTimerRef = useRef(null); // Purane alarm ko yaad rakhne ke liye
