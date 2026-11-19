@@ -86,10 +86,29 @@
      <p id="errorText" class="text-xs text-red-600 bg-red-50 border border-red-200 p-2 rounded-lg font-bold mt-4 text-center hidden"></p>
   </div>
 
+  <!-- LIVE STATUS / SUCCESS / ERROR POPUP MODAL -->
+  <div id="statusModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+     <div class="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl text-center border-t-4 border-purple-600" id="statusCard">
+        <div id="statusIcon" class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-3">
+           <svg class="animate-spin h-7 w-7 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+           </svg>
+        </div>
+        <h3 id="statusTitle" class="font-black text-lg text-gray-900 mb-1">Please Wait...</h3>
+        <p id="statusMsg" class="text-xs font-bold text-gray-500 leading-relaxed mb-4">Connecting securely...</p>
+        <button id="statusCloseBtn" type="button" class="hidden w-full bg-purple-600 text-white py-2.5 rounded-xl font-black text-sm shadow-md hover:bg-purple-700 active:scale-95 transition">
+           Try Again
+        </button>
+     </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
   <script>
+    const GOOGLE_CLIENT_ID = "9946165167-rnq7dirshmi8thut5dueo92hmulsv1pr.apps.googleusercontent.com";
+
     const firebaseConfig = {
       apiKey: "AIzaSyBCX9rALYZSxzYvawPexwXIHTSA3uhU24E",
       authDomain: "rajaguptaact.firebaseapp.com",
@@ -103,20 +122,55 @@
         firebase.initializeApp(firebaseConfig);
     }
     const auth = firebase.auth();
-    const provider = new firebase.auth.GoogleAuthProvider();
-
-    // 🚀 OLD + NEW DONO GMAIL 1ST TRY FIX
-    provider.setCustomParameters({ prompt: 'select_account consent' });
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
 
     const termsCheck = document.getElementById('termsCheck');
     const errorText = document.getElementById('errorText');
     const emailInput = document.getElementById('emailInput');
     const passInput = document.getElementById('passInput');
-    const btnText = document.getElementById('googleBtnText');
-    const googleBtn = document.getElementById('googleLoginBtn');
+    const googleTermsGuard = document.getElementById('googleTermsGuard');
+    const googleSignInDiv = document.getElementById('googleSignInDiv');
+    const googleBtnWrapper = document.getElementById('googleBtnWrapper');
+
+    const statusModal = document.getElementById('statusModal');
+    const statusCard = document.getElementById('statusCard');
+    const statusIcon = document.getElementById('statusIcon');
+    const statusTitle = document.getElementById('statusTitle');
+    const statusMsg = document.getElementById('statusMsg');
+    const statusCloseBtn = document.getElementById('statusCloseBtn');
 
     let hasRedirected = false;
+
+    function showStatus(type, title, msg) {
+        statusTitle.innerText = title;
+        statusMsg.innerText = msg;
+        statusModal.classList.remove('hidden');
+        statusModal.classList.add('flex');
+
+        if (type === 'loading') {
+            statusCard.className = "bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl text-center border-t-4 border-purple-600";
+            statusIcon.className = "w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-3";
+            statusIcon.innerHTML = `<svg class="animate-spin h-7 w-7 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+            statusCloseBtn.classList.add('hidden');
+        } else if (type === 'success') {
+            statusCard.className = "bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl text-center border-t-4 border-green-500";
+            statusIcon.className = "w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3 text-2xl";
+            statusIcon.innerText = "✅";
+            statusCloseBtn.classList.add('hidden');
+        } else {
+            statusCard.className = "bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl text-center border-t-4 border-red-500";
+            statusIcon.className = "w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3 text-2xl";
+            statusIcon.innerText = "❌";
+            statusCloseBtn.classList.remove('hidden');
+        }
+    }
+
+    function hideStatus() {
+        statusModal.classList.add('hidden');
+        statusModal.classList.remove('flex');
+    }
+
+    statusCloseBtn.addEventListener('click', hideStatus);
 
     function showError(msg) {
        errorText.innerText = "❌ " + msg;
@@ -133,58 +187,126 @@
        return true;
     }
 
+    function withTimeout(promise, ms = 15000) {
+        return Promise.race([
+            promise,
+            new Promise((_, reject) => setTimeout(() => reject({ code: 'custom/timeout' }), ms))
+        ]);
+    }
+
+    function getFriendlyError(error) {
+        if (!navigator.onLine) return "No internet connection. Please turn on mobile data or Wi-Fi and try again.";
+        if (error && error.code === 'custom/timeout') return "Network is too slow or connection timed out. Please try again.";
+        if (error && error.code === 'auth/network-request-failed') return "Network error. Please check your internet connection and try again.";
+        if (error && error.code === 'auth/email-already-in-use') return "This email is already registered. Please tap 'Login' instead.";
+        if (error && (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential')) return "Incorrect Email or Password. Please check and try again.";
+        return (error && error.message) ? error.message : "Login failed. Please try again.";
+    }
+
+    // Unlock real Google button only when Terms checkbox is ticked
+    function updateTermsGuard() {
+        if (termsCheck.checked) {
+            googleTermsGuard.classList.add('hidden');
+            errorText.classList.add('hidden');
+        } else {
+            googleTermsGuard.classList.remove('hidden');
+        }
+    }
+    termsCheck.addEventListener('change', updateTermsGuard);
+    googleTermsGuard.addEventListener('click', () => {
+        if (!navigator.onLine) {
+            showStatus('error', 'No Internet Connection', 'Please turn on mobile data or Wi-Fi and try again.');
+            return;
+        }
+        checkTerms();
+    });
+
     async function goHome(user) {
         if (hasRedirected) return;
         hasRedirected = true;
-        btnText.innerText = "Login Successful! Redirecting...";
+        showStatus('success', 'Login Successful!', 'Redirecting to Raja Gupta Act Studio...');
         try {
-            if (user) await user.getIdToken();
+            if (user) await withTimeout(user.getIdToken(), 8000);
         } catch(e) {}
         setTimeout(() => {
             window.location.replace("index.html");
-        }, 250);
+        }, 600);
     }
 
+    // If user is already logged in, redirect straight to home
     auth.onAuthStateChanged((user) => {
         if (user) {
             goHome(user);
         }
     });
 
-    // 🚀 1-TAP GOOGLE LOGIN (Exact same Firebase 10.8.0 SDK as index.html)
-    googleBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (!checkTerms()) return;
+    // OFFICIAL GOOGLE IDENTITY SERVICES CALLBACK (1st-Try Login for Old & New Gmail)
+    async function handleGoogleCredential(response) {
+        if (!navigator.onLine) {
+            showStatus('error', 'No Internet Connection', 'Your internet is disconnected. Please reconnect and try again.');
+            return;
+        }
+        if (!response || !response.credential) {
+            showStatus('error', 'Login Failed', 'Google did not return login verification. Please try again.');
+            return;
+        }
 
-        googleBtn.disabled = true;
-        btnText.innerText = "Opening Google...";
+        showStatus('loading', 'Verifying Account...', 'Signing in securely with Google. Please wait...');
 
-        auth.signInWithPopup(provider)
-            .then((result) => {
-                if (result && result.user) {
-                    goHome(result.user);
-                } else {
-                    btnText.innerText = "Continue with Google";
-                    googleBtn.disabled = false;
-                }
-            })
-            .catch((error) => {
-                if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-                    showError("Login cancelled. Please try again.");
-                } else if (error.code === 'auth/popup-blocked') {
-                    showError("Popup blocked by browser. Please allow popups and try again.");
-                } else {
-                    showError("Login Error: " + error.message);
-                }
-                btnText.innerText = "Continue with Google";
-                googleBtn.disabled = false;
-            });
-    });
+        try {
+            const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+            const result = await withTimeout(auth.signInWithCredential(credential), 15000);
+            if (result && result.user) {
+                goHome(result.user);
+            } else {
+                showStatus('error', 'Login Failed', 'Unable to verify your Google account. Please try again.');
+            }
+        } catch (error) {
+            showStatus('error', 'Login Failed', getFriendlyError(error));
+        }
+    }
+
+    function initGoogleSignIn(attempt = 0) {
+        if (window.google && window.google.accounts && window.google.accounts.id) {
+            try {
+                window.google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleCredential,
+                    auto_select: false,
+                    cancel_on_tap_outside: true,
+                    itp_support: true
+                });
+                googleSignInDiv.innerHTML = '';
+                const btnW = Math.min(340, Math.max(240, Math.floor(googleBtnWrapper.offsetWidth || 300)));
+                window.google.accounts.id.renderButton(googleSignInDiv, {
+                    theme: 'outline',
+                    size: 'large',
+                    shape: 'pill',
+                    text: 'continue_with',
+                    width: btnW
+                });
+                updateTermsGuard();
+            } catch (e) {
+                googleSignInDiv.innerHTML = `<button type="button" onclick="window.location.reload()" class="w-full py-3 bg-red-50 border-2 border-red-200 text-red-600 rounded-xl font-black text-xs cursor-pointer">⚠️ Google Sign-In Error. Tap to Retry</button>`;
+            }
+        } else if (attempt < 25) {
+            setTimeout(() => initGoogleSignIn(attempt + 1), 250);
+        } else {
+            googleSignInDiv.innerHTML = `<button type="button" onclick="window.location.reload()" class="w-full py-3 bg-red-50 border-2 border-red-200 text-red-600 rounded-xl font-black text-xs cursor-pointer">⚠️ Slow/No Internet. Tap to Reload Google Sign-In</button>`;
+            googleTermsGuard.classList.add('hidden');
+        }
+    }
+
+    window.addEventListener('load', () => initGoogleSignIn(0));
 
     // EMAIL LOGIN LOGIC
     document.getElementById('emailLoginBtn').addEventListener('click', async (e) => {
         e.preventDefault();
         if (!checkTerms()) return;
+        if (!navigator.onLine) {
+            showStatus('error', 'No Internet Connection', 'Please turn on mobile data or Wi-Fi and try again.');
+            return;
+        }
 
         const email = emailInput.value.trim();
         const pass = passInput.value.trim();
@@ -193,15 +315,13 @@
         if (!email) { showError("Please enter your Email Address."); return; }
         if (!pass) { showError("Please enter your Password."); return; }
 
-        const btn = document.getElementById('emailLoginBtn');
-        btn.innerText = "Wait...";
+        showStatus('loading', 'Signing In...', 'Verifying your email and password...');
 
         try {
-            const res = await auth.signInWithEmailAndPassword(email, pass);
+            const res = await withTimeout(auth.signInWithEmailAndPassword(email, pass), 15000);
             goHome(res.user);
         } catch (error) {
-            showError("Invalid Email or Password. Try again.");
-            btn.innerText = "Login";
+            showStatus('error', 'Login Failed', getFriendlyError(error));
         }
     });
 
@@ -209,6 +329,10 @@
     document.getElementById('emailSignupBtn').addEventListener('click', async (e) => {
         e.preventDefault();
         if (!checkTerms()) return;
+        if (!navigator.onLine) {
+            showStatus('error', 'No Internet Connection', 'Please turn on mobile data or Wi-Fi and try again.');
+            return;
+        }
 
         const email = emailInput.value.trim();
         const pass = passInput.value.trim();
@@ -218,21 +342,15 @@
         if (!pass) { showError("Please enter a Password (Min 6 chars)."); return; }
         if (pass.length < 6) { showError("Password must be at least 6 characters."); return; }
 
-        const btn = document.getElementById('emailSignupBtn');
-        btn.innerText = "Wait...";
+        showStatus('loading', 'Creating Account...', 'Setting up your new account...');
 
         try {
-            const res = await auth.createUserWithEmailAndPassword(email, pass);
+            const res = await withTimeout(auth.createUserWithEmailAndPassword(email, pass), 15000);
             goHome(res.user);
         } catch (error) {
-            if (error.code === 'auth/email-already-in-use') {
-                showError("Email already registered. Click 'Login' instead.");
-            } else {
-                showError(error.message);
-            }
-            btn.innerText = "Sign Up";
+            showStatus('error', 'Sign Up Failed', getFriendlyError(error));
         }
     });
-  </script>        
+  </script>
 </body>
 </html>
