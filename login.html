@@ -85,21 +85,10 @@
      <p id="errorText" class="text-xs text-red-600 bg-red-50 border border-red-200 p-2 rounded-lg font-bold mt-4 text-center hidden"></p>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { 
-        getAuth, 
-        signInWithPopup, 
-        signInWithRedirect, 
-        getRedirectResult, 
-        GoogleAuthProvider, 
-        signInWithEmailAndPassword, 
-        createUserWithEmailAndPassword, 
-        onAuthStateChanged, 
-        setPersistence, 
-        browserLocalPersistence 
-    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBCX9rALYZSxzYvawPexwXIHTSA3uhU24E",
       authDomain: "rajaguptaact.firebaseapp.com",
@@ -109,25 +98,29 @@
       appId: "1:9946165167:web:5809fb442b06882980495a"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
 
-    // 🚀 FORCE CLEAN GMAIL SELECTION (No looping, No extra passwords)
-    provider.setCustomParameters({ prompt: 'select_account' });
-
-    // 🚀 BROWSER KO BATAYEGA KI LOGIN YAAD RAKHNA HAI
-    setPersistence(auth, browserLocalPersistence);
+    // 🚀 OLD + NEW DONO GMAIL 1ST TRY FIX
+    provider.setCustomParameters({ prompt: 'select_account consent' });
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
 
     const termsCheck = document.getElementById('termsCheck');
     const errorText = document.getElementById('errorText');
     const emailInput = document.getElementById('emailInput');
     const passInput = document.getElementById('passInput');
     const btnText = document.getElementById('googleBtnText');
+    const googleBtn = document.getElementById('googleLoginBtn');
+
+    let hasRedirected = false;
 
     function showError(msg) {
        errorText.innerText = "❌ " + msg;
        errorText.classList.remove('hidden');
+       errorText.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     function checkTerms() {
@@ -139,60 +132,46 @@
        return true;
     }
 
-    let hasRedirected = false;
-    function goHome() {
+    async function goHome(user) {
         if (hasRedirected) return;
         hasRedirected = true;
         btnText.innerText = "Login Successful! Redirecting...";
-        // 300ms wait taaki browser session properly save kar le
+        try {
+            if (user) await user.getIdToken();
+        } catch(e) {}
         setTimeout(() => {
             window.location.replace("index.html");
-        }, 300);
+        }, 250);
     }
 
-    // 🚀 REDIRECT BACKUP
-    getRedirectResult(auth).then((result) => {
-        if (result && result.user) {
-            goHome();
-        }
-    }).catch((error) => {
-        showError("Login Error: " + error.message);
-        btnText.innerText = "Continue with Google";
-    });
-
-    onAuthStateChanged(auth, (user) => {
+    auth.onAuthStateChanged((user) => {
         if (user) {
-            goHome();
+            goHome(user);
         }
     });
 
-    // 🚀 1-TAP GOOGLE LOGIN FIX (Direct Synchronous Popup — No await before popup)
-    const googleBtn = document.getElementById('googleLoginBtn');
+    // 🚀 1-TAP GOOGLE LOGIN (Exact same Firebase 10.8.0 SDK as index.html)
     googleBtn.addEventListener('click', (e) => {
         e.preventDefault();
         if (!checkTerms()) return;
-        
+
         googleBtn.disabled = true;
         btnText.innerText = "Opening Google...";
-        
-        signInWithPopup(auth, provider)
+
+        auth.signInWithPopup(provider)
             .then((result) => {
                 if (result && result.user) {
-                    goHome();
+                    goHome(result.user);
+                } else {
+                    btnText.innerText = "Continue with Google";
+                    googleBtn.disabled = false;
                 }
             })
             .catch((error) => {
-                if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
-                    btnText.innerText = "Redirecting to Google...";
-                    signInWithRedirect(auth, provider).catch((err) => {
-                        showError("Browser Error: " + err.message);
-                        btnText.innerText = "Continue with Google";
-                        googleBtn.disabled = false;
-                    });
-                    return;
-                }
                 if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
                     showError("Login cancelled. Please try again.");
+                } else if (error.code === 'auth/popup-blocked') {
+                    showError("Popup blocked by browser. Please allow popups and try again.");
                 } else {
                     showError("Login Error: " + error.message);
                 }
@@ -201,34 +180,24 @@
             });
     });
 
-
     // EMAIL LOGIN LOGIC
     document.getElementById('emailLoginBtn').addEventListener('click', async (e) => {
         e.preventDefault();
         if (!checkTerms()) return;
-        
+
         const email = emailInput.value.trim();
         const pass = passInput.value.trim();
-        
-        if(!email && !pass) { 
-            showError("Please enter your Email and Password."); 
-            return; 
-        }
-        if(!email) { 
-            showError("Please enter your Email Address."); 
-            return; 
-        }
-        if(!pass) { 
-            showError("Please enter your Password."); 
-            return; 
-        }
-        
+
+        if (!email && !pass) { showError("Please enter your Email and Password."); return; }
+        if (!email) { showError("Please enter your Email Address."); return; }
+        if (!pass) { showError("Please enter your Password."); return; }
+
         const btn = document.getElementById('emailLoginBtn');
         btn.innerText = "Wait...";
-        
+
         try {
-            await signInWithEmailAndPassword(auth, email, pass);
-            window.location.replace("index.html");
+            const res = await auth.signInWithEmailAndPassword(email, pass);
+            goHome(res.user);
         } catch (error) {
             showError("Invalid Email or Password. Try again.");
             btn.innerText = "Login";
@@ -239,35 +208,23 @@
     document.getElementById('emailSignupBtn').addEventListener('click', async (e) => {
         e.preventDefault();
         if (!checkTerms()) return;
-        
+
         const email = emailInput.value.trim();
         const pass = passInput.value.trim();
-        
-        if(!email && !pass) { 
-            showError("Please enter Email and Password to Sign Up."); 
-            return; 
-        }
-        if(!email) { 
-            showError("Please enter your Email Address."); 
-            return; 
-        }
-        if(!pass) { 
-            showError("Please enter a Password (Min 6 chars)."); 
-            return; 
-        }
-        if(pass.length < 6) { 
-            showError("Password must be at least 6 characters."); 
-            return; 
-        }
-        
+
+        if (!email && !pass) { showError("Please enter Email and Password to Sign Up."); return; }
+        if (!email) { showError("Please enter your Email Address."); return; }
+        if (!pass) { showError("Please enter a Password (Min 6 chars)."); return; }
+        if (pass.length < 6) { showError("Password must be at least 6 characters."); return; }
+
         const btn = document.getElementById('emailSignupBtn');
         btn.innerText = "Wait...";
-        
+
         try {
-            await createUserWithEmailAndPassword(auth, email, pass);
-            window.location.replace("index.html");
+            const res = await auth.createUserWithEmailAndPassword(email, pass);
+            goHome(res.user);
         } catch (error) {
-            if(error.code === 'auth/email-already-in-use') {
+            if (error.code === 'auth/email-already-in-use') {
                 showError("Email already registered. Click 'Login' instead.");
             } else {
                 showError(error.message);
@@ -275,6 +232,6 @@
             btn.innerText = "Sign Up";
         }
     });
-  </script>
+  </script>        
 </body>
 </html>
