@@ -4827,7 +4827,7 @@
         setIsProcessingLogin(false); 
       };
 
-      const handlePinSubmit = () => {
+      const handlePinSubmit = async () => {
         if (blockUntil > Date.now() || isProcessingLogin) return;
         setIsProcessingLogin(true); 
 
@@ -4842,42 +4842,77 @@
             return;
         }
 
-        if (otpInput === liveOTP && liveOTP !== '') {
-           setIsAdmin(true); 
-           setOtpInput('');
-           setPassword('');
-           setLiveOTP('');
-           setAdminStep(1);
-           window.localStorage.setItem('raja_otp_fails', '0');
+        try {
+            const verifyRes = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'verify_otp', otp: otpInput, password: password })
+            });
+            const verifyData = await verifyRes.json();
 
-           // 🚨 OTP Verify karte time bhi purana cache saaf karo
-           cachedDevInfo = null; 
+            if (verifyData && verifyData.status === 'valid') {
+                setIsAdmin(true); 
+                setOtpInput('');
+                setPassword('');
+                setLiveOTP('');
+                setOtpTimeLeft(0);
+                setAdminStep(1);
+                window.localStorage.setItem('raja_otp_fails', '0');
 
-           fetchDeviceDetails().then(devDetails => {
-               let permDevId = 'TRUSTED-' + Date.now() + '-' + Math.floor(Math.random()*10000);
-               window.localStorage.setItem('raja_permanent_device_id', permDevId);
+                cachedDevInfo = null; 
 
-               try { 
-                   db.collection('trustedDevices').doc(permDevId).set({
-                       id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
-                   });
-                   db.collection('adminSessions').doc(permDevId).set({
-                       id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
-                   });
-                   
-                   window.localStorage.setItem('raja_device_id', permDevId); 
-                   window.localStorage.setItem('raja_admin_fails', '0'); 
-                   window.localStorage.setItem('raja_otp_resends', '0'); 
-               } catch(err){}
-               
-               sendLoginAlert('NEW_DEVICE_VERIFIED', '', devDetails);
-           });
-        } else {
-           let otpFails = Number(window.localStorage.getItem('raja_otp_fails') || 0) + 1;
-           window.localStorage.setItem('raja_otp_fails', otpFails);
-           fetchDeviceDetails().then(dev => sendLoginAlert('OTP_FAILED', `${otpInput}|${otpFails}`, dev));
-           showToast(`❌ Incorrect OTP! (You can try again)`);
-           setOtpInput('');
+                fetchDeviceDetails().then(devDetails => {
+                    let permDevId = 'TRUSTED-' + Date.now() + '-' + Math.floor(Math.random()*10000);
+                    window.localStorage.setItem('raja_permanent_device_id', permDevId);
+
+                    try { 
+                        db.collection('trustedDevices').doc(permDevId).set({
+                            id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
+                        });
+                        db.collection('adminSessions').doc(permDevId).set({
+                            id: permDevId, ip: devDetails.ip, location: devDetails.location, deviceModel: devDetails.deviceModel, deviceType: devDetails.deviceType, org: devDetails.org, createdAt: Date.now(), lastSeen: Date.now()
+                        });
+                        
+                        window.localStorage.setItem('raja_device_id', permDevId); 
+                        window.localStorage.setItem('raja_admin_fails', '0'); 
+                        window.localStorage.setItem('raja_otp_resends', '0'); 
+                    } catch(err){}
+                    
+                    sendLoginAlert('NEW_DEVICE_VERIFIED', '', devDetails);
+                });
+            } else if (verifyData && verifyData.status === 'expired') {
+                setOtpTimeLeft(0);
+                setOtpInput('');
+                showToast("⏰ OTP Expired! Please click 'Resend OTP' for a new code.");
+            } else if (verifyData && verifyData.status === 'blocked') {
+                const bTime = verifyData.blockedUntil || (Date.now() + 15 * 60 * 1000);
+                setBlockUntil(bTime);
+                window.localStorage.setItem('raja_admin_block', bTime);
+                window.localStorage.setItem('raja_otp_fails', '0');
+                window.localStorage.setItem('raja_otp_resends', '0');
+                setOtpInput('');
+                setPassword('');
+                setLiveOTP('');
+                setOtpTimeLeft(0);
+                setAdminStep(1);
+
+                fetchDeviceDetails().then(dev => {
+                    const bData = { ip: dev.ip, deviceModel: dev.deviceModel, blockedUntil: bTime, reason: '3 Wrong OTP Attempts' };
+                    if (deviceFingerprint) db.collection('BlockedHackers').doc(deviceFingerprint).set(bData).catch(e=>{});
+                    if (dev && dev.ip && !dev.ip.includes("Unknown")) {
+                        db.collection('BlockedHackers').doc(dev.ip.replace(/\./g, '_')).set(bData).catch(e=>{});
+                    }
+                    sendLoginAlert('BLOCKED', '3 Wrong OTP Attempts (15 Min Lock)', dev);
+                });
+                showToast("🚫 3 Wrong OTP Attempts! Blocked for 15 minutes.");
+            } else {
+                const otpFails = (verifyData && verifyData.attempts) ? verifyData.attempts : (Number(window.localStorage.getItem('raja_otp_fails') || 0) + 1);
+                window.localStorage.setItem('raja_otp_fails', otpFails);
+                fetchDeviceDetails().then(dev => sendLoginAlert('OTP_FAILED', `${otpInput}|${otpFails}`, dev));
+                showToast(`❌ Incorrect OTP! Attempt ${otpFails}/3`);
+                setOtpInput('');
+            }
+        } catch (err) {
+            showToast("⚠️ Network error while verifying OTP. Please try again.");
         }
         setIsProcessingLogin(false);
       };
