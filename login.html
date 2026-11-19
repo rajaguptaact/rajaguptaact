@@ -139,9 +139,9 @@
        return true;
     }
 
-    // 🚀 REDIRECT GLITCH FIX: YAHAN SE WAPAS AANE PAR TURANT REDIRECT KAREGA
+    // 🚀 REDIRECT BACKUP (Sirf tab chalega jab browser popup block kare)
     getRedirectResult(auth).then((result) => {
-        if (result) {
+        if (result && result.user) {
             btnText.innerText = "Login Successful! Redirecting...";
             window.location.replace("index.html");
         }
@@ -156,18 +156,42 @@
         }
     });
 
-    // 🚀 FIXED GOOGLE LOGIN LOGIC (DIRECT REDIRECT, NO POPUP BLOCKS)
-    document.getElementById('googleLoginBtn').addEventListener('click', (e) => {
+    // 🚀 1-TAP GOOGLE LOGIN FIX (Fast Popup + Auto Redirect Backup, No Loop)
+    const googleBtn = document.getElementById('googleLoginBtn');
+    googleBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         if (!checkTerms()) return;
         
-        btnText.innerText = "Connecting to Google...";
-        // Direct redirect mobile ke liye sabse safe hai. Isse loop nahi banega.
-        signInWithRedirect(auth, provider).catch((error) => {
-            showError("Browser Error: " + error.message);
+        googleBtn.disabled = true;
+        btnText.innerText = "Opening Google...";
+        
+        try {
+            await setPersistence(auth, browserLocalPersistence);
+            const result = await signInWithPopup(auth, provider);
+            if (result && result.user) {
+                btnText.innerText = "Login Successful! Redirecting...";
+                window.location.replace("index.html");
+            }
+        } catch (error) {
+            if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
+                btnText.innerText = "Redirecting to Google...";
+                signInWithRedirect(auth, provider).catch((err) => {
+                    showError("Browser Error: " + err.message);
+                    btnText.innerText = "Continue with Google";
+                    googleBtn.disabled = false;
+                });
+                return;
+            }
+            if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+                showError("Login cancelled. Please try again.");
+            } else {
+                showError("Login Error: " + error.message);
+            }
             btnText.innerText = "Continue with Google";
-        });
+            googleBtn.disabled = false;
+        }
     });
+
 
     // EMAIL LOGIN LOGIC
     document.getElementById('emailLoginBtn').addEventListener('click', async (e) => {
