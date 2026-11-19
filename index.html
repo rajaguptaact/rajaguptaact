@@ -2771,9 +2771,8 @@
                                    } else {
                                        const isAdded = addToCart(currentArt, cartSizeName, displayPrice, cartSizeName.includes('Original') ? currentArt.priceOriginalOld : null);
                                        if (isAdded !== false) {
-                                           const newList = wishlist.filter(item => !(item.id === currentArt.id && item.savedSize === wItem.savedSize));
-                                           setWishlist(newList);
-                                           if(activeUserId) db.collection('UserSaves').doc(activeUserId).set({ wishlist: newList, expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true }).catch(e=>{});
+                                           const targetSize = wItem.savedSize || 'Original A4 Colour Pencil';
+                                           setWishlist(prev => prev.filter(item => !(item.id === currentArt.id && (item.savedSize || 'Original A4 Colour Pencil') === targetSize)));
                                        }
                                    }
                                }} className={`text-[10px] md:text-xs font-bold ${isDeleted ? 'text-gray-400 cursor-not-allowed grayscale opacity-50' : 'text-purple-600 hover:underline cursor-pointer'}`}>Add to Cart</button>
