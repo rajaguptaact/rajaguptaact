@@ -1172,6 +1172,12 @@
       // 🌟 PREMIUM CENTER ALERT LOGIC 🌟
       const [premiumAlert, setPremiumAlert] = useState(null);
       const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+      const [orderModal, setOrderModal] = useState(null);
+      const withOrderTimeout = (promise, ms = 12000) => Promise.race([
+          promise,
+          new Promise((_, reject) => setTimeout(() => reject({ code: 'custom/timeout', message: 'Network is slow or connection timed out. Please check your internet and try again.' }), ms))
+      ]);
+
       const showPremiumAlert = (msg) => {
           setPremiumAlert(msg);
       };
