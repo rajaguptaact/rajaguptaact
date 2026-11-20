@@ -5624,6 +5624,40 @@
           )}
 
 
+          {/* ⏳ CENTER ORDER PROCESSING / STATUS POPUP */}
+          {orderModal && (
+              <div className="fixed inset-0 bg-black/65 z-[99999] flex items-center justify-center p-4 backdrop-blur-sm">
+                  <div className={`bg-white rounded-3xl p-6 md:p-8 w-full max-w-xs md:max-w-sm shadow-2xl text-center border-t-4 ${
+                      orderModal.type === 'loading' ? 'border-purple-600' :
+                      orderModal.type === 'success' ? 'border-green-500' : 'border-red-500'
+                  }`}>
+                      <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 text-2xl md:text-3xl ${
+                          orderModal.type === 'loading' ? 'bg-purple-100' :
+                          orderModal.type === 'success' ? 'bg-green-100' : 'bg-red-100'
+                      }`}>
+                          {orderModal.type === 'loading' ? (
+                              <svg className="animate-spin h-7 w-7 md:h-8 md:w-8 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                          ) : orderModal.type === 'success' ? '✅' : '❌'}
+                      </div>
+                      <h3 className="font-black text-lg md:text-xl text-gray-900 mb-1.5">{orderModal.title}</h3>
+                      <p className="text-xs md:text-sm font-bold text-gray-500 leading-relaxed">{orderModal.msg}</p>
+                      {orderModal.type === 'error' && (
+                          <button
+                              type="button"
+                              onClick={() => setOrderModal(null)}
+                              className="mt-5 w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2.5 md:py-3 rounded-xl font-black text-xs md:text-sm shadow-md active:scale-95 transition cursor-pointer"
+                          >
+                              Try Again
+                          </button>
+                      )}
+                  </div>
+              </div>
+          )}
+
+
           {/* 🔐 LOGOUT CONFIRMATION POPUP */}
           {showLogoutConfirm && (
               <div className="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)}>
