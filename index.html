@@ -3282,7 +3282,15 @@
         const shippingFeeBase = checkoutData.country === 'International' ? 700 : 100;
         const finalAmountBase = checkoutData.amount + shippingFeeBase;
 
-        const finalizeOrder = () => {
+        const finalizeOrder = async () => {
+          if (isValidating) return;
+          if (!navigator.onLine) {
+              showPremiumAlert("❌ No internet connection. Please turn on mobile data or Wi-Fi and try again.");
+              return;
+          }
+          setIsValidating(true);
+          showToast("⏳ Confirming & saving your order...");
+
           const generatedId = 'ORD-' + Date.now().toString().slice(-4) + Math.floor(1000 + Math.random()*9000);
           
           const finalPayload = {
@@ -3290,41 +3298,51 @@
               date: new Date().toLocaleDateString('en-IN'),
               time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), 
               createdAt: Date.now(),
-              userId: currentUser ? currentUser.uid : null,
+              userId: firebase.auth().currentUser ? firebase.auth().currentUser.uid : null,
               ...checkoutData,
-              amount: finalAmountBase,
+              name: String(checkoutData.name || '').trim(),
+              email: String(checkoutData.email || '').toLowerCase().trim(),
+              amount: Number(finalAmountBase),
               displayAmount: getPrice(finalAmountBase)
           };
-          
-          db.collection('orders').add(finalPayload);
-          sendSilentAlert(finalPayload); 
-          
-          addLocalOrder({
-              orderId: generatedId,
-              date: finalPayload.date,
-              time: finalPayload.time,
-              type: finalPayload.type,
-              displayAmount: finalPayload.displayAmount,
-              itemDetails: finalPayload.itemDetails
-          });
 
-          setLastOrderId(generatedId);
+          try {
+              await db.collection('orders').add(finalPayload);
+              sendSilentAlert(finalPayload); 
+              
+              await addLocalOrder({
+                  orderId: generatedId,
+                  date: finalPayload.date,
+                  time: finalPayload.time,
+                  type: finalPayload.type,
+                  displayAmount: finalPayload.displayAmount,
+                  itemDetails: finalPayload.itemDetails
+              });
 
-          if (checkoutData.type === 'Gallery Purchase' && checkoutData.itemDetails) {
-             checkoutData.itemDetails.forEach(item => {
-                if (item.selectedSize && item.selectedSize.includes('Original') && item.id) {
-                   db.collection('RajaStudio').doc(item.id).update({ isSold: true }).catch(e => console.log(e));
-                }
-             });
+              setLastOrderId(generatedId);
+
+              if (checkoutData.type === 'Gallery Purchase' && checkoutData.itemDetails) {
+                 checkoutData.itemDetails.forEach(item => {
+                    if (item.selectedSize && item.selectedSize.includes('Original') && item.id) {
+                       db.collection('RajaStudio').doc(item.id).update({ isSold: true }).catch(e => console.log(e));
+                    }
+                 });
+              }
+
+              setCart([]); 
+              try { window.localStorage.removeItem('raja_cart_live_v1'); } catch(e){}
+              if (activeUserId) {
+                  db.collection('RecoveredCarts').doc(activeUserId).set({ items: [], expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true }).catch(e=>{});
+              }
+              setIsOrderPlaced(true);
+          } catch (err) {
+              console.error("Gallery Order Save Failed:", err);
+              showPremiumAlert("❌ Order could not be saved due to network/server error. Please tap confirm again.\n\nDetails: " + (err.message || err.code || "Network Error"));
+          } finally {
+              setIsValidating(false);
           }
-
-          setCart([]); 
-          try { window.localStorage.removeItem('raja_cart_live_v1'); } catch(e){}
-          if(activeUserId) {
-              db.collection('RecoveredCarts').doc(activeUserId).set({ items: [], expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true }).catch(e=>{});
-          }
-          setIsOrderPlaced(true); 
         };
+
 
         if (isOrderPlaced) {
            const isIntl = checkoutData.country === 'International' || currency === 'USD';
