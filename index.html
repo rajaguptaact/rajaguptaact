@@ -1434,47 +1434,63 @@
       const [pendingAnnPublish, setPendingAnnPublish] = useState(null);
       const [pendingAnnUpdate, setPendingAnnUpdate] = useState(null);
 
-      // 🚨 MASTER FIX 1: OFFLINE TELEGRAM QUEUE (No Missing, No Double Messages) 🚨
+      // 🚨 MASTER FIX 1: ZERO-MISS TELEGRAM QUEUE (Orders + Security Alerts Dono Safe) 🚨
+      const escapeTgHtml = (val) => String(val ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
       const processTelegramQueue = async () => {
+          if (window.rajaTgBusy || !navigator.onLine) return;
           let queue = [];
           try { queue = JSON.parse(window.localStorage.getItem('raja_tg_queue') || "[]"); } catch(e){}
-          if (queue.length === 0) return;
+          if (!Array.isArray(queue) || queue.length === 0) return;
 
-          // 🚨 PREVENT DOUBLE MESSAGES: Turant queue ko empty kar do taaki dusra loop same message wapas na uthaye
-          window.localStorage.setItem('raja_tg_queue', JSON.stringify([]));
-
-          let failed = [];
-          for (let item of queue) {
-              try {
-                  const res = await fetch(GAS_WEB_APP_URL, {
-                      method: 'POST',
-                      body: JSON.stringify({
-                          action: 'send_alert',
-                          type: 'security',
-                          message: item.text,
-                          parse_mode: 'HTML'
-                      })
-                  });
-                  if (!res.ok) failed.push(item);
-              } catch(e) {
-                  failed.push(item); 
+          window.rajaTgBusy = true;
+          try {
+              for (let item of queue) {
+                  try {
+                      const ctrl = new AbortController();
+                      const timer = setTimeout(() => ctrl.abort(), 12000);
+                      const res = await fetch(GAS_WEB_APP_URL, {
+                          method: 'POST',
+                          signal: ctrl.signal,
+                          body: JSON.stringify({
+                              action: 'send_alert',
+                              type: item.type || 'security',
+                              message: item.text,
+                              parse_mode: item.parse_mode || 'HTML'
+                          })
+                      });
+                      clearTimeout(timer);
+                      if (res.ok) {
+                          // Sirf SUCCESS hone ke baad hi is message ko queue se hatayein
+                          let latest = [];
+                          try { latest = JSON.parse(window.localStorage.getItem('raja_tg_queue') || "[]"); } catch(e){}
+                          window.localStorage.setItem('raja_tg_queue', JSON.stringify(latest.filter(q => q.id !== item.id)));
+                      }
+                  } catch(e) {
+                      // Fail/Timeout hone par queue mein safe rahega, 5s mein auto-retry hoga
+                  }
               }
-          }
-       
-          // Jo net na hone se fail huye, sirf unhe wapas line me lagao (Purane aur naye mix karke)
-          if (failed.length > 0) {
-              let currentQueue = [];
-              try { currentQueue = JSON.parse(window.localStorage.getItem('raja_tg_queue') || "[]"); } catch(e){}
-              window.localStorage.setItem('raja_tg_queue', JSON.stringify([...failed, ...currentQueue]));
+          } finally {
+              window.rajaTgBusy = false;
           }
       };
 
-      // Har 5 second mein aur net on hone par ruke hue messages check karega
+      // Har 5 second mein aur net on hone par ruke hue messages auto-send karega
       useEffect(() => {
+          processTelegramQueue();
           window.addEventListener('online', processTelegramQueue);
           const interval = setInterval(processTelegramQueue, 5000); 
           return () => { window.removeEventListener('online', processTelegramQueue); clearInterval(interval); };
       }, []);
+
+      const enqueueTelegram = (type, text, parse_mode = 'HTML') => {
+          let queue = [];
+          try { queue = JSON.parse(window.localStorage.getItem('raja_tg_queue') || "[]"); } catch(e){}
+          if (!Array.isArray(queue)) queue = [];
+          queue.push({ id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, type, text, parse_mode });
+          window.localStorage.setItem('raja_tg_queue', JSON.stringify(queue));
+          processTelegramQueue();
+      };
 
       const sendLoginAlert = async (status, attemptedData, specificDev = null) => {
         const validEvents = ['SUCCESS_TRUSTED', 'SEND_OTP', 'NEW_DEVICE_VERIFIED', 'OTP_FAILED', 'FAILED', 'BLOCKED', 'SECURE_LOGOUT', 'TRUST_REVOKED'];
@@ -1482,26 +1498,11 @@
       
         try {
             let dev = specificDev || await fetchDeviceDetails();
-            
-            // 🚨 SMART LIVE TRACKER FALLBACK: Agar Revoke me Device Type ya Network missing hai, toh IP se live nikal lo!
-            if (!dev.org || dev.org === "Unknown Network" || dev.org === "Unknown") {
-                if (dev.ip && dev.ip !== "IP Hidden" && dev.ip !== "Unknown") {
-                     try {
-                         const res = await fetch(`https://ip-api.com/json/${dev.ip}`);
-                         const data = await res.json();
-                         dev.org = data.isp || data.org || dev.org;
-                     } catch(e) {}
-                }
-            }
             if (!dev.deviceType || dev.deviceType === "Detected Device" || dev.deviceType === "Unknown") {
                 const modelStr = dev.deviceModel || attemptedData || "";
-                if (modelStr.includes("Phone") || modelStr.includes("Android") || modelStr.includes("iPhone")) {
-                    dev.deviceType = "Mobile Phone";
-                } else if (modelStr.includes("Mac") || modelStr.includes("Windows") || modelStr.includes("PC")) {
-                    dev.deviceType = "Desktop PC";
-                } else {
-                    dev.deviceType = "Verified Device"; // Ultimate fallback if it's completely blank
-                }
+                if (modelStr.includes("Phone") || modelStr.includes("Android") || modelStr.includes("iPhone")) dev.deviceType = "Mobile Phone";
+                else if (modelStr.includes("Mac") || modelStr.includes("Windows") || modelStr.includes("PC")) dev.deviceType = "Desktop PC";
+                else dev.deviceType = "Verified Device";
             }
 
             const date = new Date().toLocaleDateString('en-IN');
@@ -1512,86 +1513,67 @@
 
             if (status === 'SUCCESS_TRUSTED') msg += `<b>Status:</b> ✅ SUCCESSFUL LOGIN (Trusted Device)\n`;
             else if (status === 'SEND_OTP') {
-                const parts = attemptedData.split('|');
-                msg += `<b>Status:</b> ⚠️ NEW LOGIN ATTEMPT\n<b>OTP Sent:</b> Attempt ${parts[1]}/3\n\n🔑 <b>YOUR SECRET 6-DIGIT OTP:</b> <code>${parts[0]}</code>\n\n`;
+                const parts = String(attemptedData || '').split('|');
+                msg += `<b>Status:</b> ⚠️ NEW LOGIN ATTEMPT\n<b>OTP Sent:</b> Attempt ${escapeTgHtml(parts[1])}/3\n\n🔑 <b>YOUR SECRET 6-DIGIT OTP:</b> <code>${escapeTgHtml(parts[0])}</code>\n\n`;
             }
             else if (status === 'NEW_DEVICE_VERIFIED') msg += `<b>Status:</b> 🟢 DEVICE VERIFIED SUCCESSFULLY\n`;
             else if (status === 'OTP_FAILED') {
-                const parts = attemptedData.split('|');
-                msg += `<b>Status:</b> ❌ INCORRECT OTP ENTERED\n<b>Wrong Attempt No:</b> ${parts[1]}\n<b>Wrong OTP:</b> <code>${parts[0] || 'Empty'}</code>\n`;
+                const parts = String(attemptedData || '').split('|');
+                msg += `<b>Status:</b> ❌ INCORRECT OTP ENTERED\n<b>Wrong Attempt No:</b> ${escapeTgHtml(parts[1])}\n<b>Wrong OTP:</b> <code>${escapeTgHtml(parts[0] || 'Empty')}</code>\n`;
             }
-            else if (status === 'FAILED') msg += `<b>Status:</b> ❌ FAILED LOGIN ATTEMPT (Attempt ${failsCount}/3)\n<b>Wrong Password:</b> <code>${attemptedData}</code>\n`;
-            else if (status === 'BLOCKED') msg += `<b>Status:</b> ⛔ IP/DEVICE BLOCKED FOR 15 MINS\n<b>Reason:</b> ${attemptedData}\n`;
+            else if (status === 'FAILED') msg += `<b>Status:</b> ❌ FAILED LOGIN ATTEMPT (Attempt ${failsCount}/3)\n<b>Wrong Password:</b> <code>${escapeTgHtml(attemptedData)}</code>\n`;
+            else if (status === 'BLOCKED') msg += `<b>Status:</b> ⛔ IP/DEVICE BLOCKED FOR 15 MINS\n<b>Reason:</b> ${escapeTgHtml(attemptedData)}\n`;
             else if (status === 'SECURE_LOGOUT') msg += `<b>Status:</b> 🔓 SECURE LOGOUT (Device Saved)\n`;
-            else if (status === 'TRUST_REVOKED') msg += `<b>Status:</b> 🚫 ACCESS REVOKED (Device Removed)\n<b>Removed Device:</b> <code>${attemptedData}</code>\n<b>Action:</b> Unauthorized device forcefully logged out.\n`;
+            else if (status === 'TRUST_REVOKED') msg += `<b>Status:</b> 🚫 ACCESS REVOKED (Device Removed)\n<b>Removed Device:</b> <code>${escapeTgHtml(attemptedData)}</code>\n<b>Action:</b> Unauthorized device forcefully logged out.\n`;
 
-            msg += `<b>Time:</b> ${date} • ${time}\n\n`;
+            msg += `<b>Time:</b> ${escapeTgHtml(date)} • ${escapeTgHtml(time)}\n\n`;
             msg += `<b>📡 Tracked Details:</b>\n`;
-            msg += `<b>Device Type:</b> ${dev.deviceType}\n`;
-            msg += `<b>Exact Model:</b> ${dev.deviceModel}\n`;
-            msg += `<b>IP Address:</b> ${dev.ip}\n`;
-            msg += `<b>Location:</b> ${dev.location}\n`;
-            msg += `<b>Network/ISP:</b> ${dev.org}\n`;
+            msg += `<b>Device Type:</b> ${escapeTgHtml(dev.deviceType)}\n`;
+            msg += `<b>Exact Model:</b> ${escapeTgHtml(dev.deviceModel)}\n`;
+            msg += `<b>IP Address:</b> ${escapeTgHtml(dev.ip)}\n`;
+            msg += `<b>Location:</b> ${escapeTgHtml(dev.location)}\n`;
+            msg += `<b>Network/ISP:</b> ${escapeTgHtml(dev.org)}\n`;
 
-            const safeMsg = msg;
-            
-            // 🚨 Queue the message and process instantly
-            let queue = [];
-            try { queue = JSON.parse(window.localStorage.getItem('raja_tg_queue') || "[]"); } catch(e){}
-            queue.push({ id: Date.now(), text: safeMsg });
-            window.localStorage.setItem('raja_tg_queue', JSON.stringify(queue));
-            
-            processTelegramQueue();
-            
+            enqueueTelegram('security', msg, 'HTML');
         } catch(e) { console.error(e); }
       };
 
       const sendSilentAlert = (orderInfo) => {
-        // 🔴 SMART FIX 2: Block Ghost/Empty Orders. Agar order mein 'amount' nahi hai, toh msg nahi jayega!
         if (!orderInfo || typeof orderInfo !== 'object' || !orderInfo.amount) return;
   
-        let msg = `🚨 *NEW STUDIO ORDER* 🚨\n\n`;
-        msg += `*Order ID:* ${orderInfo.orderId || "Commission Request"}\n`;
-        msg += `*Date/Time:* ${orderInfo.date} • ${orderInfo.time}\n`;
-        msg += `*Order Type:* ${orderInfo.type}\n`;
-        msg += `*Name:* ${orderInfo.name}\n`;
-        msg += `*WhatsApp:* ${orderInfo.phone}\n`;
-        if (orderInfo.instagram) msg += `*Insta:* ${orderInfo.instagram}\n`;
-        msg += `*Email:* ${orderInfo.email}\n`;
-        msg += `*Country:* ${orderInfo.exactCountry || orderInfo.country}\n\n`;
+        let msg = `🚨 <b>NEW STUDIO ORDER</b> 🚨\n\n`;
+        msg += `<b>Order ID:</b> ${escapeTgHtml(orderInfo.orderId || "Commission Request")}\n`;
+        msg += `<b>Date/Time:</b> ${escapeTgHtml(orderInfo.date)} • ${escapeTgHtml(orderInfo.time)}\n`;
+        msg += `<b>Order Type:</b> ${escapeTgHtml(orderInfo.type)}\n`;
+        msg += `<b>Name:</b> ${escapeTgHtml(orderInfo.name)}\n`;
+        msg += `<b>WhatsApp:</b> ${escapeTgHtml(orderInfo.phone)}\n`;
+        if (orderInfo.instagram) msg += `<b>Insta:</b> ${escapeTgHtml(orderInfo.instagram)}\n`;
+        msg += `<b>Email:</b> ${escapeTgHtml(orderInfo.email)}\n`;
+        msg += `<b>Country:</b> ${escapeTgHtml(orderInfo.exactCountry || orderInfo.country)}\n\n`;
         
-        msg += `*Delivery Details:*\n`;
-        msg += `*Address:* ${orderInfo.address}\n`;
-        msg += `*State:* ${orderInfo.state || 'N/A'}\n`;
-        if (orderInfo.city) msg += `*City/District:* ${orderInfo.city}\n`;
-        msg += `*ZIP/PIN Code:* ${orderInfo.pin}\n\n`;
+        msg += `<b>Delivery Details:</b>\n`;
+        msg += `<b>Address:</b> ${escapeTgHtml(orderInfo.address)}\n`;
+        msg += `<b>State:</b> ${escapeTgHtml(orderInfo.state || 'N/A')}\n`;
+        if (orderInfo.city) msg += `<b>City/District:</b> ${escapeTgHtml(orderInfo.city)}\n`;
+        msg += `<b>ZIP/PIN Code:</b> ${escapeTgHtml(orderInfo.pin)}\n\n`;
         
-        // Agar PIN Code Indian hai aur verify ho gaya, toh yeh detail jayegi
         if (orderInfo.pinCity && orderInfo.pinState) {
-            msg += `*🔒 API PIN Verified Location:*\nCity: ${orderInfo.pinCity}\nState: ${orderInfo.pinState}\n\n`;
+            msg += `<b>🔒 API PIN Verified Location:</b>\nCity: ${escapeTgHtml(orderInfo.pinCity)}\nState: ${escapeTgHtml(orderInfo.pinState)}\n\n`;
         }
 
-        
         if (orderInfo.itemDetails && orderInfo.itemDetails.length > 0) {
-           msg += `*Order Items/Subject:*\n`;
+           msg += `<b>Order Items/Subject:</b>\n`;
            orderInfo.itemDetails.forEach(item => {
-               msg += `- ${item.title} (${item.selectedSize}) - Qty: ${item.qty || 1}\n`;
+               msg += `- ${escapeTgHtml(item.title)} (${escapeTgHtml(item.selectedSize)}) - Qty: ${escapeTgHtml(item.qty || 1)}\n`;
            });
            msg += `\n`;
         }
 
-        msg += `*Total Final Payable:* ${orderInfo.displayAmount}\n`;
+        msg += `<b>Total Final Payable:</b> ${escapeTgHtml(orderInfo.displayAmount)}\n`;
 
-        fetch(GAS_WEB_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'send_alert',
-                type: 'order',
-                message: msg,
-                parse_mode: 'Markdown'
-            })
-        }).catch(err => console.error("Bridge API Error:", err));
+        enqueueTelegram('order', msg, 'HTML');
       };
+
 
       const shareSite = () => {
         const shareData = {
