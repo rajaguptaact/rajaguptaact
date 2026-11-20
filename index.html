@@ -1243,22 +1243,30 @@
          } catch(e) {}
 
 
-         // 🚨 Chrome Cache Trap Fix (Date.now() bypasses browser cache)
-         try {
-             const res4 = await fetch(`https://api.ipify.org?format=json&_t=${Date.now()}`);
-             const data4 = await res4.json();
-             if (data4 && data4.ip && !data4.ip.includes(':')) ip = data4.ip; 
-         } catch(e) {}
-
-         try {
-             const resGeo = await fetch(`https://ipapi.co/${ip !== "Unknown" ? ip + '/' : ''}json/?_t=${Date.now()}`);
-             const dataGeo = await resGeo.json();
-             if (dataGeo && dataGeo.city && !dataGeo.error) {
-                 if (dataGeo.ip && !dataGeo.ip.includes(':')) ip = dataGeo.ip;
-                 location = dataGeo.city + ", " + dataGeo.region + ", " + dataGeo.country_name;
-                 org = dataGeo.org || org;
+         // 🚨 Fast Timeout Fetch (Slow IP API par alert kabhi atke ya miss na ho)
+         const fetchJsonFast = async (url, ms = 2500) => {
+             const ctrl = new AbortController();
+             const timer = setTimeout(() => ctrl.abort(), ms);
+             try {
+                 const res = await fetch(url, { signal: ctrl.signal });
+                 clearTimeout(timer);
+                 return await res.json();
+             } catch(e) {
+                 clearTimeout(timer);
+                 return null;
              }
-         } catch(e) {}
+         };
+
+         const data4 = await fetchJsonFast(`https://api.ipify.org?format=json&_t=${Date.now()}`, 2500);
+         if (data4 && data4.ip && !data4.ip.includes(':')) ip = data4.ip;
+
+         const dataGeo = await fetchJsonFast(`https://ipapi.co/${ip !== "Unknown" ? ip + '/' : ''}json/?_t=${Date.now()}`, 2500);
+         if (dataGeo && dataGeo.city && !dataGeo.error) {
+             if (dataGeo.ip && !dataGeo.ip.includes(':')) ip = dataGeo.ip;
+             location = dataGeo.city + ", " + dataGeo.region + ", " + dataGeo.country_name;
+             org = dataGeo.org || org;
+         }
+
 
          if (ip.includes(':')) ip = "IPv4 Secured Network"; 
          cachedDevInfo = { ip, location, org, deviceModel, deviceType };
