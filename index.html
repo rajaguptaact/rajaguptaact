@@ -998,7 +998,9 @@
               unsubOrders = db.collection('UserOrders').doc(activeId).onSnapshot(doc => {
                   if (isLoggingOutRef.current || doc.metadata.hasPendingWrites) return;
                   if (doc.exists) {
-                      const cloudOrders = doc.data().orders || [];
+                      const data = doc.data();
+                      if (data.updatedAt && window.rajaLastOrdersWrite && data.updatedAt < window.rajaLastOrdersWrite) return;
+                      const cloudOrders = data.orders || [];
                       setMyLocalOrders(prev => {
                           if (JSON.stringify(prev) === JSON.stringify(cloudOrders)) return prev;
                           try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(cloudOrders)); } catch(e){}
