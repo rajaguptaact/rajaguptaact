@@ -304,7 +304,8 @@
           </div>
         </div>
       );
-    };
+    }, (prev, next) => prev.isHidden && next.isHidden);
+
 
     const FAQItem = ({ question, answer }) => {
       const [isOpen, setIsOpen] = useState(false);
