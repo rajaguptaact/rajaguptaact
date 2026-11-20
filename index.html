@@ -2885,8 +2885,8 @@
         const canSubmit = isEmailValidNow && isPhoneValidNow && isPinValidNow && isAddressValidNow && isNameValidNow && isLocationMatched;
 
         const handleEmailChange = (e) => {
-          // Auto-lowercase aur auto-space remove karega
-          setCheckoutData({...checkoutData, email: e.target.value.toLowerCase().trim()});
+          const val = e.target.value.toLowerCase().replace(/\s+/g, '');
+          setCheckoutData(prev => ({...prev, email: val}));
         };
 
         const handlePhoneChange = (e) => {
@@ -2896,7 +2896,7 @@
           if (val.lastIndexOf('+') > 0) {
              val = val.substring(0, val.lastIndexOf('+')) + val.substring(val.lastIndexOf('+')).replace(/\+/g, '');
           }
-          setCheckoutData({...checkoutData, phone: val});
+          setCheckoutData(prev => ({...prev, phone: val}));
         };
 
         const handlePinChange = async (e) => {
