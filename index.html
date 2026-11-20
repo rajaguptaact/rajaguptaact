@@ -3021,7 +3021,9 @@
         };
 
         const handleBack = () => {
-          const hasData = checkoutData.name.trim() !== '' || checkoutData.email.trim() !== '' || checkoutData.phone.trim() !== '' || checkoutData.address.trim() !== '' || checkoutData.pin.trim() !== '';
+          const autoEmail = (currentUser && currentUser.email) ? currentUser.email.toLowerCase().trim() : '';
+          const hasEmailChanged = checkoutData.email.trim() !== '' && checkoutData.email.trim() !== autoEmail;
+          const hasData = checkoutData.name.trim() !== '' || hasEmailChanged || checkoutData.phone.trim() !== '' || checkoutData.address.trim() !== '' || checkoutData.pin.trim() !== '';
           if (hasData) {
             if (window.confirm("⚠️ WARNING: Navigating away will discard all the details you have entered. Are you sure you want to go back?")) {
               setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
