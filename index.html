@@ -5700,16 +5700,77 @@
                               setMenuOpen(false);
                               isLoggingOutRef.current = true;
                               setIsDataLoaded(false);
-                              firebase.auth().signOut().then(() => {
+
+                              // Agar Admin Panel open tha toh signOut se pehle offline mark karein
+                              if (isAdmin) {
+                                  const devId = window.localStorage.getItem('raja_device_id');
+                                  if (devId) {
+                                      db.collection('adminSessions').doc(devId).update({ lastSeen: Date.now(), isOnline: false }).catch(()=>{});
+                                      db.collection('trustedDevices').doc(devId).update({ lastSeen: Date.now(), isOnline: false }).catch(()=>{});
+                                  }
+                              }
+
+                              // 1. Local Storage & Sync Timestamps Clean
+                              try {
                                   window.localStorage.removeItem('raja_cart_live_v1');
                                   window.localStorage.removeItem('raja_my_orders_v1');
                                   window.localStorage.removeItem('raja_wishlist_live_v1');
                                   window.localStorage.removeItem('raja_likes_live_v1');
                                   window.localStorage.removeItem('art_guest_id');
-                                  setCart([]);
-                                  setWishlist([]);
-                                  setUserLikes([]);
-                                  setMyLocalOrders([]);
+                                  window.localStorage.removeItem('raja_is_guest_session');
+                              } catch(e) {}
+                              lastCartWriteRef.current = 0;
+                              lastSavesWriteRef.current = 0;
+                              window.rajaLastOrdersWrite = 0;
+
+                              // 2. Cart, Wishlist, Likes & Orders Reset
+                              setCart([]);
+                              setWishlist([]);
+                              setWishlistPopupArt(null);
+                              setUserLikes([]);
+                              setMyLocalOrders([]);
+                              setRecoveredOrders([]);
+                              setHasSearched(false);
+                              setSearchWaInput('');
+                              setIsRecoverOpen(false);
+
+                              // 3. Admin Panel Full Reset (Device trust safe rahega)
+                              setIsAdmin(false);
+                              setAdminStep(1);
+                              setPassword('');
+                              setShowAdminPass(false);
+                              setOtpInput('');
+                              setLiveOTP('');
+                              setOtpTimeLeft(0);
+                              setResendTimer(0);
+                              setIsProcessingLogin(false);
+                              setOrders([]);
+                              setActiveSessions([]);
+                              setIsDevicesOpen(false);
+                              setIsOrdersOpen(false);
+                              setIsBgManagerOpen(false);
+                              setEditArtId(null);
+                              setEditAnnId(null);
+                              setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [] });
+                              setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
+                              setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); setRawBgFile(null); setIsMediaModified(false);
+
+                              // 4. Checkout, Commission & Payment Reset
+                              setCommissionInput({ subject: '', size: '', budget: '', instagram: '' });
+                              setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: currency === 'USD' ? 'International' : 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
+                              setStaticStates([]); setStaticCities([]); setLocalAreas([]);
+                              setIsValidating(false);
+                              setIsOrderPlaced(false);
+                              setLastOrderId(null);
+                              setOrderModal(null);
+                              setPremiumAlert(null);
+
+                              // Agar Checkout/Payment beech mein tha toh safe Gallery dikhayein, baaki har page wahin rahega (NO reload)
+                              if (view === 'checkout_form' || view === 'payment') {
+                                  setView('gallery');
+                              }
+
+                              firebase.auth().signOut().then(() => {
                                   showToast("✅ Logged out successfully");
                               }).catch(() => {
                                   isLoggingOutRef.current = false;
