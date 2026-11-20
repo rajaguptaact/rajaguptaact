@@ -95,7 +95,7 @@
     } catch(e) {}
 
     
-      const ArtworkCard = ({ art, getPrice, addToCart, wishlist, userLikes, toggleWishlist, handleLikeArt, shareArtwork, setWishlistPopupArt }) => {
+      const ArtworkCard = React.memo(({ art, getPrice, addToCart, wishlist, userLikes, toggleWishlist, handleLikeArt, shareArtwork, setWishlistPopupArt, isHidden }) => {
 
       const scrollRef = useRef(null);
       const [mockups, setMockups] = useState(() => {
