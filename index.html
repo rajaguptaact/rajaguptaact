@@ -1180,6 +1180,157 @@
       const [premiumAlert, setPremiumAlert] = useState(null);
       const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
       const [orderModal, setOrderModal] = useState(null);
+      // 💬 AUTOMATED CHAT SUPPORT BOT STATE & LOGIC
+      const [isChatOpen, setIsChatOpen] = useState(false);
+      const [chatInput, setChatInput] = useState('');
+      const [isBotTyping, setIsBotTyping] = useState(false);
+      const chatEndRef = useRef(null);
+      const chatTimerRef = useRef(null);
+
+      const getChatTime = () => new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+      const getStudioWaUrl = (text = "Hi Raja! I need help regarding an artwork / order on Raja Gupta Act.") => {
+          let num = '917281074416';
+          try {
+              const waLink = document.querySelector('a[href*="wa.me"], a[href*="whatsapp.com"]');
+              if (waLink && waLink.href) {
+                  const match = waLink.href.match(/(?:wa\.me\/|phone=)(\d{10,15})/);
+                  if (match && match[1]) num = match[1];
+              }
+          } catch(e) {}
+          return `https://wa.me/${num}?text=${encodeURIComponent(text)}`;
+      };
+
+      const createWelcomeMsg = () => ([
+          {
+              id: 'welcome_1',
+              sender: 'bot',
+              time: getChatTime(),
+              text: "Hi! 👋 Welcome to Raja Gupta Act Studio Support.\n\nTap any quick topic below or type your question here — I'll help you right away!"
+          }
+      ]);
+
+      const [chatMessages, setChatMessages] = useState(createWelcomeMsg);
+
+      const CHAT_QUICK_TOPICS = [
+          {
+              id: 'commission',
+              label: '🎨 Book Custom Commission',
+              question: 'How to book a Custom Commission?',
+              answer: "Go to Menu → Commission Art, enter your portrait subject, preferred size (A5/A4/A3), budget, and WhatsApp/Instagram details, then submit your address.\n\nNo advance payment is taken on the website — Raja will contact you personally on WhatsApp/Instagram to review your reference photo and finalize the order."
+          },
+          {
+              id: 'sizes',
+              label: '📏 Sizes & Art Quality',
+              question: 'What are the Artwork Sizes & Quality?',
+              answer: "All artworks are 100% handmade using artist-grade colored pencils on heavy acid-free art paper (and high-resolution archival prints where selected).\n\nAvailable sizes:\n• A5: 14.8 × 21.0 cm (5.8 × 8.3 in)\n• A4: 21.0 × 29.7 cm (8.3 × 11.7 in)\n• A3: 29.7 × 42.0 cm (11.7 × 16.5 in)"
+          },
+          {
+              id: 'delivery',
+              label: '🚚 Delivery & Shipping',
+              question: 'What is the Delivery Time & Shipping process?',
+              answer: "Gallery orders are dispatched within 2–4 working days.\n\n• India Delivery: 5–8 working days\n• International Delivery: 12–21 working days (depending on country & customs)\n\nA tracking ID is shared on WhatsApp/Email once your parcel is shipped."
+          },
+          {
+              id: 'packaging',
+              label: '📦 Packaging & Framing',
+              question: 'Is packaging safe & are frames included?',
+              answer: "Every artwork is packed in protective sleeves with rigid cardboard backing or a hard art tube so it arrives 100% bend-free and safe.\n\nArtworks are shipped unframed by default so you can pick a frame matching your room decor."
+          },
+          {
+              id: 'history',
+              label: '📋 Order History',
+              question: 'How to check or recover my Order History?',
+              answer: "Open Menu → Order History to view your recent orders.\n\nIf you switched phones or cleared browser data, log in using 'Continue with Google' (with the same Gmail used at checkout) and tap 'Sync & Recover Past Orders'."
+          },
+          {
+              id: 'payment',
+              label: '💳 Payment & Refunds',
+              question: 'What are the Payment & Refund rules?',
+              answer: "Orders are verified after payment confirmation. Because original artworks and custom commissions are handmade, cancellations and refunds follow our Refund Policy (available in the website footer).\n\nIf a parcel ever arrives damaged, please message us within 48 hours with an unboxing video."
+          },
+          {
+              id: 'whatsapp',
+              label: '💬 Talk to Artist',
+              question: 'I want to talk to the artist directly.',
+              answer: "Need help with a specific artwork, custom size, or an existing order? Tap the button below to chat directly with Raja on WhatsApp.",
+              showWhatsApp: true
+          }
+      ];
+
+      const getSmartBotReply = (rawText) => {
+          const t = String(rawText || '').toLowerCase();
+          if (/^(hi|hello|hey|hii+|hlo|namaste|good morning|good evening)\b/.test(t)) {
+              return { text: "Hello! 😊 How can I help you today? You can ask me about Custom Commissions, Artwork Sizes, Delivery Time, Packaging, or Order History." };
+          }
+          if (/(commission|custom|portrait|sketch|banwana|banwa|drawing|reference|gift)/.test(t)) {
+              return { text: CHAT_QUICK_TOPICS[0].answer };
+          }
+          if (/(size|a3|a4|a5|inch|cm|centimeter|paper|pencil|quality|original|print|bada|chota)/.test(t)) {
+              return { text: CHAT_QUICK_TOPICS[1].answer };
+          }
+          if (/(deliver|delivery|ship|shipping|track|tracking|courier|post|international|foreign|days|kitne din|kab|time)/.test(t)) {
+              return { text: CHAT_QUICK_TOPICS[2].answer };
+          }
+          if (/(pack|packing|packaging|frame|framing|damage|broken|bend|safe|tube)/.test(t)) {
+              return { text: CHAT_QUICK_TOPICS[3].answer };
+          }
+          if (/(history|recover|past|purana|order id|find order|missing|lost order)/.test(t)) {
+              return { text: CHAT_QUICK_TOPICS[4].answer };
+          }
+          if (/(pay|payment|upi|phonepe|gpay|paytm|refund|cancel|return|price|cost|rate|charge|kitna|money|rupee|usd)/.test(t)) {
+              return { text: CHAT_QUICK_TOPICS[5].answer };
+          }
+          if (/(whatsapp|contact|phone|number|call|artist|raja|talk|human|agent|help|issue|problem)/.test(t)) {
+              return { text: CHAT_QUICK_TOPICS[6].answer, showWhatsApp: true };
+          }
+          return {
+              text: "Thanks for your message! 🙂 I can instantly answer questions about Custom Commissions, Sizes, Delivery, Packaging, Order History, and Payments.\n\nFor specific queries, you can also chat directly with Raja on WhatsApp below:",
+              showWhatsApp: true
+          };
+      };
+
+      const sendChatMessage = (userText, presetReply = null) => {
+          const cleaned = String(userText || '').trim();
+          if (!cleaned) return;
+          if (chatTimerRef.current) clearTimeout(chatTimerRef.current);
+
+          const userMsg = {
+              id: 'u_' + Date.now(),
+              sender: 'user',
+              time: getChatTime(),
+              text: cleaned
+          };
+          setChatMessages(prev => [...prev, userMsg]);
+          setChatInput('');
+          setIsBotTyping(true);
+
+          chatTimerRef.current = setTimeout(() => {
+              const replyObj = presetReply || getSmartBotReply(cleaned);
+              setIsBotTyping(false);
+              setChatMessages(prev => [...prev, {
+                  id: 'b_' + Date.now(),
+                  sender: 'bot',
+                  time: getChatTime(),
+                  text: replyObj.text,
+                  showWhatsApp: !!replyObj.showWhatsApp
+              }]);
+          }, 550);
+      };
+
+      const handleResetChat = () => {
+          if (chatTimerRef.current) clearTimeout(chatTimerRef.current);
+          setIsBotTyping(false);
+          setChatInput('');
+          setChatMessages(createWelcomeMsg());
+      };
+
+      useEffect(() => {
+          if (isChatOpen && chatEndRef.current) {
+              chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+          }
+      }, [chatMessages, isBotTyping, isChatOpen]);
+
       const withOrderTimeout = (promise, ms = 12000) => Promise.race([
           promise,
           new Promise((_, reject) => setTimeout(() => reject({ code: 'custom/timeout', message: 'Network is slow or connection timed out. Please check your internet and try again.' }), ms))
