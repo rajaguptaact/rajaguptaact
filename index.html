@@ -1967,9 +1967,10 @@
         }, 0);
         const initCountry = currency === 'USD' ? 'International' : 'India';
         const insta = (extraData && extraData.instagram) ? extraData.instagram : '';
+        const autoEmail = (currentUser && currentUser.email) ? currentUser.email.toLowerCase().trim() : '';
         
-        setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: initCountry, type: type, itemDetails: items, amount: total, instagram: insta });
-        
+        setCheckoutData({ name: '', email: autoEmail, phone: '', address: '', pin: '', city: '', state: '', country: initCountry, type: type, itemDetails: items, amount: total, instagram: insta });
+
         setIsValidating(false);
         nav('checkout_form');
       };
