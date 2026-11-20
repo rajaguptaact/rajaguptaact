@@ -148,6 +148,18 @@
     const emailInput = document.getElementById('emailInput');
     const passInput = document.getElementById('passInput');
     const googleBtn = document.getElementById('googleLoginBtn');
+    const togglePassBtn = document.getElementById('togglePassBtn');
+    const eyeOpenIcon = document.getElementById('eyeOpenIcon');
+    const eyeCloseIcon = document.getElementById('eyeCloseIcon');
+
+    if (togglePassBtn) {
+        togglePassBtn.addEventListener('click', () => {
+            const isHidden = passInput.type === 'password';
+            passInput.type = isHidden ? 'text' : 'password';
+            eyeOpenIcon.classList.toggle('hidden', isHidden);
+            eyeCloseIcon.classList.toggle('hidden', !isHidden);
+        });
+    }
 
     const statusModal = document.getElementById('statusModal');
     const statusCard = document.getElementById('statusCard');
