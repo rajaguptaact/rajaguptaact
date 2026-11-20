@@ -1156,13 +1156,18 @@
           const newOrders = [orderData, ...latestOrders];
           setMyLocalOrders(newOrders);
           try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(newOrders)); } catch(e){}
-          
-          const targetId = firebase.auth().currentUser ? firebase.auth().currentUser.uid : (activeUserId || window.localStorage.getItem("art_guest_id"));
-          if (targetId) {
-              try {
-                  await db.collection('UserOrders').doc(targetId).set({ orders: newOrders, expireAt: getExpiry(), updatedAt: now }, { merge: true });
-              } catch(e) { console.error("UserOrders Save Error:", e); }
+
+          let targetId = firebase.auth().currentUser ? firebase.auth().currentUser.uid : (activeUserId || window.localStorage.getItem("art_guest_id"));
+          if (!targetId) {
+              targetId = 'guest_' + Date.now() + Math.random().toString(36).substring(2);
+              window.localStorage.setItem('art_guest_id', targetId);
           }
+          try {
+              await withOrderTimeout(
+                  db.collection('UserOrders').doc(targetId).set({ orders: newOrders, expireAt: getExpiry(), updatedAt: now }, { merge: true }),
+                  6000
+              );
+          } catch(e) { console.error("UserOrders Save Error:", e); }
       };
 
 
