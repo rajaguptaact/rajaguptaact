@@ -1140,17 +1140,27 @@
           return [];
       });
 
-      const addLocalOrder = (orderData) => {
-          const newOrders = [orderData, ...myLocalOrders];
+      const addLocalOrder = async (orderData) => {
+          const now = Date.now();
+          window.rajaLastOrdersWrite = now;
+          let latestOrders = [];
+          try {
+              const saved = JSON.parse(window.localStorage.getItem('raja_my_orders_v1') || '[]');
+              if (Array.isArray(saved) && saved.length >= myLocalOrders.length) latestOrders = saved;
+              else latestOrders = myLocalOrders;
+          } catch(e) { latestOrders = myLocalOrders; }
+
+          const newOrders = [orderData, ...latestOrders];
           setMyLocalOrders(newOrders);
           try { window.localStorage.setItem('raja_my_orders_v1', JSON.stringify(newOrders)); } catch(e){}
           
           const targetId = firebase.auth().currentUser ? firebase.auth().currentUser.uid : (activeUserId || window.localStorage.getItem("art_guest_id"));
           if (targetId) {
-              db.collection('UserOrders').doc(targetId).set({ orders: newOrders, expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true }).catch(e=>{});
+              try {
+                  await db.collection('UserOrders').doc(targetId).set({ orders: newOrders, expireAt: getExpiry(), updatedAt: now }, { merge: true });
+              } catch(e) { console.error("UserOrders Save Error:", e); }
           }
       };
-
 
 
       const toastTimerRef = useRef(null); // Purane alarm ko yaad rakhne ke liye
