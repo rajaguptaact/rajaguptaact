@@ -3006,25 +3006,46 @@
 
           if (checkoutData.type === 'Commission') {
              if (!navigator.onLine) {
-                 showPremiumAlert("❌ No internet connection. Please turn on mobile data or Wi-Fi and try again.");
+                 setOrderModal({ type: 'error', title: 'No Internet Connection', msg: 'Please turn on mobile data or Wi-Fi and try again.' });
                  return;
              }
              setIsValidating(true);
-             showToast("⏳ Saving your Commission Request...");
+             setOrderModal({ type: 'loading', title: 'Submitting Request...', msg: 'Please wait while we securely save your commission request. Do not close or press back.' });
+
+             const cleanItems = Array.isArray(checkoutData.itemDetails)
+                 ? checkoutData.itemDetails.map(it => ({
+                       title: String(it.title || ''),
+                       selectedSize: String(it.selectedSize || ''),
+                       price: Number(it.price) || 0,
+                       qty: Number(it.qty) || 1
+                   }))
+                 : [];
+
              const finalPayload = {
                  date: new Date().toLocaleDateString('en-IN'), 
                  time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
                  createdAt: Date.now(),
                  userId: firebase.auth().currentUser ? firebase.auth().currentUser.uid : null,
-                 ...checkoutData,
                  name: String(checkoutData.name || '').trim(),
                  email: String(checkoutData.email || '').toLowerCase().trim(),
+                 phone: String(checkoutData.phone || '').trim(),
+                 address: String(checkoutData.address || '').trim(),
+                 pin: String(checkoutData.pin || '').trim(),
+                 city: String(checkoutData.city || ''),
+                 state: String(checkoutData.state || ''),
+                 country: String(checkoutData.country || 'India'),
+                 exactCountry: String(checkoutData.exactCountry || ''),
+                 pinCity: String(checkoutData.pinCity || ''),
+                 pinState: String(checkoutData.pinState || ''),
+                 instagram: String(checkoutData.instagram || '').trim(),
+                 type: 'Commission',
+                 itemDetails: cleanItems,
                  amount: Number(finalAmountBase),
                  displayAmount: getPrice(finalAmountBase)
              };
 
              try {
-                 await db.collection('orders').add(finalPayload);
+                 await withOrderTimeout(db.collection('orders').add(finalPayload), 12000);
                  sendSilentAlert(finalPayload); 
                  
                  await addLocalOrder({
@@ -3032,18 +3053,27 @@
                      time: finalPayload.time,
                      type: finalPayload.type,
                      displayAmount: finalPayload.displayAmount,
-                     title: finalPayload.itemDetails[0].title,
-                     itemDetails: finalPayload.itemDetails
+                     title: cleanItems[0] ? cleanItems[0].title : 'Commission Request',
+                     itemDetails: cleanItems
                  });
 
-                 setCommissionInput({ subject: '', size: '', budget: '', instagram: '' });
-                 setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
-                 
-                 showPremiumAlert("✅ Commission Request Sent Successfully!\n📋 You can track this request in your 'Order History'.\n💬 I will contact you soon via WhatsApp / Instagram.");
-                 nav('my_orders');
+                 setOrderModal({ type: 'success', title: 'Request Submitted!', msg: 'Your commission request has been confirmed.' });
+                 setTimeout(() => {
+                     setOrderModal(null);
+                     setCommissionInput({ subject: '', size: '', budget: '', instagram: '' });
+                     setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
+                     showPremiumAlert("✅ Commission Request Sent Successfully!\n📋 You can track this request in your 'Order History'.\n💬 I will contact you soon via WhatsApp / Instagram.");
+                     nav('my_orders');
+                 }, 700);
              } catch (err) {
                  console.error("Commission Order Save Failed:", err);
-                 showPremiumAlert("❌ Could not save Commission Request. Please check your internet and tap Submit again.\n\nDetails: " + (err.message || err.code || "Network Error"));
+                 setOrderModal({
+                     type: 'error',
+                     title: 'Submission Failed',
+                     msg: err && err.code === 'custom/timeout'
+                         ? 'Network is slow or connection timed out. Please try again.'
+                         : ('Could not save your request. Please check your internet and try again. (' + (err.code || err.message || 'Network Error') + ')')
+                 });
              } finally {
                  setIsValidating(false);
              }
@@ -3052,6 +3082,7 @@
              nav('payment');
           }
         };
+
 
         const handleBack = () => {
           const autoEmail = (currentUser && currentUser.email) ? currentUser.email.toLowerCase().trim() : '';
