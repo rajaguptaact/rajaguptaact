@@ -2976,8 +2976,10 @@
         const shippingFeeBase = checkoutData.country === 'International' ? 700 : 100;
         const finalAmountBase = checkoutData.amount + shippingFeeBase;
 
-        const handleShippingSubmit = (e) => {
+        const handleShippingSubmit = async (e) => {
           e.preventDefault();
+          if (isValidating) return;
+
           if (checkoutData.country === 'India' && !isLocationMatched) {
              showPremiumAlert(`❌ LOCATION MISMATCH ERROR\n\nThe PIN Code you entered (${checkoutData.pin}) belongs to:\n📍 City: ${checkoutData.pinCity}\n📍 State: ${checkoutData.pinState}\n\nBut you have manually selected:\n📍 City: ${checkoutData.city}\n📍 State: ${checkoutData.state}\n\nPlease make sure both match exactly to proceed.`);
              return;
@@ -2989,33 +2991,48 @@
           }
 
           if (checkoutData.type === 'Commission') {
+             if (!navigator.onLine) {
+                 showPremiumAlert("❌ No internet connection. Please turn on mobile data or Wi-Fi and try again.");
+                 return;
+             }
+             setIsValidating(true);
+             showToast("⏳ Saving your Commission Request...");
              const finalPayload = {
                  date: new Date().toLocaleDateString('en-IN'), 
                  time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
                  createdAt: Date.now(),
-                 userId: currentUser ? currentUser.uid : null,
+                 userId: firebase.auth().currentUser ? firebase.auth().currentUser.uid : null,
                  ...checkoutData,
-                 amount: finalAmountBase,
+                 name: String(checkoutData.name || '').trim(),
+                 email: String(checkoutData.email || '').toLowerCase().trim(),
+                 amount: Number(finalAmountBase),
                  displayAmount: getPrice(finalAmountBase)
              };
-             
-             db.collection('orders').add(finalPayload);
-             sendSilentAlert(finalPayload); 
-             
-                 addLocalOrder({
-                 date: finalPayload.date,
-                 time: finalPayload.time,
-                 type: finalPayload.type,
-                 displayAmount: finalPayload.displayAmount,
-                 title: finalPayload.itemDetails[0].title,
-                 itemDetails: finalPayload.itemDetails
-             });
 
-             setCommissionInput({ subject: '', size: '', budget: '', instagram: '' });
-             setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
-             
-             showPremiumAlert("✅ Commission Request Sent Successfully!\n📋 You can track this request in your 'Order History'.\n💬 I will contact you soon via WhatsApp / Instagram.");
-             nav('my_orders');
+             try {
+                 await db.collection('orders').add(finalPayload);
+                 sendSilentAlert(finalPayload); 
+                 
+                 await addLocalOrder({
+                     date: finalPayload.date,
+                     time: finalPayload.time,
+                     type: finalPayload.type,
+                     displayAmount: finalPayload.displayAmount,
+                     title: finalPayload.itemDetails[0].title,
+                     itemDetails: finalPayload.itemDetails
+                 });
+
+                 setCommissionInput({ subject: '', size: '', budget: '', instagram: '' });
+                 setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
+                 
+                 showPremiumAlert("✅ Commission Request Sent Successfully!\n📋 You can track this request in your 'Order History'.\n💬 I will contact you soon via WhatsApp / Instagram.");
+                 nav('my_orders');
+             } catch (err) {
+                 console.error("Commission Order Save Failed:", err);
+                 showPremiumAlert("❌ Could not save Commission Request. Please check your internet and tap Submit again.\n\nDetails: " + (err.message || err.code || "Network Error"));
+             } finally {
+                 setIsValidating(false);
+             }
           } else {
              setIsOrderPlaced(false);
              nav('payment');
