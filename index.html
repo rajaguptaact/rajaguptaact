@@ -5474,7 +5474,27 @@
                         </div>
                         <h2 className="font-black text-lg md:text-2xl mb-1 md:mb-2 text-gray-900">Admin Security</h2>
                         <p className="text-[10px] md:text-sm font-bold text-gray-500 mb-4 md:mb-8">Protected Access Only</p>
-                        <input type="password" disabled={isProcessingLogin} placeholder="Enter Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border-2 border-gray-200 p-2.5 md:p-4 rounded-lg md:rounded-xl mb-3 md:mb-6 text-center tracking-widest font-black focus:border-gray-900 outline-none text-xs md:text-base" />
+                        <div className="relative mb-3 md:mb-6">
+                          <input type={showAdminPass ? "text" : "password"} disabled={isProcessingLogin} placeholder="Enter Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border-2 border-gray-200 py-2.5 md:py-4 pl-10 pr-10 md:pl-12 md:pr-12 rounded-lg md:rounded-xl text-center tracking-widest font-black focus:border-gray-900 outline-none text-xs md:text-base" />
+                          <button
+                            type="button"
+                            onClick={() => setShowAdminPass(prev => !prev)}
+                            aria-label="Show or hide admin password"
+                            className="absolute inset-y-0 right-0 px-3 md:px-4 flex items-center text-gray-400 hover:text-gray-900 cursor-pointer focus:outline-none"
+                          >
+                            {showAdminPass ? (
+                              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                              </svg>
+                            ) : (
+                              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+
                         <button onClick={handlePasswordSubmit} disabled={isProcessingLogin} className={`w-full text-white py-2.5 md:py-4 rounded-lg md:rounded-xl font-black text-xs md:text-base shadow-lg transition-all ${isProcessingLogin ? 'bg-gray-500 cursor-wait' : 'bg-gray-900 hover:shadow-xl cursor-pointer'}`}>
                            {isProcessingLogin ? 'Processing...' : 'Secure Login'}
                         </button>
