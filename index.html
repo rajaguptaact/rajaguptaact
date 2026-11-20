@@ -3330,29 +3330,50 @@
         const finalizeOrder = async () => {
           if (isValidating) return;
           if (!navigator.onLine) {
-              showPremiumAlert("❌ No internet connection. Please turn on mobile data or Wi-Fi and try again.");
+              setOrderModal({ type: 'error', title: 'No Internet Connection', msg: 'Please turn on mobile data or Wi-Fi and try again.' });
               return;
           }
           setIsValidating(true);
-          showToast("⏳ Confirming & saving your order...");
+          setOrderModal({ type: 'loading', title: 'Confirming Your Order...', msg: 'Please wait while we confirm your order and generate your Order ID. Do not close or press back.' });
 
           const generatedId = 'ORD-' + Date.now().toString().slice(-4) + Math.floor(1000 + Math.random()*9000);
-          
+
+          const cleanItems = Array.isArray(checkoutData.itemDetails)
+              ? checkoutData.itemDetails.map(it => ({
+                    id: String(it.id || ''),
+                    title: String(it.title || ''),
+                    selectedSize: String(it.selectedSize || ''),
+                    price: Number(it.price) || 0,
+                    qty: Number(it.qty) || 1
+                }))
+              : [];
+
           const finalPayload = {
               orderId: generatedId, 
               date: new Date().toLocaleDateString('en-IN'),
               time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), 
               createdAt: Date.now(),
               userId: firebase.auth().currentUser ? firebase.auth().currentUser.uid : null,
-              ...checkoutData,
               name: String(checkoutData.name || '').trim(),
               email: String(checkoutData.email || '').toLowerCase().trim(),
+              phone: String(checkoutData.phone || '').trim(),
+              address: String(checkoutData.address || '').trim(),
+              pin: String(checkoutData.pin || '').trim(),
+              city: String(checkoutData.city || ''),
+              state: String(checkoutData.state || ''),
+              country: String(checkoutData.country || 'India'),
+              exactCountry: String(checkoutData.exactCountry || ''),
+              pinCity: String(checkoutData.pinCity || ''),
+              pinState: String(checkoutData.pinState || ''),
+              instagram: String(checkoutData.instagram || '').trim(),
+              type: String(checkoutData.type || 'Gallery Purchase'),
+              itemDetails: cleanItems,
               amount: Number(finalAmountBase),
               displayAmount: getPrice(finalAmountBase)
           };
 
           try {
-              await db.collection('orders').add(finalPayload);
+              await withOrderTimeout(db.collection('orders').add(finalPayload), 12000);
               sendSilentAlert(finalPayload); 
               
               await addLocalOrder({
@@ -3361,13 +3382,13 @@
                   time: finalPayload.time,
                   type: finalPayload.type,
                   displayAmount: finalPayload.displayAmount,
-                  itemDetails: finalPayload.itemDetails
+                  itemDetails: cleanItems
               });
 
               setLastOrderId(generatedId);
 
-              if (checkoutData.type === 'Gallery Purchase' && checkoutData.itemDetails) {
-                 checkoutData.itemDetails.forEach(item => {
+              if (finalPayload.type === 'Gallery Purchase' && cleanItems.length > 0) {
+                 cleanItems.forEach(item => {
                     if (item.selectedSize && item.selectedSize.includes('Original') && item.id) {
                        db.collection('RajaStudio').doc(item.id).update({ isSold: true }).catch(e => console.log(e));
                     }
@@ -3379,10 +3400,21 @@
               if (activeUserId) {
                   db.collection('RecoveredCarts').doc(activeUserId).set({ items: [], expireAt: getExpiry(), updatedAt: Date.now() }, { merge: true }).catch(e=>{});
               }
-              setIsOrderPlaced(true);
+
+              setOrderModal({ type: 'success', title: 'Order Confirmed!', msg: 'Generating your Order ID...' });
+              setTimeout(() => {
+                  setOrderModal(null);
+                  setIsOrderPlaced(true);
+              }, 650);
           } catch (err) {
               console.error("Gallery Order Save Failed:", err);
-              showPremiumAlert("❌ Order could not be saved due to network/server error. Please tap confirm again.\n\nDetails: " + (err.message || err.code || "Network Error"));
+              setOrderModal({
+                  type: 'error',
+                  title: 'Order Not Confirmed',
+                  msg: err && err.code === 'custom/timeout'
+                      ? 'Network is slow or connection timed out. Please tap Try Again.'
+                      : ('Could not confirm your order. Please check your internet and tap Try Again. (' + (err.code || err.message || 'Network Error') + ')')
+              });
           } finally {
               setIsValidating(false);
           }
