@@ -6577,6 +6577,119 @@
                   </div>
               </div>
           )}
+          
+          {/* 🔍 PROTECTED FULL-SCREEN HD ARTWORK ZOOM MODAL (SINGLE ARTWORK + DIAGONAL WATERMARK) */}
+          {zoomArtMounted && zoomArt && (
+              <div
+                  onContextMenu={(e) => e.preventDefault()}
+                  className={`fixed inset-0 z-[99998] bg-black/95 backdrop-blur-md flex flex-col select-none transition-opacity duration-300 ease-out ${
+                      zoomArtVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                  }`}
+                  style={{ height: '100dvh' }}
+              >
+                  {/* Top Header Bar */}
+                  <div className="px-4 py-3 flex items-center justify-between gap-3 bg-gradient-to-b from-black/80 to-transparent z-30 shrink-0">
+                      <div className="min-w-0">
+                          <h3 className="text-white font-black text-sm md:text-base truncate leading-tight">
+                              {zoomArt.title}
+                          </h3>
+                          <p className="text-[10px] md:text-xs font-bold text-gray-400">
+                              Original Colour Pencil • Protected HD View
+                          </p>
+                      </div>
+                      <button
+                          type="button"
+                          onClick={closeArtZoom}
+                          aria-label="Close HD View"
+                          className="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-white flex items-center justify-center font-black text-sm transition active:scale-90 cursor-pointer shrink-0"
+                      >
+                          ✕
+                      </button>
+                  </div>
+
+                  {/* Protected Center Stage */}
+                  <div
+                      onTouchStart={handleZoomTouchStart}
+                      onTouchMove={handleZoomTouchMove}
+                      onTouchEnd={handleZoomTouchEnd}
+                      onMouseDown={handleZoomMouseDown}
+                      onMouseMove={handleZoomMouseMove}
+                      onMouseUp={handleZoomMouseUp}
+                      onMouseLeave={handleZoomMouseUp}
+                      onDoubleClick={() => {
+                          if (Date.now() - zoomGestureRef.current.lastTouch < 400) return;
+                          setZoomLevelSafe(zoomScale > 1.1 ? 1 : 2.2);
+                      }}
+                      style={{ touchAction: 'none' }}
+                      className={`flex-1 relative overflow-hidden flex items-center justify-center p-3 md:p-6 ${
+                          zoomScale > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'
+                      }`}
+                  >
+                      {/* Zoomable Single Artwork */}
+                      <div
+                          className={`relative flex items-center justify-center max-w-full max-h-full transition-transform ${
+                              zoomGestureRef.current.mode === 'none' ? 'duration-200 ease-out' : 'duration-0'
+                          }`}
+                          style={{
+                              transform: `translate3d(${zoomOffset.x}px, ${zoomOffset.y}px, 0) scale(${zoomScale * (zoomArtVisible ? 1 : 0.94)})`
+                          }}
+                      >
+                          <img
+                              src={zoomArt.image}
+                              alt={zoomArt.title}
+                              draggable={false}
+                              onContextMenu={(e) => e.preventDefault()}
+                              className="max-w-[92vw] max-h-[72dvh] md:max-h-[76dvh] object-contain rounded-lg shadow-2xl pointer-events-none select-none"
+                          />
+                      </div>
+
+                      {/* Anti-Theft Repeating Diagonal Watermark Layer (Always Covers View Even When Zoomed) */}
+                      <div
+                          className="absolute inset-0 z-20 pointer-events-none select-none"
+                          style={{
+                              backgroundImage: DIAGONAL_WATERMARK_BG,
+                              backgroundRepeat: 'repeat'
+                          }}
+                      ></div>
+                  </div>
+
+                  {/* Bottom Floating Zoom Controls */}
+                  <div className="px-4 pb-5 pt-2 flex flex-col items-center gap-1.5 z-30 shrink-0 bg-gradient-to-t from-black/80 to-transparent">
+                      <div className="inline-flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-1 shadow-xl">
+                          <button
+                              type="button"
+                              onClick={() => setZoomLevelSafe(zoomScale - 0.5)}
+                              disabled={zoomScale <= 1}
+                              className="w-9 h-8 rounded-full text-white font-black text-base hover:bg-white/15 active:scale-90 transition cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                              aria-label="Zoom Out"
+                          >
+                              −
+                          </button>
+                          <button
+                              type="button"
+                              onClick={() => setZoomLevelSafe(1)}
+                              className="px-3 h-8 rounded-full text-white font-black text-[11px] md:text-xs hover:bg-white/15 transition cursor-pointer min-w-[58px]"
+                              title="Reset Zoom"
+                          >
+                              {Math.round(zoomScale * 100)}%
+                          </button>
+                          <button
+                              type="button"
+                              onClick={() => setZoomLevelSafe(zoomScale + 0.5)}
+                              disabled={zoomScale >= 3}
+                              className="w-9 h-8 rounded-full text-white font-black text-base hover:bg-white/15 active:scale-90 transition cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                              aria-label="Zoom In"
+                          >
+                              +
+                          </button>
+                      </div>
+                      <p className="text-[10px] font-bold text-gray-400">
+                          Pinch or double-tap to inspect pencil details
+                      </p>
+                  </div>
+              </div>
+          )}
+
 
           {/* 📏 PREMIUM MYNTRA-STYLE ANIMATED ARTWORK SIZE GUIDE MODAL */}
           {sizeGuideMounted && (() => {
