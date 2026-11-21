@@ -6182,7 +6182,13 @@
                               setIsOrderPlaced(false);
                               setLastOrderId(null);
                               setOrderModal(null);
+                              if (chatTimerRef.current) clearTimeout(chatTimerRef.current);
                               setIsChatOpen(false);
+                              setIsBotTyping(false);
+                              setChatInput('');
+                              setChatMessages([]);
+                              try { window.sessionStorage.removeItem('raja_chat_session_v1'); } catch(e) {}
+
                               setPremiumAlert(null);
 
 
