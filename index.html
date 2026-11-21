@@ -6586,6 +6586,7 @@
                   </div>
               </div>
           )}
+                  
           
           {/* 🔍 PROTECTED FULL-SCREEN HD ARTWORK ZOOM MODAL (SINGLE ARTWORK + DIAGONAL WATERMARK) */}
           {zoomArtMounted && zoomArt && (
@@ -6597,12 +6598,12 @@
                   style={{ height: '100dvh' }}
               >
                   {/* Top Header Bar */}
-                  <div className="px-4 py-3 flex items-center justify-between gap-3 bg-gradient-to-b from-black/80 to-transparent z-30 shrink-0">
+                  <div className="px-4 md:px-8 py-3 md:py-4 flex items-center justify-between gap-3 bg-gradient-to-b from-black/80 to-transparent z-30 shrink-0">
                       <div className="min-w-0">
-                          <h3 className="text-white font-black text-sm md:text-base truncate leading-tight">
+                          <h3 className="text-white font-black text-sm md:text-xl truncate leading-tight">
                               {zoomArt.title}
                           </h3>
-                          <p className="text-[10px] md:text-xs font-bold text-gray-400">
+                          <p className="text-[10px] md:text-xs font-bold text-gray-400 mt-0.5">
                               Original Colour Pencil • Protected HD View
                           </p>
                       </div>
@@ -6610,7 +6611,7 @@
                           type="button"
                           onClick={closeArtZoom}
                           aria-label="Close HD View"
-                          className="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-white flex items-center justify-center font-black text-sm transition active:scale-90 cursor-pointer shrink-0"
+                          className="w-9 h-9 md:w-12 md:h-12 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-white flex items-center justify-center font-black text-sm md:text-lg transition active:scale-90 cursor-pointer shrink-0"
                       >
                           ✕
                       </button>
@@ -6648,11 +6649,11 @@
                               alt={zoomArt.title}
                               draggable={false}
                               onContextMenu={(e) => e.preventDefault()}
-                              className="max-w-[92vw] max-h-[72dvh] md:max-h-[76dvh] object-contain rounded-lg shadow-2xl pointer-events-none select-none"
+                              className="max-w-[92vw] max-h-[72dvh] md:max-h-[74dvh] object-contain rounded-lg shadow-2xl pointer-events-none select-none"
                           />
                       </div>
 
-                      {/* Anti-Theft Repeating Diagonal Watermark Layer (Always Covers View Even When Zoomed) */}
+                      {/* Anti-Theft Repeating Diagonal Watermark Layer */}
                       <div
                           className="absolute inset-0 z-20 pointer-events-none select-none"
                           style={{
@@ -6663,13 +6664,13 @@
                   </div>
 
                   {/* Bottom Floating Zoom Controls */}
-                  <div className="px-4 pb-5 pt-2 flex flex-col items-center gap-1.5 z-30 shrink-0 bg-gradient-to-t from-black/80 to-transparent">
-                      <div className="inline-flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-1 shadow-xl">
+                  <div className="px-4 pb-5 md:pb-6 pt-2 flex flex-col items-center gap-1.5 md:gap-2 z-30 shrink-0 bg-gradient-to-t from-black/80 to-transparent">
+                      <div className="inline-flex items-center gap-1 md:gap-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-1 md:p-1.5 shadow-xl">
                           <button
                               type="button"
                               onClick={() => setZoomLevelSafe(zoomScale - 0.5)}
                               disabled={zoomScale <= 1}
-                              className="w-9 h-8 rounded-full text-white font-black text-base hover:bg-white/15 active:scale-90 transition cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                              className="w-9 h-8 md:w-12 md:h-10 rounded-full text-white font-black text-base md:text-xl hover:bg-white/15 active:scale-90 transition cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
                               aria-label="Zoom Out"
                           >
                               −
@@ -6677,7 +6678,7 @@
                           <button
                               type="button"
                               onClick={() => setZoomLevelSafe(1)}
-                              className="px-3 h-8 rounded-full text-white font-black text-[11px] md:text-xs hover:bg-white/15 transition cursor-pointer min-w-[58px]"
+                              className="px-3 md:px-5 h-8 md:h-10 rounded-full text-white font-black text-[11px] md:text-sm hover:bg-white/15 transition cursor-pointer min-w-[58px] md:min-w-[74px]"
                               title="Reset Zoom"
                           >
                               {Math.round(zoomScale * 100)}%
@@ -6686,13 +6687,13 @@
                               type="button"
                               onClick={() => setZoomLevelSafe(zoomScale + 0.5)}
                               disabled={zoomScale >= 3}
-                              className="w-9 h-8 rounded-full text-white font-black text-base hover:bg-white/15 active:scale-90 transition cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                              className="w-9 h-8 md:w-12 md:h-10 rounded-full text-white font-black text-base md:text-xl hover:bg-white/15 active:scale-90 transition cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
                               aria-label="Zoom In"
                           >
                               +
                           </button>
                       </div>
-                      <p className="text-[10px] font-bold text-gray-400">
+                      <p className="text-[10px] md:text-xs font-bold text-gray-400">
                           Pinch or double-tap to inspect pencil details
                       </p>
                   </div>
