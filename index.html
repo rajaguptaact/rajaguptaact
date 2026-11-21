@@ -2619,6 +2619,36 @@
         img.src = art.image;
       };
 
+      const updateGalleryCartQty = (artId, selectedSize, delta) => {
+        const target = cart.find(c => c.id === artId && c.selectedSize === selectedSize);
+        if (!target) return;
+
+        if (delta < 0) {
+            if (selectedSize && selectedSize.includes('Original')) {
+                setCart(prev => prev.filter(c => !(c.id === artId && c.selectedSize === selectedSize)));
+                showToast("🗑️ Item removed from Cart");
+                return;
+            }
+            const curQty = target.qty || 1;
+            if (curQty <= 1) {
+                setCart(prev => prev.filter(c => !(c.id === artId && c.selectedSize === selectedSize)));
+                showToast("🗑️ Item removed from Cart");
+            } else {
+                setCart(prev => prev.map(c => (c.id === artId && c.selectedSize === selectedSize) ? { ...c, qty: curQty - 1 } : c));
+                showToast("☑️ Item quantity updated in Cart!");
+            }
+        } else if (delta > 0) {
+            if (selectedSize && selectedSize.includes('Original')) return;
+            const curQty = target.qty || 1;
+            if (curQty < 3) {
+                setCart(prev => prev.map(c => (c.id === artId && c.selectedSize === selectedSize) ? { ...c, qty: curQty + 1 } : c));
+                showToast("☑️ Item quantity updated in Cart!");
+            } else {
+                showToast("⚠️ Maximum 3 quantity allowed per item.");
+            }
+        }
+      };
+
 
       const startCheckout = (items, type, extraData) => {
         if (type === 'Gallery Purchase') {
