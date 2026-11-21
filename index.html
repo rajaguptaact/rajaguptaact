@@ -2791,9 +2791,13 @@
                         </div>
                         <div>
                            <h4 className={`font-black text-sm md:text-lg line-clamp-1 ${isDeleted ? 'text-gray-500 line-through' : isItemSoldOut ? 'text-red-800' : 'text-gray-900'}`}>{item.title}</h4>
-                           <p className={`text-[10px] md:text-sm font-bold ${isDeleted ? 'text-gray-400' : 'text-purple-600'}`}>{item.selectedSize}</p>
-                           {isDeleted && <span className="text-[9px] md:text-[10px] bg-gray-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block shadow-sm">Artwork Deleted</span>}
-                           {!isDeleted && isItemSoldOut && <span className="text-[9px] md:text-[10px] bg-red-500 text-white px-2 py-0.5 rounded font-black uppercase mt-1 inline-block animate-pulse shadow-sm">Sold Out</span>}
+                           <div className="flex flex-wrap items-center gap-1.5 mt-1 md:mt-1.5">
+                             <span className={`inline-block px-2 py-0.5 md:px-2.5 md:py-1 rounded-md border text-[9px] md:text-xs font-black uppercase tracking-wide ${isDeleted ? 'bg-gray-200 text-gray-500 border-gray-300' : 'bg-purple-50 text-purple-600 border-purple-100'}`}>
+                               Size: {item.selectedSize}
+                             </span>
+                             {isDeleted && <span className="text-[9px] md:text-[10px] bg-gray-500 text-white px-2 py-0.5 rounded-md font-black uppercase inline-block shadow-sm">Artwork Deleted</span>}
+                             {!isDeleted && isItemSoldOut && <span className="text-[9px] md:text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-md font-black uppercase inline-block animate-pulse shadow-sm">Sold Out</span>}
+                           </div>
                         </div>
                       </div>
                       
