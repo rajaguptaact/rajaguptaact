@@ -2093,12 +2093,12 @@
       };
 
       useEffect(() => {
-          if (sizeGuideMounted || isChatOpen || zoomArtMounted) {
+          if (sizeGuideMounted || isChatOpen || zoomArtMounted || !!slipOrder) {
               document.body.style.overflow = 'hidden';
           } else {
               document.body.style.overflow = '';
           }
-      }, [sizeGuideMounted, isChatOpen, zoomArtMounted]);
+      }, [sizeGuideMounted, isChatOpen, zoomArtMounted, slipOrder]);
 
 
       // 💬 AUTOMATED CHAT SUPPORT BOT STATE & SMART LOGIC (v2: Actions, Follow-ups, Order Check, Feedback)
