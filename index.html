@@ -277,9 +277,19 @@
               {mockups.length > 0 ? (
                  mockups.map((m, i) => (
                     <div key={i} className="flex-none w-[68%] md:w-[42%] lg:w-[30%] snap-center">
-                      <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-[0_4px_15px_rgba(0,0,0,0.1)] relative flex items-center justify-center bg-gray-100 border border-gray-200">
-                         <img src={m} className="w-full h-full object-cover transition-transform hover:scale-[1.03] duration-500" onContextMenu={(e) => e.preventDefault()} />
+                      <div
+                        onClick={() => openArtZoom && openArtZoom(art)}
+                        title="Tap to view HD Artwork"
+                        className="w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-[0_4px_15px_rgba(0,0,0,0.1)] relative flex items-center justify-center bg-gray-100 border border-gray-200 cursor-zoom-in group"
+                      >
+                         <img src={m} className="w-full h-full object-cover transition-transform group-hover:scale-[1.03] duration-500" onContextMenu={(e) => e.preventDefault()} />
                          <div className="img-protect-overlay"></div>
+                         <span className="absolute bottom-2.5 right-2.5 z-30 pointer-events-none bg-black/55 backdrop-blur-sm text-white/95 p-1.5 rounded-full shadow border border-white/20 flex items-center justify-center">
+                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                             <circle cx="11" cy="11" r="7"></circle>
+                             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 8v6M8 11h6"></path>
+                           </svg>
+                         </span>
                       </div>
                     </div>
                  ))
