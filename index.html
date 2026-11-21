@@ -339,23 +339,23 @@
           </div>
 
           {/* Myntra-Style SELECT SIZE + Size Guide Row */}
-          <div className="mt-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] md:text-xs font-black uppercase tracking-wider text-gray-700">
+          <div className="mt-3 md:mt-4">
+            <div className="flex items-center justify-between mb-2 md:mb-3">
+              <span className="text-[11px] md:text-sm font-black uppercase tracking-wider text-gray-700">
                 Select Size
               </span>
               <button
                 type="button"
                 onClick={() => openSizeGuide(activeOpt.id)}
-                className="text-[11px] md:text-xs font-black text-pink-600 hover:text-purple-700 flex items-center gap-0.5 cursor-pointer active:scale-95 transition"
+                className="text-[11px] md:text-sm font-black text-pink-600 hover:text-purple-700 flex items-center gap-0.5 cursor-pointer active:scale-95 transition"
               >
                 <span>Size Guide</span>
-                <span className="text-sm leading-none">›</span>
+                <span className="text-sm md:text-base leading-none">›</span>
               </button>
             </div>
 
             {/* 4 Sleek Myntra-Style Size Pills */}
-            <div className="grid grid-cols-4 gap-1.5 md:gap-2.5">
+            <div className="grid grid-cols-4 gap-1.5 md:gap-3">
               {sizeOptions.map((opt) => {
                 const isActive = selectedSizeId === opt.id;
                 const inCartObj = Array.isArray(cart) ? cart.find(c => c.id === art.id && c.selectedSize === opt.cartSize) : null;
@@ -364,7 +364,7 @@
                     key={opt.id}
                     type="button"
                     onClick={() => setSelectedSizeId(opt.id)}
-                    className={`relative rounded-xl py-2 px-1 md:py-2.5 md:px-2 border-2 text-center transition-all duration-200 active:scale-95 cursor-pointer ${
+                    className={`relative rounded-xl md:rounded-2xl py-2 px-1 md:py-3.5 md:px-3 border-2 text-center transition-all duration-200 active:scale-95 cursor-pointer ${
                       isActive
                         ? opt.isOriginal
                           ? 'border-purple-600 bg-purple-600 text-white shadow-md'
@@ -374,27 +374,27 @@
                   >
                     {/* Discount / Sold Mini Tag on Original Pill */}
                     {opt.isOriginal && opt.isSold && (
-                      <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gray-600 text-white text-[7px] md:text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase whitespace-nowrap shadow">
+                      <span className="absolute -top-2 md:-top-2.5 left-1/2 -translate-x-1/2 bg-gray-600 text-white text-[7px] md:text-[10px] font-black px-1.5 md:px-2.5 py-0.5 rounded-full uppercase whitespace-nowrap shadow">
                         Sold
                       </span>
                     )}
                     {opt.isOriginal && !opt.isSold && hasOrigDiscount && (
-                      <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-yellow-400 text-gray-900 text-[7px] md:text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase whitespace-nowrap shadow border border-yellow-200 animate-heartbeat">
+                      <span className="absolute -top-2 md:-top-2.5 left-1/2 -translate-x-1/2 bg-yellow-400 text-gray-900 text-[7px] md:text-[10px] font-black px-1.5 md:px-2.5 py-0.5 rounded-full uppercase whitespace-nowrap shadow border border-yellow-200 animate-heartbeat">
                         {origDiscountPct}% OFF
                       </span>
                     )}
 
                     {/* Live In-Cart Mini Badge */}
                     {inCartObj && (
-                      <span className={`absolute -top-1.5 -right-1 w-4 h-4 rounded-full text-[8px] font-black flex items-center justify-center shadow border border-white ${
+                      <span className={`absolute -top-1.5 -right-1 md:-top-2 md:-right-1.5 w-4 h-4 md:w-5 md:h-5 rounded-full text-[8px] md:text-[10px] font-black flex items-center justify-center shadow border border-white ${
                         isActive ? 'bg-gray-900 text-white' : 'bg-emerald-500 text-white'
                       }`}>
                         {opt.isOriginal ? '✓' : (inCartObj.qty || 1)}
                       </span>
                     )}
 
-                    <p className="font-black text-[11px] md:text-sm leading-tight">{opt.pillTitle}</p>
-                    <p className={`text-[9px] md:text-[11px] font-bold leading-tight mt-0.5 ${
+                    <p className="font-black text-[11px] md:text-base leading-tight">{opt.pillTitle}</p>
+                    <p className={`text-[9px] md:text-xs font-bold leading-tight mt-0.5 ${
                       isActive ? 'text-white/90' : 'text-gray-400'
                     }`}>
                       {opt.pillSub}
@@ -405,7 +405,7 @@
             </div>
 
             {/* Live Price + Add to Cart / Stepper Bar */}
-            <div className={`mt-3 rounded-2xl p-3 md:p-4 border-2 flex items-center justify-between gap-3 transition-colors duration-200 ${
+            <div className={`mt-3 md:mt-4 rounded-2xl p-3 md:p-5 border-2 flex items-center justify-between gap-3 transition-colors duration-200 ${
               activeOpt.isOriginal
                 ? 'bg-purple-50/90 border-purple-200/80'
                 : 'bg-pink-50/90 border-pink-200/80'
@@ -414,18 +414,18 @@
                 <p className="text-[9px] md:text-xs font-extrabold uppercase tracking-wider text-gray-500 truncate">
                   {activeOpt.barLabel}
                 </p>
-                <div className="flex items-baseline flex-wrap gap-1.5 mt-0.5">
-                  <span className={`text-xl md:text-2xl font-black leading-none ${
+                <div className="flex items-baseline flex-wrap gap-1.5 md:gap-2.5 mt-0.5 md:mt-1">
+                  <span className={`text-xl md:text-3xl font-black leading-none ${
                     activeOpt.isOriginal ? 'text-purple-700' : 'text-pink-600'
                   }`}>
                     {getPrice(activeOpt.price)}
                   </span>
                   {activeOpt.isOriginal && hasOrigDiscount && (
                     <>
-                      <span className="line-through text-gray-400 text-[11px] md:text-sm font-bold">
+                      <span className="line-through text-gray-400 text-[11px] md:text-base font-bold">
                         {getPrice(art.priceOriginalOld)}
                       </span>
-                      <span className="bg-yellow-400 text-gray-900 text-[8px] md:text-[10px] font-black px-1.5 py-0.5 rounded-md uppercase shadow-sm">
+                      <span className="bg-yellow-400 text-gray-900 text-[8px] md:text-xs font-black px-1.5 md:px-2 py-0.5 rounded-md uppercase shadow-sm">
                         {origDiscountPct}% OFF
                       </span>
                     </>
@@ -439,18 +439,18 @@
                   <button
                     type="button"
                     disabled
-                    className="bg-gray-400 text-gray-100 px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-black text-xs md:text-sm shadow cursor-not-allowed"
+                    className="bg-gray-400 text-gray-100 px-4 md:px-8 py-2.5 md:py-3.5 rounded-xl font-black text-xs md:text-base shadow cursor-not-allowed"
                   >
                     SOLD OUT
                   </button>
                 ) : activeCartItem ? (
                   activeOpt.isOriginal ? (
-                    <div className="flex items-center gap-1.5 bg-white border-2 border-purple-200 rounded-xl p-1 shadow-sm">
-                      <span className="text-[10px] md:text-xs font-black text-purple-700 pl-2">Qty: 1</span>
+                    <div className="flex items-center gap-1.5 md:gap-2.5 bg-white border-2 border-purple-200 rounded-xl p-1 md:p-1.5 shadow-sm">
+                      <span className="text-[10px] md:text-sm font-black text-purple-700 pl-2 md:pl-3">Qty: 1</span>
                       <button
                         type="button"
                         onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, -1)}
-                        className="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-lg font-black text-[10px] md:text-xs transition active:scale-95 cursor-pointer"
+                        className="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-black text-[10px] md:text-sm transition active:scale-95 cursor-pointer"
                       >
                         Remove
                       </button>
@@ -460,18 +460,18 @@
                       <button
                         type="button"
                         onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, -1)}
-                        className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center font-black text-base md:text-lg hover:bg-pink-600 active:scale-90 transition cursor-pointer"
+                        className="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center font-black text-base md:text-xl hover:bg-pink-600 active:scale-90 transition cursor-pointer"
                         aria-label="Decrease quantity"
                       >
                         −
                       </button>
-                      <span className="w-7 md:w-8 text-center font-black text-xs md:text-sm select-none">
+                      <span className="w-7 md:w-10 text-center font-black text-xs md:text-base select-none">
                         {activeCartItem.qty || 1}
                       </span>
                       <button
                         type="button"
                         onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, 1)}
-                        className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center font-black text-base md:text-lg hover:bg-pink-600 active:scale-90 transition cursor-pointer"
+                        className="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center font-black text-base md:text-xl hover:bg-pink-600 active:scale-90 transition cursor-pointer"
                         aria-label="Increase quantity"
                       >
                         +
@@ -482,7 +482,7 @@
                   <button
                     type="button"
                     onClick={() => addToCart(art, activeOpt.cartSize, activeOpt.price, activeOpt.oldPrice)}
-                    className={`px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-black text-xs md:text-sm text-white shadow-md transition active:scale-95 cursor-pointer ${
+                    className={`px-4 md:px-8 py-2.5 md:py-3.5 rounded-xl font-black text-xs md:text-base text-white shadow-md transition active:scale-95 cursor-pointer ${
                       activeOpt.isOriginal
                         ? 'bg-purple-600 hover:bg-purple-700'
                         : 'bg-pink-500 hover:bg-pink-600'
@@ -494,6 +494,8 @@
               </div>
             </div>
           </div>
+
+
 
           {/* Clean Amazon-Style Description Toggle */}
           <div className="w-full mt-3 pt-2.5 border-t border-gray-200/80">
