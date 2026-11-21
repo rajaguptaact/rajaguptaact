@@ -1033,7 +1033,7 @@
                               if (cartMap.has(key)) {
                                   if (!c.selectedSize.includes('Original')) {
                                       const ex = cartMap.get(key);
-                                      cartMap.set(key, { ...ex, qty: Math.min(5, (ex.qty || 1) + (c.qty || 1)) });
+                                      cartMap.set(key, { ...ex, qty: Math.min(3, (ex.qty || 1) + (c.qty || 1)) });
                                   }
                               } else {
                                   cartMap.set(key, c);
