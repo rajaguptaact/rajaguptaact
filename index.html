@@ -326,7 +326,7 @@
       const activeCartItem = Array.isArray(cart) ? cart.find(c => c.id === art.id && c.selectedSize === activeOpt.cartSize) : null;
 
       return (
-        <div id={'art-' + art.id} className="glass-panel rounded-3xl shadow-xl overflow-hidden p-3.5 md:p-8 mb-6 md:mb-10">
+        <div id={'art-' + art.id} style={{ WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }} className="glass-panel rounded-3xl shadow-xl overflow-hidden p-3.5 md:p-8 mb-6 md:mb-10 select-none">
 
           {/* Compact Header */}
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2.5 border-b border-gray-200/80">
