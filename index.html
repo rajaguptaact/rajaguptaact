@@ -135,10 +135,12 @@
       }, []);
 
       const startTipPress = (tipKey) => {
+          if (window.getSelection) { try { window.getSelection().removeAllRanges(); } catch(e) {} }
           if (tipPressTimerRef.current) clearTimeout(tipPressTimerRef.current);
           if (tipHideTimerRef.current) clearTimeout(tipHideTimerRef.current);
           tipTriggeredRef.current = false;
           tipPressTimerRef.current = setTimeout(() => {
+              if (window.getSelection) { try { window.getSelection().removeAllRanges(); } catch(e) {} }
               tipTriggeredRef.current = true;
               setActiveTip(tipKey);
           }, 400);
