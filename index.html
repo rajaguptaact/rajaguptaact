@@ -1824,33 +1824,28 @@
           } catch(e) {}
       }, [chatMessages]);
 
-      // Live typing welcome message on fresh open + lock background scroll
+      // Live typing welcome message on fresh open
       useEffect(() => {
-          if (isChatOpen) {
-              document.body.style.overflow = 'hidden';
-              if (chatMessages.length === 0) {
-                  setIsBotTyping(true);
-                  chatTimerRef.current = setTimeout(() => {
-                      setIsBotTyping(false);
-                      setChatMessages([{
-                          id: 'welcome_' + Date.now(),
-                          sender: 'bot',
-                          time: getChatTime(),
-                          text: "Hi! 👋 Welcome to Raja Gupta Act Studio Support.\n\nNeed help with Gallery orders, Custom Commissions, Sizes, Delivery, or Order History? Tap any quick button below or type your question!",
-                          noFeedback: true
-                      }]);
-                  }, 900);
-              }
-          } else {
-              document.body.style.overflow = '';
+          if (isChatOpen && chatMessages.length === 0) {
+              setIsBotTyping(true);
+              chatTimerRef.current = setTimeout(() => {
+                  setIsBotTyping(false);
+                  setChatMessages([{
+                      id: 'welcome_' + Date.now(),
+                      sender: 'bot',
+                      time: getChatTime(),
+                      text: "Hi! 👋 Welcome to Raja Gupta Act Studio Support.\n\nNeed help with Gallery orders, Custom Commissions, Sizes, Delivery, or Order History? Tap any quick button below or type your question!",
+                      noFeedback: true
+                  }]);
+              }, 900);
           }
           return () => {
-              document.body.style.overflow = '';
               if (isChatOpen && chatMessages.length === 0 && chatTimerRef.current) {
                   clearTimeout(chatTimerRef.current);
               }
           };
       }, [isChatOpen]);
+
 
       useEffect(() => {
           if (isChatOpen && chatEndRef.current) {
