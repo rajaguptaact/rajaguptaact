@@ -1519,6 +1519,356 @@
       const [premiumAlert, setPremiumAlert] = useState(null);
       const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
       const [orderModal, setOrderModal] = useState(null);
+      // 📦 ADMIN 1-CLICK SHIPPING SLIP GENERATOR STATE & LOGIC
+      const DEFAULT_RETURN_ADDR = {
+          name: 'Raja Gupta Act',
+          address: 'Kali Rakha Near Sadar Hospital, B. Deoghar, Jharkhand, India - 814112',
+          phone: '+91 7281074416',
+          email: 'rajaguptaact@gmail.com'
+      };
+      const [slipOrder, setSlipOrder] = useState(null);
+      const [slipShowPrice, setSlipShowPrice] = useState(true);
+      const [isEditingReturnAddr, setIsEditingReturnAddr] = useState(false);
+      const [returnAddr, setReturnAddr] = useState(() => {
+          try {
+              const saved = window.localStorage.getItem('raja_admin_return_addr_v1');
+              if (saved) {
+                  const parsed = JSON.parse(saved);
+                  if (parsed && parsed.address) return parsed;
+              }
+          } catch(e) {}
+          return DEFAULT_RETURN_ADDR;
+      });
+      const [returnAddrDraft, setReturnAddrDraft] = useState(returnAddr);
+
+      const getOrderRegionLine = (ord) => {
+          const parts = [];
+          if (ord.city) parts.push(ord.city);
+          if (ord.state) parts.push(ord.state);
+          return parts.join(', ');
+      };
+
+      const getOrderCountryName = (ord) => {
+          return ord.exactCountry || ord.country || 'India';
+      };
+
+      const copyShippingAddress = (ord) => {
+          if (!ord) return;
+          const regionLine = getOrderRegionLine(ord);
+          const countryName = getOrderCountryName(ord);
+          const lines = [
+              'TO:',
+              ord.name || '',
+              ord.address || '',
+              regionLine ? `${regionLine}${ord.pin ? ' - ' + ord.pin : ''}` : (ord.pin ? `PIN/ZIP: ${ord.pin}` : ''),
+              countryName,
+              `Phone: ${ord.phone || 'N/A'}`,
+              `Order: ${ord.orderId || 'Commission Request'}`
+          ].filter(Boolean);
+          const textToCopy = lines.join('\n');
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(textToCopy)
+                  .then(() => showToast("📋 Customer address copied!"))
+                  .catch(() => showToast("⚠️ Could not copy address."));
+          } else {
+              showToast("⚠️ Copy not supported on this browser.");
+          }
+      };
+
+      const downloadShippingSlipPNG = (ord) => {
+          if (!ord) return;
+          try {
+              const W = 1200;
+              const PAD = 60;
+              const CONTENT_W = W - PAD * 2;
+              const tempCanvas = document.createElement('canvas');
+              tempCanvas.width = W;
+              tempCanvas.height = 2600;
+              const ctx = tempCanvas.getContext('2d');
+
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, W, 2600);
+
+              const wrapLines = (text, maxW) => {
+                  const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+                  if (!words.length) return [];
+                  const lines = [];
+                  let cur = words[0];
+                  for (let i = 1; i < words.length; i++) {
+                      const test = cur + ' ' + words[i];
+                      if (ctx.measureText(test).width <= maxW) cur = test;
+                      else { lines.push(cur); cur = words[i]; }
+                  }
+                  lines.push(cur);
+                  return lines;
+              };
+
+              let y = 64;
+
+              // TOP HEADER
+              ctx.fillStyle = '#111111';
+              ctx.font = '900 44px sans-serif';
+              ctx.fillText('RAJA GUPTA ACT', PAD, y + 36);
+
+              ctx.fillStyle = '#555555';
+              ctx.font = '700 20px sans-serif';
+              ctx.fillText('PROFESSIONAL COLOUR PENCIL STUDIO', PAD, y + 66);
+
+              const orderTag = ord.type === 'Commission' ? 'COMMISSION' : (ord.country === 'International' ? 'INTERNATIONAL' : 'PREPAID ORDER');
+              ctx.font = '900 22px sans-serif';
+              const tagW = ctx.measureText(orderTag).width + 36;
+              ctx.fillStyle = '#111111';
+              ctx.fillRect(W - PAD - tagW, y + 4, tagW, 44);
+              ctx.fillStyle = '#ffffff';
+              ctx.fillText(orderTag, W - PAD - tagW + 18, y + 34);
+
+              ctx.fillStyle = '#333333';
+              ctx.font = '700 20px sans-serif';
+              const metaStr = `${ord.orderId || 'Commission Request'}  •  ${ord.date || ''}`;
+              const metaW = ctx.measureText(metaStr).width;
+              ctx.fillText(metaStr, W - PAD - metaW, y + 74);
+
+              y += 96;
+              ctx.strokeStyle = '#111111';
+              ctx.lineWidth = 4;
+              ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(W - PAD, y); ctx.stroke();
+              y += 28;
+
+              // DELIVER TO SECTION
+              const toBoxTop = y;
+              let ty = toBoxTop + 38;
+              ctx.fillStyle = '#555555';
+              ctx.font = '900 22px sans-serif';
+              ctx.fillText('SHIP TO / DELIVER TO:', PAD + 26, ty);
+              ty += 48;
+
+              ctx.fillStyle = '#000000';
+              ctx.font = '900 40px sans-serif';
+              const nameLines = wrapLines(ord.name || 'Customer', CONTENT_W - 52);
+              nameLines.forEach(line => { ctx.fillText(line, PAD + 26, ty); ty += 48; });
+
+              ty += 4;
+              ctx.fillStyle = '#111111';
+              ctx.font = '700 28px sans-serif';
+              const addrLines = wrapLines(ord.address || '', CONTENT_W - 52);
+              addrLines.forEach(line => { ctx.fillText(line, PAD + 26, ty); ty += 38; });
+
+              const regionLine = getOrderRegionLine(ord);
+              if (regionLine) {
+                  ctx.font = '700 28px sans-serif';
+                  const regLines = wrapLines(regionLine, CONTENT_W - 52);
+                  regLines.forEach(line => { ctx.fillText(line, PAD + 26, ty); ty += 38; });
+              }
+
+              ty += 12;
+              const pinLabel = `PIN / ZIP: ${ord.pin || 'N/A'}   |   ${getOrderCountryName(ord).toUpperCase()}`;
+              ctx.font = '900 28px sans-serif';
+              const pinW = Math.min(CONTENT_W - 52, ctx.measureText(pinLabel).width + 36);
+              ctx.fillStyle = '#111111';
+              ctx.fillRect(PAD + 26, ty - 28, pinW, 46);
+              ctx.fillStyle = '#ffffff';
+              ctx.fillText(pinLabel, PAD + 44, ty + 5);
+              ty += 44;
+
+              ctx.fillStyle = '#111111';
+              ctx.font = '900 28px sans-serif';
+              ctx.fillText(`PHONE / WHATSAPP: ${ord.phone || 'N/A'}`, PAD + 26, ty + 8);
+              ty += 34;
+
+              ctx.strokeStyle = '#111111';
+              ctx.lineWidth = 4;
+              ctx.strokeRect(PAD, toBoxTop, CONTENT_W, ty - toBoxTop);
+              y = ty + 28;
+
+              // PACKAGE CONTENTS SECTION
+              const itemsBoxTop = y;
+              let iy = itemsBoxTop + 36;
+              ctx.fillStyle = '#555555';
+              ctx.font = '900 21px sans-serif';
+              ctx.fillText('PACKAGE CONTENTS:', PAD + 24, iy);
+              iy += 38;
+
+              const itemsArr = Array.isArray(ord.itemDetails) && ord.itemDetails.length > 0
+                  ? ord.itemDetails
+                  : [{ title: ord.title || 'Commission Artwork', selectedSize: 'Custom', qty: 1 }];
+
+              ctx.fillStyle = '#111111';
+              itemsArr.forEach(item => {
+                  const rowText = `• ${item.title || 'Artwork'}  [${item.selectedSize || 'Standard'}]  × Qty: ${item.qty || 1}`;
+                  ctx.font = '700 24px sans-serif';
+                  const rLines = wrapLines(rowText, CONTENT_W - 48);
+                  rLines.forEach(line => { ctx.fillText(line, PAD + 24, iy); iy += 33; });
+                  iy += 6;
+              });
+
+              if (slipShowPrice) {
+                  iy += 6;
+                  ctx.strokeStyle = '#cccccc';
+                  ctx.lineWidth = 2;
+                  ctx.beginPath(); ctx.moveTo(PAD + 24, iy); ctx.lineTo(W - PAD - 24, iy); ctx.stroke();
+                  iy += 36;
+                  ctx.fillStyle = '#111111';
+                  ctx.font = '900 26px sans-serif';
+                  ctx.fillText(`${ord.type === 'Commission' ? 'DECLARED BUDGET:' : 'TOTAL PAID:'} ${ord.displayAmount || ('₹' + (ord.amount || 0))}`, PAD + 24, iy);
+                  iy += 24;
+              } else {
+                  iy += 8;
+              }
+
+              ctx.strokeStyle = '#999999';
+              ctx.lineWidth = 2.5;
+              ctx.strokeRect(PAD, itemsBoxTop, CONTENT_W, iy - itemsBoxTop);
+              y = iy + 26;
+
+              // FRAGILE WARNING BANNER
+              ctx.fillStyle = '#111111';
+              ctx.fillRect(PAD, y, CONTENT_W, 84);
+              ctx.fillStyle = '#ffffff';
+              ctx.textAlign = 'center';
+              ctx.font = '900 28px sans-serif';
+              ctx.fillText('⚠ FRAGILE ARTWORK — DO NOT BEND OR FOLD ⚠', W / 2, y + 38);
+              ctx.font = '700 20px sans-serif';
+              ctx.fillText('HANDLE WITH CARE  •  KEEP FLAT & DRY  •  HANDMADE ART', W / 2, y + 68);
+              ctx.textAlign = 'left';
+              y += 110;
+
+              // FROM (RETURN ADDRESS) SECTION
+              const fromTop = y;
+              let fy = fromTop + 34;
+              ctx.fillStyle = '#555555';
+              ctx.font = '900 20px sans-serif';
+              ctx.fillText('FROM (RETURN ADDRESS):', PAD + 24, fy);
+              fy += 36;
+
+              ctx.fillStyle = '#111111';
+              ctx.font = '900 26px sans-serif';
+              ctx.fillText(returnAddr.name || 'Raja Gupta Act', PAD + 24, fy);
+              fy += 34;
+
+              ctx.font = '700 23px sans-serif';
+              const retLines = wrapLines(returnAddr.address || '', CONTENT_W - 48);
+              retLines.forEach(line => { ctx.fillText(line, PAD + 24, fy); fy += 32; });
+
+              ctx.font = '700 22px sans-serif';
+              ctx.fillStyle = '#333333';
+              ctx.fillText(`Phone: ${returnAddr.phone || '+91 7281074416'}   |   ${returnAddr.email || 'rajaguptaact@gmail.com'}`, PAD + 24, fy + 6);
+              fy += 30;
+
+              ctx.strokeStyle = '#999999';
+              ctx.lineWidth = 2;
+              ctx.strokeRect(PAD, fromTop, CONTENT_W, fy - fromTop);
+              y = fy + 48;
+
+              // FINAL TRIMMED CANVAS WITH OUTER BORDER
+              const finalH = Math.min(2600, Math.max(1050, y));
+              const finalCanvas = document.createElement('canvas');
+              finalCanvas.width = W;
+              finalCanvas.height = finalH;
+              const fctx = finalCanvas.getContext('2d');
+              fctx.fillStyle = '#ffffff';
+              fctx.fillRect(0, 0, W, finalH);
+              fctx.drawImage(tempCanvas, 0, 0, W, finalH, 0, 0, W, finalH);
+              fctx.strokeStyle = '#111111';
+              fctx.lineWidth = 8;
+              fctx.strokeRect(24, 24, W - 48, finalH - 48);
+
+              const link = document.createElement('a');
+              const safeName = String(ord.orderId || ord.name || 'Order').replace(/[^a-zA-Z0-9_-]/g, '_');
+              link.download = `Shipping_Slip_${safeName}.png`;
+              link.href = finalCanvas.toDataURL('image/png');
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              showToast("✅ Shipping Slip HD PNG Downloaded!");
+          } catch (err) {
+              console.error(err);
+              showToast("❌ Failed to generate Shipping Slip PNG.");
+          }
+      };
+
+      const printShippingSlip = (ord) => {
+          if (!ord) return;
+          const win = window.open('', '_blank', 'width=820,height=960');
+          if (!win) {
+              showToast("⚠️ Popup blocked! Allow popups or tap Download PNG.");
+              return;
+          }
+          const regionLine = getOrderRegionLine(ord);
+          const countryName = getOrderCountryName(ord);
+          const orderTag = ord.type === 'Commission' ? 'COMMISSION' : (ord.country === 'International' ? 'INTERNATIONAL' : 'PREPAID ORDER');
+          const itemsArr = Array.isArray(ord.itemDetails) && ord.itemDetails.length > 0
+              ? ord.itemDetails
+              : [{ title: ord.title || 'Commission Artwork', selectedSize: 'Custom', qty: 1 }];
+          const itemsHtml = itemsArr.map(it =>
+              `<div style="padding:5px 0;border-bottom:1px dashed #ddd;display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:700;">
+                  <span>• ${escapeTgHtml(it.title || 'Artwork')} <span style="color:#444;">(${escapeTgHtml(it.selectedSize || 'Standard')})</span></span>
+                  <span style="white-space:nowrap;">Qty: ${escapeTgHtml(it.qty || 1)}</span>
+              </div>`
+          ).join('');
+          const priceHtml = slipShowPrice
+              ? `<div style="margin-top:8px;padding-top:8px;border-top:2px solid #111;display:flex;justify-content:space-between;font-size:15px;font-weight:900;">
+                    <span>${ord.type === 'Commission' ? 'DECLARED BUDGET' : 'TOTAL PAID'}</span>
+                    <span>${escapeTgHtml(ord.displayAmount || ('₹' + (ord.amount || 0)))}</span>
+                 </div>`
+              : '';
+
+          const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Shipping Slip - ${escapeTgHtml(ord.orderId || ord.name || 'Order')}</title>
+          <style>
+            @page { size: auto; margin: 10mm; }
+            * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+            body { margin: 0; padding: 16px; background: #fff; color: #111; }
+            .slip { max-width: 680px; margin: 0 auto; border: 4px solid #111; padding: 22px; }
+            .hdr { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #111; padding-bottom: 12px; margin-bottom: 16px; gap: 12px; }
+            .badge { background: #111; color: #fff; padding: 5px 12px; font-size: 12px; font-weight: 900; letter-spacing: 1px; display: inline-block; }
+            .box { border: 3px solid #111; padding: 14px 16px; margin-bottom: 14px; }
+            .box-light { border: 1.5px solid #666; padding: 12px 14px; margin-bottom: 14px; }
+            .pin { display: inline-block; background: #111; color: #fff; padding: 5px 12px; font-weight: 900; font-size: 15px; letter-spacing: 0.5px; margin: 8px 0; }
+            .fragile { background: #111; color: #fff; text-align: center; padding: 12px; margin-bottom: 14px; }
+          </style></head><body>
+          <div class="slip">
+            <div class="hdr">
+              <div>
+                <div style="font-size:26px;font-weight:900;letter-spacing:-0.5px;">RAJA GUPTA ACT</div>
+                <div style="font-size:11px;font-weight:800;color:#555;letter-spacing:1px;">PROFESSIONAL COLOUR PENCIL STUDIO</div>
+              </div>
+              <div style="text-align:right;">
+                <span class="badge">${escapeTgHtml(orderTag)}</span>
+                <div style="font-size:12px;font-weight:800;margin-top:6px;">${escapeTgHtml(ord.orderId || 'Commission Request')} • ${escapeTgHtml(ord.date || '')}</div>
+              </div>
+            </div>
+            <div class="box">
+              <div style="font-size:11px;font-weight:900;color:#555;letter-spacing:1.2px;margin-bottom:6px;">SHIP TO / DELIVER TO:</div>
+              <div style="font-size:24px;font-weight:900;margin-bottom:6px;">${escapeTgHtml(ord.name || '')}</div>
+              <div style="font-size:15px;font-weight:700;line-height:1.45;">${escapeTgHtml(ord.address || '')}</div>
+              ${regionLine ? `<div style="font-size:15px;font-weight:700;margin-top:3px;">${escapeTgHtml(regionLine)}</div>` : ''}
+              <div class="pin">PIN / ZIP: ${escapeTgHtml(ord.pin || 'N/A')} &nbsp;|&nbsp; ${escapeTgHtml(countryName.toUpperCase())}</div>
+              <div style="font-size:15px;font-weight:900;margin-top:4px;">PHONE / WHATSAPP: ${escapeTgHtml(ord.phone || 'N/A')}</div>
+            </div>
+            <div class="box-light">
+              <div style="font-size:11px;font-weight:900;color:#555;letter-spacing:1.2px;margin-bottom:6px;">PACKAGE CONTENTS:</div>
+              ${itemsHtml}
+              ${priceHtml}
+            </div>
+            <div class="fragile">
+              <div style="font-size:16px;font-weight:900;letter-spacing:0.8px;">⚠ FRAGILE ARTWORK — DO NOT BEND OR FOLD ⚠</div>
+              <div style="font-size:11px;font-weight:700;margin-top:3px;letter-spacing:0.8px;">HANDLE WITH CARE • KEEP FLAT & DRY • HANDMADE ART</div>
+            </div>
+            <div class="box-light" style="margin-bottom:0;">
+              <div style="font-size:11px;font-weight:900;color:#555;letter-spacing:1.2px;margin-bottom:4px;">FROM (RETURN ADDRESS):</div>
+              <div style="font-size:15px;font-weight:900;">${escapeTgHtml(returnAddr.name || 'Raja Gupta Act')}</div>
+              <div style="font-size:13px;font-weight:700;line-height:1.4;margin-top:2px;">${escapeTgHtml(returnAddr.address || '')}</div>
+              <div style="font-size:12px;font-weight:700;color:#333;margin-top:4px;">Phone: ${escapeTgHtml(returnAddr.phone || '+91 7281074416')} | ${escapeTgHtml(returnAddr.email || 'rajaguptaact@gmail.com')}</div>
+            </div>
+          </div></body></html>`;
+
+          win.document.open();
+          win.document.write(html);
+          win.document.close();
+          win.focus();
+          setTimeout(() => { try { win.print(); } catch(e) {} }, 300);
+      };
+
+
       // 🔍 PROTECTED FULL-SCREEN HD ARTWORK ZOOM STATE & LOGIC
       const [zoomArt, setZoomArt] = useState(null);
       const [zoomArtMounted, setZoomArtMounted] = useState(false);
