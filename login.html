@@ -185,22 +185,23 @@
         statusModal.classList.add('flex');
 
         if (type === 'loading') {
-            statusCard.className = "bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl text-center border-t-4 border-purple-600";
-            statusIcon.className = "w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-3";
-            statusIcon.innerHTML = `<svg class="animate-spin h-7 w-7 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+            statusCard.className = "bg-white rounded-3xl p-6 md:p-8 w-full max-w-xs md:max-w-md shadow-2xl text-center border-t-4 border-purple-600";
+            statusIcon.className = "w-14 h-14 md:w-16 md:h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-3 md:mb-4";
+            statusIcon.innerHTML = `<svg class="animate-spin h-7 w-7 md:h-8 md:w-8 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
             statusCloseBtn.classList.add('hidden');
         } else if (type === 'success') {
-            statusCard.className = "bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl text-center border-t-4 border-green-500";
-            statusIcon.className = "w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3 text-2xl";
+            statusCard.className = "bg-white rounded-3xl p-6 md:p-8 w-full max-w-xs md:max-w-md shadow-2xl text-center border-t-4 border-green-500";
+            statusIcon.className = "w-14 h-14 md:w-16 md:h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3 md:mb-4 text-2xl md:text-3xl";
             statusIcon.innerText = "✅";
             statusCloseBtn.classList.add('hidden');
         } else {
-            statusCard.className = "bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl text-center border-t-4 border-red-500";
-            statusIcon.className = "w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3 text-2xl";
+            statusCard.className = "bg-white rounded-3xl p-6 md:p-8 w-full max-w-xs md:max-w-md shadow-2xl text-center border-t-4 border-red-500";
+            statusIcon.className = "w-14 h-14 md:w-16 md:h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3 md:mb-4 text-2xl md:text-3xl";
             statusIcon.innerText = "❌";
             statusCloseBtn.classList.remove('hidden');
         }
     }
+
 
     function hideStatus() {
         statusModal.classList.add('hidden');
