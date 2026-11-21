@@ -96,46 +96,87 @@
 
       const ArtworkCard = React.memo(({ art, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, wishlist, userLikes, toggleWishlist, handleLikeArt, shareArtwork, setWishlistPopupArt, isHidden }) => {
 
+      // Global memory cache taaki mockups dobara fetch na hoan
+      window.rajaMockupCache = window.rajaMockupCache || {};
+
       const scrollRef = useRef(null);
       const [mockups, setMockups] = useState(() => {
+          if (window.rajaMockupCache[art.id] && window.rajaMockupCache[art.id].length > 0) return window.rajaMockupCache[art.id];
           if (art.customMockups && art.customMockups.length > 0) return art.customMockups;
           return [];
       });
       const [loadingMockups, setLoadingMockups] = useState(() => {
+          if (window.rajaMockupCache[art.id] && window.rajaMockupCache[art.id].length > 0) return false;
           if (art.customMockups && art.customMockups.length > 0) return false;
           return true;
       });
+      const [mockupRetryTick, setMockupRetryTick] = useState(0);
       const [isDescOpen, setIsDescOpen] = useState(false);
       const [selectedSizeId, setSelectedSizeId] = useState('original');
 
-      // Global memory cache taaki mockups dobara fetch na hoan
-      window.rajaMockupCache = window.rajaMockupCache || {};
-
       useEffect(() => {
           let isMounted = true;
-          if (window.rajaMockupCache[art.id]) {
+          let retryTimer = null;
+
+          if (window.rajaMockupCache[art.id] && window.rajaMockupCache[art.id].length > 0) {
               setMockups(window.rajaMockupCache[art.id]);
               setLoadingMockups(false);
               return;
           }
           if (art.customMockups && art.customMockups.length > 0) {
               window.rajaMockupCache[art.id] = art.customMockups;
-              if(isMounted) { setMockups(art.customMockups); setLoadingMockups(false); }
-          } else {
-              db.collection('RajaMockups').where('artId', '==', art.id).get().then(snap => {
+              setMockups(art.customMockups);
+              setLoadingMockups(false);
+              return;
+          }
+
+          const fetchMockupsSafe = async (attempt = 1) => {
+              if (!isMounted) return;
+              setLoadingMockups(true);
+              try {
+                  let snap = await db.collection('RajaMockups').where('artId', '==', art.id).get();
+                  let fetched = snap.docs.map(d => d.data()).sort((a,b) => a.index - b.index).map(d => d.image).filter(Boolean);
+
+                  // Login/Logout ya cache glitch par seedha Firebase server se dubara check karega
+                  if (fetched.length === 0 && navigator.onLine) {
+                      snap = await db.collection('RajaMockups').where('artId', '==', art.id).get({ source: 'server' });
+                      fetched = snap.docs.map(d => d.data()).sort((a,b) => a.index - b.index).map(d => d.image).filter(Boolean);
+                  }
+
                   if (!isMounted) return;
-                  const fetched = snap.docs.map(d => d.data()).sort((a,b) => a.index - b.index).map(d => d.image);
                   if (fetched.length > 0) {
                       window.rajaMockupCache[art.id] = fetched;
                       setMockups(fetched);
+                      setLoadingMockups(false);
+                      return;
                   }
-                  setLoadingMockups(false);
-              }).catch(e => {
-                  if (isMounted) setLoadingMockups(false);
-              });
-          }
-          return () => { isMounted = false; };
-      }, [art.id, art.customMockups]);
+                  throw new Error('Empty mockups');
+              } catch (e) {
+                  if (!isMounted) return;
+                  if (attempt < 4) {
+                      retryTimer = setTimeout(() => fetchMockupsSafe(attempt + 1), attempt * 1200);
+                  } else {
+                      setLoadingMockups(false);
+                  }
+              }
+          };
+
+          fetchMockupsSafe(1);
+
+          const handleBackOnline = () => {
+              if (isMounted && (!window.rajaMockupCache[art.id] || window.rajaMockupCache[art.id].length === 0)) {
+                  fetchMockupsSafe(1);
+              }
+          };
+          window.addEventListener('online', handleBackOnline);
+
+          return () => {
+              isMounted = false;
+              if (retryTimer) clearTimeout(retryTimer);
+              window.removeEventListener('online', handleBackOnline);
+          };
+      }, [art.id, art.customMockups, mockupRetryTick]);
+
 
       useEffect(() => {
           if (mockups.length > 0) {
