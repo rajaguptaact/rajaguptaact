@@ -94,7 +94,7 @@
         db.settings({ experimentalForceLongPolling: true, useFetchStreams: false });
     } catch(e) {}
 
-      const ArtworkCard = React.memo(({ art, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, wishlist, userLikes, toggleWishlist, handleLikeArt, shareArtwork, setWishlistPopupArt, isHidden }) => {
+      const ArtworkCard = React.memo(({ art, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, openArtZoom, wishlist, userLikes, toggleWishlist, handleLikeArt, shareArtwork, setWishlistPopupArt, isHidden }) => {
 
       // Global memory cache taaki mockups dobara fetch na hoan
       window.rajaMockupCache = window.rajaMockupCache || {};
