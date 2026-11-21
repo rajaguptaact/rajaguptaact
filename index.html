@@ -926,7 +926,7 @@
                   price: Number(c.price) || 0,
                   priceOriginalOld: c.priceOriginalOld ? Number(c.priceOriginalOld) : null,
                   cartId: c.cartId ? Number(c.cartId) : (Date.now() + idx),
-                  qty: Math.min(5, Math.max(1, Number(c.qty) || 1))
+                  qty: Math.min(3, Math.max(1, Number(c.qty) || 1))
               }));
       };
 
