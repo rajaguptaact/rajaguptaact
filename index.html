@@ -94,8 +94,7 @@
         db.settings({ experimentalForceLongPolling: true, useFetchStreams: false });
     } catch(e) {}
 
-    
-      const ArtworkCard = React.memo(({ art, getPrice, addToCart, wishlist, userLikes, toggleWishlist, handleLikeArt, shareArtwork, setWishlistPopupArt, isHidden }) => {
+      const ArtworkCard = React.memo(({ art, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, wishlist, userLikes, toggleWishlist, handleLikeArt, shareArtwork, setWishlistPopupArt, isHidden }) => {
 
       const scrollRef = useRef(null);
       const [mockups, setMockups] = useState(() => {
@@ -107,8 +106,9 @@
           return true;
       });
       const [isDescOpen, setIsDescOpen] = useState(false);
+      const [selectedSizeId, setSelectedSizeId] = useState('original');
 
-            // Global memory cache taaki mockups dobara fetch na hoan
+      // Global memory cache taaki mockups dobara fetch na hoan
       window.rajaMockupCache = window.rajaMockupCache || {};
 
       useEffect(() => {
@@ -161,26 +161,81 @@
         return () => clearInterval(interval);
       }, [mockups.length]);
 
-      return (
-        <div id={'art-' + art.id} className="glass-panel rounded-3xl shadow-xl overflow-hidden p-4 md:p-10 mb-8 md:mb-10">
+      const hasOrigDiscount = art.priceOriginalOld && art.priceOriginal && Number(art.priceOriginalOld) > Number(art.priceOriginal);
+      const origDiscountPct = hasOrigDiscount ? Math.round(((Number(art.priceOriginalOld) - Number(art.priceOriginal)) / Number(art.priceOriginalOld)) * 100) : 0;
 
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4 border-gray-200">
-            <div>
-              <h2 className="text-xl md:text-3xl font-black text-gray-900 flex items-center gap-3">
-                  {art.title}
-              </h2>
-              <span className="inline-block mt-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 text-[10px] md:text-xs font-black px-3 py-1 rounded-full border border-purple-200">100% COLOUR PENCIL</span>
-            </div>
+      const sizeOptions = [
+          {
+              id: 'original',
+              pillTitle: 'Original',
+              pillSub: 'A4 Size',
+              barLabel: 'Original Artwork • A4 Size',
+              cartSize: 'Original A4 Colour Pencil',
+              price: art.priceOriginal || art.priceOriginalOld,
+              oldPrice: art.priceOriginal ? art.priceOriginalOld : null,
+              isOriginal: true,
+              isSold: !!art.isSold
+          },
+          {
+              id: 'a3',
+              pillTitle: 'A3',
+              pillSub: 'HD Print',
+              barLabel: 'HD Print • A3 Size',
+              cartSize: 'Print A3',
+              price: art.priceA3,
+              oldPrice: null,
+              isOriginal: false,
+              isSold: false
+          },
+          {
+              id: 'a4',
+              pillTitle: 'A4',
+              pillSub: 'HD Print',
+              barLabel: 'HD Print • A4 Size',
+              cartSize: 'Print A4',
+              price: art.priceA4,
+              oldPrice: null,
+              isOriginal: false,
+              isSold: false
+          },
+          {
+              id: 'a5',
+              pillTitle: 'A5',
+              pillSub: 'HD Print',
+              barLabel: 'HD Print • A5 Size',
+              cartSize: 'Print A5',
+              price: art.priceA5,
+              oldPrice: null,
+              isOriginal: false,
+              isSold: false
+          }
+      ];
+
+      const activeOpt = sizeOptions.find(o => o.id === selectedSizeId) || sizeOptions[0];
+      const activeCartItem = Array.isArray(cart) ? cart.find(c => c.id === art.id && c.selectedSize === activeOpt.cartSize) : null;
+
+      return (
+        <div id={'art-' + art.id} className="glass-panel rounded-3xl shadow-xl overflow-hidden p-3.5 md:p-8 mb-6 md:mb-10">
+
+          {/* Compact Header */}
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2.5 border-b border-gray-200/80">
+            <h2 className="text-lg md:text-2xl font-black text-gray-900 leading-tight">
+              {art.title}
+            </h2>
+            <span className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 text-[9px] md:text-xs font-black px-2.5 py-0.5 md:py-1 rounded-full border border-purple-200 shrink-0">
+              100% COLOUR PENCIL
+            </span>
           </div>
-          
+
+          {/* Photo Angles Slider */}
           <div className="relative">
-            <p className="text-[9px] md:hidden text-gray-400 font-bold uppercase tracking-widest text-center mb-3 animate-pulse">
+            <p className="text-[9px] md:hidden text-gray-400 font-bold uppercase tracking-widest text-center mb-1.5 animate-pulse">
               &larr; Auto Viewing Angles &rarr;
             </p>
-            <div ref={scrollRef} className="flex overflow-x-auto gap-4 md:gap-6 mb-6 md:mb-8 pb-4 hide-scrollbar snap-x snap-mandatory scroll-smooth pt-1">
+            <div ref={scrollRef} className="flex overflow-x-auto gap-3 md:gap-5 mb-2 pb-2 hide-scrollbar snap-x snap-mandatory scroll-smooth pt-0.5">
               {mockups.length > 0 ? (
                  mockups.map((m, i) => (
-                    <div key={i} className="flex-none w-[70%] md:w-[45%] lg:w-[30%] snap-center">
+                    <div key={i} className="flex-none w-[68%] md:w-[42%] lg:w-[30%] snap-center">
                       <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-[0_4px_15px_rgba(0,0,0,0.1)] relative flex items-center justify-center bg-gray-100 border border-gray-200">
                          <img src={m} className="w-full h-full object-cover transition-transform hover:scale-[1.03] duration-500" onContextMenu={(e) => e.preventDefault()} />
                          <div className="img-protect-overlay"></div>
@@ -188,9 +243,9 @@
                     </div>
                  ))
               ) : loadingMockups ? (
-                 <div className="flex justify-center items-center h-48 w-full text-purple-400 font-bold animate-pulse">Loading High Quality Angles...</div>
+                 <div className="flex justify-center items-center h-44 w-full text-purple-400 font-bold animate-pulse">Loading High Quality Angles...</div>
               ) : (
-                <div className="flex-none w-[70%] md:w-[45%] lg:w-[30%] snap-center mx-auto">
+                <div className="flex-none w-[68%] md:w-[42%] lg:w-[30%] snap-center mx-auto">
                    <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-[0_4px_15px_rgba(0,0,0,0.1)] relative flex items-center justify-center bg-white border border-gray-200 p-4">
                       <img src={art.image} className="w-full h-full object-contain transition-transform hover:scale-[1.03] duration-500 shadow-md" onContextMenu={(e) => e.preventDefault()} />
                       <div className="img-protect-overlay"></div>
@@ -199,104 +254,196 @@
               )}
             </div>
           </div>
-          
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-4 pb-2 md:pb-4">
-            
-            {/* BOX 1: ORIGINAL (Light Purple Box, Purple Button, Gray Text) */}
-            <div className="bg-purple-50 p-2 md:p-4 rounded-xl md:rounded-2xl shadow-md text-center flex flex-col justify-between transition relative overflow-visible border-2 border-purple-100 active:border-purple-400 md:hover:border-purple-400">
-              {art.priceOriginalOld && art.priceOriginal && Number(art.priceOriginalOld) > Number(art.priceOriginal) && (
-                <span className="absolute -top-2 -right-1 bg-yellow-400 text-gray-900 text-[9px] md:text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide animate-heartbeat shadow-lg border border-yellow-200 z-10">
-                  {Math.round(((Number(art.priceOriginalOld) - Number(art.priceOriginal)) / Number(art.priceOriginalOld)) * 100)}% OFF
-                </span>
-              )}
-              <div>
-                <p className="font-bold text-gray-500 text-[9px] md:text-sm uppercase mt-0.5">Original Artwork</p>
-                <p className="font-black text-gray-900 text-[11px] md:text-lg mb-1">A4 Size</p>
-                <div className="flex flex-col items-center justify-center my-1 min-h-[45px] md:min-h-[50px]">
-                  {art.priceOriginalOld && art.priceOriginal && Number(art.priceOriginalOld) > Number(art.priceOriginal) && (
-                    <span className="line-through text-gray-400 text-[9px] md:text-xs">{getPrice(art.priceOriginalOld)}</span>
-                  )}
-                  <p className="text-base md:text-2xl font-black text-purple-700">{getPrice(art.priceOriginal || art.priceOriginalOld)}</p>
-                </div>
-              </div>
-              {art.isSold ? (
-                  <button disabled className="w-full bg-gray-400 text-gray-200 py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm shadow-md cursor-not-allowed mt-2 border border-transparent">SOLD OUT</button>
-              ) : (
-                  <button onClick={() => addToCart(art, 'Original A4 Colour Pencil', art.priceOriginal || art.priceOriginalOld, art.priceOriginal ? art.priceOriginalOld : null)} className="w-full bg-purple-600 text-white py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm shadow-md hover:bg-purple-700 cursor-pointer mt-2 transform transition-transform duration-150 active:scale-95 border border-transparent">Add to Cart</button>
-              )}
-            </div>
 
-            {/* BOX 2: PRINT A3 (Light Pink Box, Pink Button, Gray Text) */}
-            <div className="bg-pink-50 p-2 md:p-4 rounded-xl md:rounded-2xl shadow-md text-center border-2 border-pink-100 flex flex-col justify-between active:border-pink-400 md:hover:border-pink-400 transition">
-              <div>
-                <p className="font-bold text-gray-500 text-[9px] md:text-sm uppercase mt-0.5">HD Print</p>
-                <p className="font-black text-gray-800 text-[11px] md:text-lg mb-1">A3 Size</p>
-                <div className="flex flex-col items-center justify-center my-1 min-h-[45px] md:min-h-[50px]">
-                  <p className="text-base md:text-2xl font-black text-pink-600">{getPrice(art.priceA3)}</p>
-                </div>
-              </div>
-              <button onClick={() => addToCart(art, 'Print A3', art.priceA3, null)} className="w-full bg-pink-500 text-white py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm shadow-md hover:bg-pink-600 cursor-pointer mt-2 transform transition-all duration-150 active:scale-95 border border-transparent">Add to Cart</button>
-            </div>
-
-            {/* BOX 3: PRINT A4 (Light Pink Box, Pink Button, Gray Text) */}
-            <div className="bg-pink-50 p-2 md:p-4 rounded-xl md:rounded-2xl shadow-md text-center border-2 border-pink-100 flex flex-col justify-between active:border-pink-400 md:hover:border-pink-400 transition">
-              <div>
-                <p className="font-bold text-gray-500 text-[9px] md:text-sm uppercase mt-0.5">HD Print</p>
-                <p className="font-black text-gray-800 text-[11px] md:text-lg mb-1">A4 Size</p>
-                <div className="flex flex-col items-center justify-center my-1 min-h-[45px] md:min-h-[50px]">
-                  <p className="text-base md:text-2xl font-black text-pink-600">{getPrice(art.priceA4)}</p>
-                </div>
-              </div>
-              <button onClick={() => addToCart(art, 'Print A4', art.priceA4, null)} className="w-full bg-pink-500 text-white py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm shadow-md hover:bg-pink-600 cursor-pointer mt-2 transform transition-all duration-150 active:scale-95 border border-transparent">Add to Cart</button>
-            </div>
-
-            {/* BOX 4: PRINT A5 (Light Pink Box, Pink Button, Gray Text) */}
-            <div className="bg-pink-50 p-2 md:p-4 rounded-xl md:rounded-2xl shadow-md text-center border-2 border-pink-100 flex flex-col justify-between active:border-pink-400 md:hover:border-pink-400 transition">
-               <div>
-                <p className="font-bold text-gray-500 text-[9px] md:text-sm uppercase mt-0.5">HD Print</p>
-                <p className="font-black text-gray-800 text-[11px] md:text-lg mb-1">A5 Size</p>
-                <div className="flex flex-col items-center justify-center my-1 min-h-[45px] md:min-h-[50px]">
-                  <p className="text-base md:text-2xl font-black text-pink-600">{getPrice(art.priceA5)}</p>
-                </div>
-              </div>
-              <button onClick={() => addToCart(art, 'Print A5', art.priceA5, null)} className="w-full bg-pink-500 text-white py-1.5 md:py-3 rounded-lg md:rounded-xl font-bold text-[10px] md:text-sm shadow-md hover:bg-pink-600 cursor-pointer mt-2 transform transition-all duration-150 active:scale-95 border border-transparent">Add to Cart</button>
-            </div>
-            
-          </div>
-
-                    {/* INSTAGRAM ACTION BAR: PRICE KE NICHE, DESC KE UPAR */}
-          <div className="flex justify-between items-center py-4 border-t border-gray-100 mt-4">
-              <div className="flex gap-4">
-                  <button onClick={() => handleLikeArt(art)} className="transform active:scale-75 transition-transform cursor-pointer">
-                      <svg className={`w-7 h-7 ${userLikes?.includes(art.id) ? 'text-red-500 fill-red-500' : 'text-gray-900 fill-none hover:text-gray-600'}`} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+          {/* Compact 1-Line Social Bar */}
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <div className="flex items-center gap-3.5">
+                  <button type="button" onClick={() => handleLikeArt(art)} className="flex items-center gap-1.5 transform active:scale-90 transition-transform cursor-pointer">
+                      <svg className={`w-6 h-6 ${userLikes?.includes(art.id) ? 'text-red-500 fill-red-500' : 'text-gray-900 fill-none hover:text-gray-600'}`} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                      <span className="font-black text-xs md:text-sm text-gray-900">
+                        {Number(Math.max(0, Number(art.realLikes) || 0) + (Number(art.fakeLikes) || 0)).toLocaleString('en-IN')}
+                      </span>
                   </button>
-                  <button onClick={() => shareArtwork(art)} className="transform active:scale-75 transition-transform text-gray-900 hover:text-gray-600 cursor-pointer">
-                      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                  <button type="button" onClick={() => shareArtwork(art)} className="transform active:scale-75 transition-transform text-gray-900 hover:text-gray-600 cursor-pointer">
+                      <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
                   </button>
               </div>
-              <button onClick={() => setWishlistPopupArt(art)} className="cursor-pointer">
-                  <svg className={`w-7 h-7 ${wishlist?.some(w => w.id === art.id) ? 'text-gray-900 fill-gray-900' : 'text-gray-900 fill-none hover:text-gray-600'}`} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+              <button type="button" onClick={() => setWishlistPopupArt(art)} className="transform active:scale-90 transition cursor-pointer">
+                  <svg className={`w-6 h-6 ${wishlist?.some(w => w.id === art.id) ? 'text-gray-900 fill-gray-900' : 'text-gray-900 fill-none hover:text-gray-600'}`} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
               </button>
           </div>
-          
-          <p className="font-black text-sm text-gray-900 mb-2">
-            {Number(Math.max(0, Number(art.realLikes) || 0) + (Number(art.fakeLikes) || 0)).toLocaleString('en-IN')} likes
-          </p>
 
+          {/* Myntra-Style SELECT SIZE + Size Guide Row */}
+          <div className="mt-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] md:text-xs font-black uppercase tracking-wider text-gray-700">
+                Select Size
+              </span>
+              <button
+                type="button"
+                onClick={() => openSizeGuide(activeOpt.id)}
+                className="text-[11px] md:text-xs font-black text-pink-600 hover:text-purple-700 flex items-center gap-0.5 cursor-pointer active:scale-95 transition"
+              >
+                <span>Size Guide</span>
+                <span className="text-sm leading-none">›</span>
+              </button>
+            </div>
 
-                    {/* Clean Amazon-Style Description Toggle */}
-          <div className="w-full mt-6 pt-4 border-t border-gray-200">
+            {/* 4 Sleek Myntra-Style Size Pills */}
+            <div className="grid grid-cols-4 gap-1.5 md:gap-2.5">
+              {sizeOptions.map((opt) => {
+                const isActive = selectedSizeId === opt.id;
+                const inCartObj = Array.isArray(cart) ? cart.find(c => c.id === art.id && c.selectedSize === opt.cartSize) : null;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setSelectedSizeId(opt.id)}
+                    className={`relative rounded-xl py-2 px-1 md:py-2.5 md:px-2 border-2 text-center transition-all duration-200 active:scale-95 cursor-pointer ${
+                      isActive
+                        ? opt.isOriginal
+                          ? 'border-purple-600 bg-purple-600 text-white shadow-md'
+                          : 'border-pink-500 bg-pink-500 text-white shadow-md'
+                        : 'border-gray-200 bg-white text-gray-800 hover:border-purple-300'
+                    }`}
+                  >
+                    {/* Discount / Sold Mini Tag on Original Pill */}
+                    {opt.isOriginal && opt.isSold && (
+                      <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gray-600 text-white text-[7px] md:text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase whitespace-nowrap shadow">
+                        Sold
+                      </span>
+                    )}
+                    {opt.isOriginal && !opt.isSold && hasOrigDiscount && (
+                      <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-yellow-400 text-gray-900 text-[7px] md:text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase whitespace-nowrap shadow border border-yellow-200 animate-heartbeat">
+                        {origDiscountPct}% OFF
+                      </span>
+                    )}
+
+                    {/* Live In-Cart Mini Badge */}
+                    {inCartObj && (
+                      <span className={`absolute -top-1.5 -right-1 w-4 h-4 rounded-full text-[8px] font-black flex items-center justify-center shadow border border-white ${
+                        isActive ? 'bg-gray-900 text-white' : 'bg-emerald-500 text-white'
+                      }`}>
+                        {opt.isOriginal ? '✓' : (inCartObj.qty || 1)}
+                      </span>
+                    )}
+
+                    <p className="font-black text-[11px] md:text-sm leading-tight">{opt.pillTitle}</p>
+                    <p className={`text-[9px] md:text-[11px] font-bold leading-tight mt-0.5 ${
+                      isActive ? 'text-white/90' : 'text-gray-400'
+                    }`}>
+                      {opt.pillSub}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Live Price + Add to Cart / Stepper Bar */}
+            <div className={`mt-3 rounded-2xl p-3 md:p-4 border-2 flex items-center justify-between gap-3 transition-colors duration-200 ${
+              activeOpt.isOriginal
+                ? 'bg-purple-50/90 border-purple-200/80'
+                : 'bg-pink-50/90 border-pink-200/80'
+            }`}>
+              <div className="min-w-0">
+                <p className="text-[9px] md:text-xs font-extrabold uppercase tracking-wider text-gray-500 truncate">
+                  {activeOpt.barLabel}
+                </p>
+                <div className="flex items-baseline flex-wrap gap-1.5 mt-0.5">
+                  <span className={`text-xl md:text-2xl font-black leading-none ${
+                    activeOpt.isOriginal ? 'text-purple-700' : 'text-pink-600'
+                  }`}>
+                    {getPrice(activeOpt.price)}
+                  </span>
+                  {activeOpt.isOriginal && hasOrigDiscount && (
+                    <>
+                      <span className="line-through text-gray-400 text-[11px] md:text-sm font-bold">
+                        {getPrice(art.priceOriginalOld)}
+                      </span>
+                      <span className="bg-yellow-400 text-gray-900 text-[8px] md:text-[10px] font-black px-1.5 py-0.5 rounded-md uppercase shadow-sm">
+                        {origDiscountPct}% OFF
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Action Control */}
+              <div className="shrink-0">
+                {activeOpt.isOriginal && activeOpt.isSold ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="bg-gray-400 text-gray-100 px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-black text-xs md:text-sm shadow cursor-not-allowed"
+                  >
+                    SOLD OUT
+                  </button>
+                ) : activeCartItem ? (
+                  activeOpt.isOriginal ? (
+                    <div className="flex items-center gap-1.5 bg-white border-2 border-purple-200 rounded-xl p-1 shadow-sm">
+                      <span className="text-[10px] md:text-xs font-black text-purple-700 pl-2">Qty: 1</span>
+                      <button
+                        type="button"
+                        onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, -1)}
+                        className="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2.5 py-1.5 rounded-lg font-black text-[10px] md:text-xs transition active:scale-95 cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center bg-pink-500 text-white rounded-xl shadow-md overflow-hidden border border-pink-600/20">
+                      <button
+                        type="button"
+                        onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, -1)}
+                        className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center font-black text-base md:text-lg hover:bg-pink-600 active:scale-90 transition cursor-pointer"
+                        aria-label="Decrease quantity"
+                      >
+                        −
+                      </button>
+                      <span className="w-7 md:w-8 text-center font-black text-xs md:text-sm select-none">
+                        {activeCartItem.qty || 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, 1)}
+                        className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center font-black text-base md:text-lg hover:bg-pink-600 active:scale-90 transition cursor-pointer"
+                        aria-label="Increase quantity"
+                      >
+                        +
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => addToCart(art, activeOpt.cartSize, activeOpt.price, activeOpt.oldPrice)}
+                    className={`px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-black text-xs md:text-sm text-white shadow-md transition active:scale-95 cursor-pointer ${
+                      activeOpt.isOriginal
+                        ? 'bg-purple-600 hover:bg-purple-700'
+                        : 'bg-pink-500 hover:bg-pink-600'
+                    }`}
+                  >
+                    Add to Cart
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Clean Amazon-Style Description Toggle */}
+          <div className="w-full mt-3 pt-2.5 border-t border-gray-200/80">
             <button 
+              type="button"
               onClick={() => setIsDescOpen(!isDescOpen)}
               className="w-full flex justify-between items-center text-left focus:outline-none cursor-pointer group"
             >
-              <span className="font-black text-gray-900 text-sm md:text-base capitalize">
+              <span className="font-black text-gray-900 text-xs md:text-base capitalize">
                 About this artwork
               </span>
-              <svg className={`w-5 h-5 text-gray-500 transform transition-transform duration-300 ${isDescOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              <svg className={`w-4 h-4 md:w-5 md:h-5 text-gray-500 transform transition-transform duration-300 ${isDescOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
             
-            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isDescOpen ? 'max-h-96 mt-3 opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isDescOpen ? 'max-h-96 mt-2.5 opacity-100' : 'max-h-0 opacity-0'}`}>
               <p className="text-gray-600 font-medium text-xs md:text-sm leading-relaxed whitespace-pre-wrap">
                  {art.desc}
               </p>
