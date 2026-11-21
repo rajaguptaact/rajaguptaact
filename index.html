@@ -64,6 +64,13 @@
         background-color: #fef2f2 !important;
         transition: all 0.3s ease;
     }
+
+    /* 🖥️ AUTOMATIC FLUID RESPONSIVE SCALE (Tablet, Laptop, Monitor & Desktop Mode) */
+    @media (min-width: 768px) {
+        html {
+            font-size: clamp(17px, 1.85vw, 19.5px);
+        }
+    }
   </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 text-gray-900 font-sans antialiased selection:bg-purple-300">
