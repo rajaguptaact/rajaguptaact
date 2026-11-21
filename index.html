@@ -121,6 +121,69 @@
       const [isDescOpen, setIsDescOpen] = useState(false);
       const [selectedSizeId, setSelectedSizeId] = useState('original');
 
+      // 🏷️ LONG-PRESS & HOVER TOOLTIP LOGIC (Like / Share / Wishlist)
+      const [activeTip, setActiveTip] = useState(null);
+      const tipPressTimerRef = useRef(null);
+      const tipHideTimerRef = useRef(null);
+      const tipTriggeredRef = useRef(false);
+
+      useEffect(() => {
+          return () => {
+              if (tipPressTimerRef.current) clearTimeout(tipPressTimerRef.current);
+              if (tipHideTimerRef.current) clearTimeout(tipHideTimerRef.current);
+          };
+      }, []);
+
+      const startTipPress = (tipKey) => {
+          if (tipPressTimerRef.current) clearTimeout(tipPressTimerRef.current);
+          if (tipHideTimerRef.current) clearTimeout(tipHideTimerRef.current);
+          tipTriggeredRef.current = false;
+          tipPressTimerRef.current = setTimeout(() => {
+              tipTriggeredRef.current = true;
+              setActiveTip(tipKey);
+          }, 400);
+      };
+
+      const endTipPress = () => {
+          if (tipPressTimerRef.current) clearTimeout(tipPressTimerRef.current);
+          if (tipTriggeredRef.current) {
+              if (tipHideTimerRef.current) clearTimeout(tipHideTimerRef.current);
+              tipHideTimerRef.current = setTimeout(() => {
+                  setActiveTip(null);
+              }, 2000);
+              setTimeout(() => {
+                  tipTriggeredRef.current = false;
+              }, 350);
+          }
+      };
+
+      const cancelTipPress = () => {
+          if (tipPressTimerRef.current) clearTimeout(tipPressTimerRef.current);
+      };
+
+      const handleTipMouseEnter = (tipKey) => {
+          if (window.matchMedia && window.matchMedia('(hover: hover)').matches) {
+              if (tipHideTimerRef.current) clearTimeout(tipHideTimerRef.current);
+              setActiveTip(tipKey);
+          }
+      };
+
+      const handleTipMouseLeave = () => {
+          if (window.matchMedia && window.matchMedia('(hover: hover)').matches) {
+              setActiveTip(null);
+          }
+      };
+
+      const handleTipAction = (actionFn) => {
+          if (tipTriggeredRef.current) {
+              tipTriggeredRef.current = false;
+              return;
+          }
+          if (tipHideTimerRef.current) clearTimeout(tipHideTimerRef.current);
+          setActiveTip(null);
+          actionFn();
+      };
+
       useEffect(() => {
           let isMounted = true;
           let retryTimer = null;
