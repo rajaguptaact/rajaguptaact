@@ -1629,6 +1629,10 @@
 
       const handleChatAction = (targetView) => {
           setIsChatOpen(false);
+          if (targetView === 'size_guide') {
+              openSizeGuide('original');
+              return;
+          }
           nav(targetView);
       };
 
