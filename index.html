@@ -1180,7 +1180,7 @@
       const [premiumAlert, setPremiumAlert] = useState(null);
       const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
       const [orderModal, setOrderModal] = useState(null);
-      // 💬 AUTOMATED CHAT SUPPORT BOT STATE & SMART LOGIC
+      // 💬 AUTOMATED CHAT SUPPORT BOT STATE & SMART LOGIC (v2: Actions, Follow-ups, Order Check, Feedback)
       const [isChatOpen, setIsChatOpen] = useState(false);
       const [chatInput, setChatInput] = useState('');
       const [isBotTyping, setIsBotTyping] = useState(false);
@@ -1211,55 +1211,168 @@
 
       const CHAT_QUICK_TOPICS = [
           {
+              id: 'check_order',
+              label: '🔍 Check My Order',
+              question: 'Check my recent order',
+              isOrderCheck: true
+          },
+          {
               id: 'buy',
               label: '🛒 How to Buy',
               question: 'How do I buy an artwork from the Gallery?',
-              answer: "Buying an artwork is simple:\n1. Open Gallery and select your favorite artwork.\n2. Choose Original Artwork or a Print Size (A5 / A4 / A3) and tap Add to Cart.\n3. Open Cart → Checkout and enter your Name, Email, WhatsApp number, Country, PIN Code, and full delivery address.\n4. Complete payment on the Scan & Pay screen (UPI / PhonePe / GPay / Paytm) and tap confirm to get your instant Order ID.\n\nTip: Tap the yellow coin button at the top anytime to switch prices between ₹ INR and $ USD."
+              answer: "Buying an artwork is simple:\n1. Open Gallery and select your favorite artwork.\n2. Choose Original Artwork or a Print Size (A5 / A4 / A3) and tap Add to Cart.\n3. Open Cart → Checkout and enter your Name, Email, WhatsApp number, Country, PIN Code, and full delivery address.\n4. Complete payment on the Scan & Pay screen (UPI / PhonePe / GPay / Paytm) and tap confirm to get your instant Order ID.\n\nTip: Tap the yellow coin button at the top anytime to switch prices between ₹ INR and $ USD.",
+              actions: [
+                  { label: 'Browse Gallery', view: 'gallery' },
+                  { label: 'View Cart', view: 'cart' }
+              ],
+              followUps: ['delivery', 'payment', 'sizes']
           },
           {
               id: 'commission',
               label: '🎨 Custom Commission',
               question: 'How do I book a Custom Commission?',
-              answer: "To order a custom handmade portrait or drawing:\n1. Open Menu → Commission.\n2. Enter your Artwork Subject (what you want drawn), Preferred Size (A5 / A4 / A3), Estimated Budget, and optional Instagram ID.\n3. Fill in your Name, Email, WhatsApp Number, and Delivery Address, then submit your request.\n\nNo payment is taken on the website for commissions. Your request is saved in Order History, and Raja will contact you personally on WhatsApp/Instagram to review your reference photo and finalize the timeline and price."
+              answer: "To order a custom handmade portrait or drawing:\n1. Open Menu → Commission.\n2. Enter your Artwork Subject (what you want drawn), Preferred Size (A5 / A4 / A3), Estimated Budget, and optional Instagram ID.\n3. Fill in your Name, Email, WhatsApp Number, and Delivery Address, then submit your request.\n\nNo payment is taken on the website for commissions. Your request is saved in Order History, and Raja will contact you personally on WhatsApp/Instagram to review your reference photo and finalize the timeline and price.",
+              actions: [
+                  { label: 'Open Commission Form', view: 'commission' }
+              ],
+              followUps: ['sizes', 'delivery', 'whatsapp']
           },
           {
               id: 'sizes',
               label: '📏 Sizes & Quality',
               question: 'What are the Artwork Sizes & Quality?',
-              answer: "Every artwork is 100% handmade using artist-grade colored pencils on heavy acid-free art paper (and high-resolution archival prints where selected).\n\nAvailable Sizes:\n• A5: 14.8 × 21.0 cm (5.8 × 8.3 in) — Compact / Desk\n• A4: 21.0 × 29.7 cm (8.3 × 11.7 in) — Standard Frame\n• A3: 29.7 × 42.0 cm (11.7 × 16.5 in) — Large Wall Portrait"
+              answer: "Every artwork is 100% handmade using artist-grade colored pencils on heavy acid-free art paper (and high-resolution archival prints where selected).\n\nAvailable Sizes:\n• A5: 14.8 × 21.0 cm (5.8 × 8.3 in) — Compact / Desk\n• A4: 21.0 × 29.7 cm (8.3 × 11.7 in) — Standard Frame\n• A3: 29.7 × 42.0 cm (11.7 × 16.5 in) — Large Wall Portrait",
+              actions: [
+                  { label: 'Browse Gallery', view: 'gallery' }
+              ],
+              followUps: ['commission', 'buy', 'packaging']
           },
           {
               id: 'delivery',
               label: '🚚 Delivery & Shipping',
               question: 'What is the Delivery Time & Shipping process?',
-              answer: "• Dispatch Time: Gallery orders ship within 2–4 working days after payment verification. Custom commissions ship after your final artwork approval.\n• India Delivery: 5–8 working days after dispatch.\n• International Delivery: 12–21 working days (worldwide shipping available; local customs duties, if any, are paid by the buyer).\n\nA courier Tracking ID is shared with you on WhatsApp/Email once your parcel is shipped."
+              answer: "• Dispatch Time: Gallery orders ship within 2–4 working days after payment verification. Custom commissions ship after your final artwork approval.\n• India Delivery: 5–8 working days after dispatch.\n• International Delivery: 12–21 working days (worldwide shipping available; local customs duties, if any, are paid by the buyer).\n\nA courier Tracking ID is shared with you on WhatsApp/Email once your parcel is shipped.",
+              followUps: ['packaging', 'check_order', 'whatsapp']
           },
           {
               id: 'packaging',
               label: '📦 Packaging & Framing',
               question: 'Is packaging safe & are frames included?',
-              answer: "Every original drawing and print is sealed in a protective sleeve with rigid cardboard backing or a hard art tube so it arrives 100% bend-free and waterproof.\n\nArtworks are shipped unframed by default so they travel safely and you can choose a frame matching your room decor."
+              answer: "Every original drawing and print is sealed in a protective sleeve with rigid cardboard backing or a hard art tube so it arrives 100% bend-free and waterproof.\n\nArtworks are shipped unframed by default so they travel safely and you can choose a frame matching your room decor.",
+              followUps: ['delivery', 'buy', 'whatsapp']
           },
           {
               id: 'history',
               label: '📋 Order History',
               question: 'How do I check or recover my Order History?',
-              answer: "Open Menu → Order History anytime to view your Gallery and Commission orders.\n\nIf an older order is not visible (for example, after changing phones or clearing browser data), simply sign in via Menu → Login / Signup → Continue with Google using the same Gmail used at checkout, then check Order History to recover your past orders."
+              answer: "Open Menu → Order History anytime to view your Gallery and Commission orders.\n\nIf an older order is not visible (for example, after changing phones or clearing browser data), simply sign in via Menu → Login / Signup → Continue with Google using the same Gmail used at checkout, then check Order History to recover your past orders.",
+              actions: [
+                  { label: 'Open Order History', view: 'my_orders' }
+              ],
+              followUps: ['check_order', 'delivery', 'whatsapp']
           },
           {
               id: 'payment',
               label: '💳 Payment & Refunds',
               question: 'What are the Payment & Refund rules?',
-              answer: "• Gallery orders are verified by Raja after UPI payment confirmation, and your order confirmation is sent on WhatsApp.\n• Because original artworks and custom commissions are handmade, cancellations and refunds follow our Refund Policy (available in the Menu footer).\n• If any parcel ever arrives damaged, message us on WhatsApp within 48 hours with an unboxing video for immediate help."
+              answer: "• Gallery orders are verified by Raja after UPI payment confirmation, and your order confirmation is sent on WhatsApp.\n• Because original artworks and custom commissions are handmade, cancellations and refunds follow our Refund Policy (available in the Menu footer).\n• If any parcel ever arrives damaged, message us on WhatsApp within 48 hours with an unboxing video for immediate help.",
+              actions: [
+                  { label: 'View Refund Policy', view: 'refund' }
+              ],
+              followUps: ['buy', 'delivery', 'whatsapp']
           },
           {
               id: 'whatsapp',
               label: '💬 Talk to Artist',
               question: 'I want to talk to the artist directly.',
               answer: "Need help with a specific artwork, custom size, gift order, or an existing Order ID? Tap the button below to chat directly with Raja on WhatsApp.",
-              showWhatsApp: true
+              showWhatsApp: true,
+              followUps: ['buy', 'commission', 'check_order']
           }
       ];
+
+      const getChatTopic = (id) => CHAT_QUICK_TOPICS.find(t => t.id === id);
+
+      const topicToReply = (id) => {
+          const t = getChatTopic(id);
+          if (!t) return null;
+          if (t.isOrderCheck) return buildOrderCheckReply('');
+          return {
+              text: t.answer,
+              actions: t.actions || [],
+              followUps: t.followUps || [],
+              showWhatsApp: !!t.showWhatsApp
+          };
+      };
+
+      const formatChatOrderItems = (ord) => {
+          if (ord && Array.isArray(ord.itemDetails) && ord.itemDetails.length > 0) {
+              return ord.itemDetails.map(it =>
+                  `${it.title || 'Artwork'}${it.selectedSize ? ` (${it.selectedSize})` : ''}${it.qty > 1 ? ` × ${it.qty}` : ''}`
+              ).join(', ');
+          }
+          return (ord && (ord.title || ord.type)) ? (ord.title || ord.type) : 'Studio Order';
+      };
+
+      const buildOrderCheckReply = (searchedId = '') => {
+          const combined = [
+              ...(Array.isArray(myLocalOrders) ? myLocalOrders : []),
+              ...(Array.isArray(recoveredOrders) ? recoveredOrders : [])
+          ];
+          const seen = new Set();
+          const allOrders = combined.filter(o => {
+              if (!o) return false;
+              const key = o.orderId || `${o.date}_${o.time}_${o.displayAmount}_${o.title || ''}`;
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+          });
+
+          const cleanId = String(searchedId || '').trim().toUpperCase();
+          if (cleanId) {
+              const norm = (s) => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+              const target = norm(cleanId);
+              const found = allOrders.find(o => o.orderId && norm(o.orderId) === target);
+              if (found) {
+                  const dispId = found.orderId || cleanId;
+                  return {
+                      text: `Here are the details for your order ${dispId}:\n• Type: ${found.type || 'Studio Order'}\n• Date: ${found.date || 'N/A'}${found.time ? ` • ${found.time}` : ''}\n• Items: ${formatChatOrderItems(found)}\n• Total: ${found.displayAmount || 'N/A'}\n\nFor live shipping or tracking updates, open Order History or message Raja directly on WhatsApp.`,
+                      actions: [{ label: 'Open Order History', view: 'my_orders' }],
+                      showWhatsApp: true,
+                      waText: `Hi Raja! I need an update regarding my order ${dispId}.`,
+                      followUps: ['delivery', 'packaging']
+                  };
+              }
+              return {
+                  text: `I couldn't find ${cleanId} in this device's saved Order History.\n\nIf you placed this order on another phone or cleared browser data, open Order History and sign in with Continue with Google (using the same Gmail used at checkout) to recover it — or message Raja directly on WhatsApp below.`,
+                  actions: [{ label: 'Open Order History', view: 'my_orders' }],
+                  showWhatsApp: true,
+                  waText: `Hi Raja! I am checking on my order ${cleanId}.`,
+                  followUps: ['history', 'delivery']
+              };
+          }
+
+          if (allOrders.length > 0) {
+              const latest = allOrders[0];
+              const extraLine = allOrders.length > 1
+                  ? `\n\nYou have ${allOrders.length} total orders saved. Tap below to view all.`
+                  : '';
+              return {
+                  text: `Here is your most recent order saved on this device:\n• Order: ${latest.orderId || latest.type || 'Commission Request'}\n• Date: ${latest.date || 'N/A'}${latest.time ? ` • ${latest.time}` : ''}\n• Items: ${formatChatOrderItems(latest)}\n• Total: ${latest.displayAmount || 'N/A'}${extraLine}`,
+                  actions: [{ label: 'Open Order History', view: 'my_orders' }],
+                  followUps: ['delivery', 'history', 'whatsapp']
+              };
+          }
+
+          return {
+              text: "There are no orders saved on this device yet.\n\nIf you already placed an order earlier, open Order History and sign in with Continue with Google (using your checkout Gmail) to recover past orders — or browse the Gallery to place a new one!",
+              actions: [
+                  { label: 'Open Order History', view: 'my_orders' },
+                  { label: 'Browse Gallery', view: 'gallery' }
+              ],
+              followUps: ['buy', 'commission', 'history']
+          };
+      };
 
       // Typo-tolerant distance helper (supports spelling mistakes & Hinglish input silently)
       const calcWordDist = (a, b) => {
@@ -1296,82 +1409,101 @@
       };
 
       const getSmartBotReply = (rawText) => {
-          const clean = String(rawText || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+          const rawStr = String(rawText || '');
+          // 0. Direct Order ID Detection (e.g., ORD-123456)
+          const ordIdMatch = rawStr.match(/\b(ord[-\s]?\d{4,12})\b/i);
+          if (ordIdMatch) {
+              const formattedId = ordIdMatch[1].toUpperCase().replace(/\s+/g, '-');
+              return buildOrderCheckReply(formattedId.startsWith('ORD-') ? formattedId : formattedId.replace(/^ORD/, 'ORD-'));
+          }
+
+          const clean = rawStr.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
           const words = clean.split(' ').filter(Boolean);
 
-          // 1. Custom Commission
+          // 1. Instant Own-Order Check
+          if (hasIntentMatch(words, clean, [],
+              ['my order', 'my orders', 'last order', 'recent order', 'check order', 'check my order', 'order status', 'mera order', 'apna order', 'order dikhao', 'where is my order', 'kahan hai mera order'])) {
+              return buildOrderCheckReply('');
+          }
+          // 2. Custom Commission
           if (hasIntentMatch(words, clean,
               ['commission', 'comision', 'comison', 'custom', 'portrait', 'potrait', 'sketch', 'drawing', 'banwana', 'banwa', 'banane', 'banana', 'reference', 'photo', 'gift', 'handmade'],
               ['custom art', 'order portrait', 'apna photo', 'photo se', 'draw my'])) {
-              return { text: CHAT_QUICK_TOPICS[1].answer };
+              return topicToReply('commission');
           }
-          // 2. Order History / Recovery
+          // 3. Order History / Recovery
           if (hasIntentMatch(words, clean,
               ['history', 'histori', 'histry', 'recover', 'recovery', 'past', 'purana', 'missing', 'lost', 'disappeared', 'gayab'],
-              ['order history', 'my orders', 'find order', 'order id', 'not showing', 'nahi dikh'])) {
-              return { text: CHAT_QUICK_TOPICS[5].answer };
+              ['order history', 'find order', 'order id', 'not showing', 'nahi dikh'])) {
+              return topicToReply('history');
           }
-          // 3. Delivery / Shipping / Tracking
+          // 4. Delivery / Shipping / Tracking
           if (hasIntentMatch(words, clean,
               ['delivery', 'dilivery', 'deliver', 'shipping', 'shiping', 'ship', 'track', 'tracking', 'courier', 'post', 'parcel', 'dispatch', 'international', 'foreign', 'worldwide', 'usa', 'uk', 'abroad', 'videsh', 'pahuchega', 'pahunch'],
               ['kitne din', 'how many days', 'how long', 'kab tak', 'kab aayega', 'shipping charge'])) {
-              return { text: CHAT_QUICK_TOPICS[3].answer };
+              return topicToReply('delivery');
           }
-          // 4. Packaging & Framing
+          // 5. Packaging & Framing
           if (hasIntentMatch(words, clean,
               ['packing', 'packaging', 'package', 'frame', 'framing', 'framed', 'unframed', 'tube', 'cardboard', 'bend', 'broken', 'damage', 'damaged', 'safe', 'waterproof'],
               ['with frame', 'frame milega', 'safe delivery'])) {
-              return { text: CHAT_QUICK_TOPICS[4].answer };
+              return topicToReply('packaging');
           }
-          // 5. Sizes & Art Quality
+          // 6. Sizes & Art Quality
           if (hasIntentMatch(words, clean,
               ['size', 'sizes', 'dimension', 'dimensions', 'inch', 'inches', 'centimeter', 'paper', 'pencil', 'color', 'colour', 'quality', 'original', 'print', 'prints', 'a3', 'a4', 'a5', 'bada', 'chota', 'sheet'],
               ['size guide', 'kitna bada', 'what size'])) {
-              return { text: CHAT_QUICK_TOPICS[2].answer };
+              return topicToReply('sizes');
           }
-          // 6. Payment, Price & Refunds
+          // 7. Payment, Price & Refunds
           if (hasIntentMatch(words, clean,
               ['payment', 'paymnt', 'pay', 'upi', 'phonepe', 'gpay', 'paytm', 'scan', 'refund', 'cancel', 'cancellation', 'return', 'price', 'prise', 'cost', 'rate', 'rates', 'charge', 'charges', 'money', 'rupee', 'rupees', 'inr', 'usd', 'dollar', 'paisa', 'paise', 'kitna', 'currency'],
               ['how much', 'kitne ka', 'cash on delivery', 'cod'])) {
-              return { text: CHAT_QUICK_TOPICS[6].answer };
+              return topicToReply('payment');
           }
-          // 7. How to Buy / Place Order
+          // 8. How to Buy / Place Order
           if (hasIntentMatch(words, clean,
               ['buy', 'purchase', 'order', 'ordr', 'cart', 'checkout', 'gallery', 'kharidna', 'kharide', 'khareed', 'shop', 'website'],
               ['how to buy', 'how to order', 'order kaise', 'kaise le', 'kaise kare', 'place order'])) {
-              return { text: CHAT_QUICK_TOPICS[0].answer };
+              return topicToReply('buy');
           }
-          // 8. Direct Contact / WhatsApp / Artist
+          // 9. Direct Contact / WhatsApp / Artist
           if (hasIntentMatch(words, clean,
               ['whatsapp', 'whtsap', 'whatsap', 'contact', 'contct', 'phone', 'number', 'call', 'artist', 'owner', 'raja', 'instagram', 'insta', 'email', 'gmail', 'human', 'agent', 'talk', 'baat'],
               ['talk to', 'speak to', 'contact you', 'direct chat'])) {
-              return { text: CHAT_QUICK_TOPICS[7].answer, showWhatsApp: true };
+              return topicToReply('whatsapp');
           }
-          // 9. General Help / Issue
+          // 10. General Help / Issue
           if (hasIntentMatch(words, clean,
               ['help', 'heip', 'halp', 'support', 'suport', 'issue', 'problem', 'error', 'stuck', 'confused', 'madad', 'dikkat', 'assist'],
               ['help me', 'need help', 'please help'])) {
               return {
-                  text: "I'm here to help! 😊 Please let me know what you need assistance with — you can tap any quick question below (How to Buy, Custom Commission, Sizes, Delivery, Packaging, Order History, or Payments), or connect directly with Raja on WhatsApp:",
-                  showWhatsApp: true
+                  text: "I'm here to help! 😊 Please choose a topic below or message Raja directly on WhatsApp for personal assistance:",
+                  showWhatsApp: true,
+                  followUps: ['buy', 'commission', 'check_order']
               };
           }
-          // 10. Greetings
+          // 11. Greetings
           if (hasIntentMatch(words, clean, ['hi', 'hello', 'helo', 'hlo', 'hey', 'hii', 'hiii', 'namaste', 'hola'], ['good morning', 'good afternoon', 'good evening'])) {
               return {
-                  text: "Hello! 😊 How can I assist you today? Feel free to ask about Gallery orders, Custom Commissions, Sizes, Delivery, Packaging, or Order History."
+                  text: "Hello! 😊 How can I assist you today? Feel free to ask about Gallery orders, Custom Commissions, Sizes, Delivery, Packaging, or your Order History.",
+                  followUps: ['buy', 'commission', 'check_order'],
+                  noFeedback: true
               };
           }
-          // 11. Thanks / Done
+          // 12. Thanks / Done
           if (hasIntentMatch(words, clean, ['thanks', 'thank', 'thx', 'okay', 'ok', 'okk', 'great', 'awesome', 'perfect', 'nice', 'cool', 'bye', 'shukriya', 'dhanyawad'], ['thank you', 'got it', 'all good'])) {
               return {
-                  text: "You're welcome! 😊 Let me know if you have any other questions, or tap 'End Chat' at the top whenever you're done."
+                  text: "You're welcome! 😊 Let me know if you have any other questions, or tap 'End Chat' at the top whenever you're done.",
+                  noFeedback: true
               };
           }
 
           return {
               text: "I'd love to help with that! 🙂 You can ask me about Buying Artworks, Custom Commissions, Sizes, Delivery Time, Packaging, Order History, or Payments — or tap below to message Raja directly on WhatsApp:",
-              showWhatsApp: true
+              showWhatsApp: true,
+              waText: `Hi Raja! I had a question on Raja Gupta Act: "${rawStr.trim().slice(0, 180)}"`,
+              followUps: ['buy', 'commission', 'check_order']
           };
       };
 
@@ -1398,9 +1530,46 @@
                   sender: 'bot',
                   time: getChatTime(),
                   text: replyObj.text,
-                  showWhatsApp: !!replyObj.showWhatsApp
+                  actions: replyObj.actions || [],
+                  followUps: replyObj.followUps || [],
+                  showWhatsApp: !!replyObj.showWhatsApp,
+                  waText: replyObj.waText || '',
+                  noFeedback: !!replyObj.noFeedback,
+                  feedback: null
               }]);
           }, 650);
+      };
+
+      const handleChatTopicTap = (topicOrId) => {
+          if (isBotTyping) return;
+          const topic = typeof topicOrId === 'string' ? getChatTopic(topicOrId) : topicOrId;
+          if (!topic) return;
+          sendChatMessage(topic.question, topicToReply(topic.id));
+      };
+
+      const handleChatAction = (targetView) => {
+          setIsChatOpen(false);
+          nav(targetView);
+      };
+
+      const handleChatFeedback = (msgId, rating) => {
+          setChatMessages(prev => prev.map(m => m.id === msgId ? { ...m, feedback: rating } : m));
+          if (rating === 'down') {
+              if (chatTimerRef.current) clearTimeout(chatTimerRef.current);
+              setIsBotTyping(true);
+              chatTimerRef.current = setTimeout(() => {
+                  setIsBotTyping(false);
+                  setChatMessages(prev => [...prev, {
+                      id: 'b_fb_' + Date.now(),
+                      sender: 'bot',
+                      time: getChatTime(),
+                      text: "Sorry I couldn't fully resolve that for you! Please tap below to connect directly with Raja on WhatsApp for personal assistance.",
+                      showWhatsApp: true,
+                      waText: "Hi Raja! I need personal assistance regarding my query on Raja Gupta Act.",
+                      noFeedback: true
+                  }]);
+              }, 550);
+          }
       };
 
       const handleEndChat = () => {
@@ -1436,7 +1605,8 @@
                           id: 'welcome_' + Date.now(),
                           sender: 'bot',
                           time: getChatTime(),
-                          text: "Hi! 👋 Welcome to Raja Gupta Act Studio Support.\n\nNeed help with Gallery orders, Custom Commissions, Sizes, Delivery, or Order History? Tap any quick button below or type your question!"
+                          text: "Hi! 👋 Welcome to Raja Gupta Act Studio Support.\n\nNeed help with Gallery orders, Custom Commissions, Sizes, Delivery, or Order History? Tap any quick button below or type your question!",
+                          noFeedback: true
                       }]);
                   }, 900);
               }
@@ -1456,7 +1626,8 @@
               chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
           }
       }, [chatMessages, isBotTyping, isChatOpen]);
-      
+
+              
 
       const withOrderTimeout = (promise, ms = 12000) => Promise.race([
           promise,
