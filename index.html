@@ -1180,6 +1180,85 @@
       const [premiumAlert, setPremiumAlert] = useState(null);
       const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
       const [orderModal, setOrderModal] = useState(null);
+      // 📏 MYNTRA-STYLE ANIMATED ARTWORK SIZE GUIDE STATE & DATA
+      const [sizeGuideMounted, setSizeGuideMounted] = useState(false);
+      const [sizeGuideVisible, setSizeGuideVisible] = useState(false);
+      const [sizeGuideUnit, setSizeGuideUnit] = useState('cm');
+      const [selectedGuideSize, setSelectedGuideSize] = useState('original');
+      const sizeGuideTimerRef = useRef(null);
+
+      const SIZE_GUIDE_ITEMS = [
+          {
+              id: 'original',
+              name: 'Original Artwork',
+              shortLabel: 'Original (A4)',
+              visualKey: 'a4',
+              type: '100% Handmade Original',
+              badge: '1 of 1 Original',
+              cmW: '21.0', cmH: '29.7',
+              inW: '8.3', inH: '11.7',
+              bestFor: 'Collector’s Piece • Colored Pencil on Acid-Free Paper'
+          },
+          {
+              id: 'a5',
+              name: 'A5 Art Print',
+              shortLabel: 'A5 Print',
+              visualKey: 'a5',
+              type: 'High-Res Art Print',
+              badge: 'Compact',
+              cmW: '14.8', cmH: '21.0',
+              inW: '5.8', inH: '8.3',
+              bestFor: 'Desk Frame, Study Table & Small Gifts'
+          },
+          {
+              id: 'a4',
+              name: 'A4 Art Print',
+              shortLabel: 'A4 Print',
+              visualKey: 'a4',
+              type: 'High-Res Art Print',
+              badge: 'Popular',
+              cmW: '21.0', cmH: '29.7',
+              inW: '8.3', inH: '11.7',
+              bestFor: 'Standard Wall Frame & Single Portraits'
+          },
+          {
+              id: 'a3',
+              name: 'A3 Art Print',
+              shortLabel: 'A3 Print',
+              visualKey: 'a3',
+              type: 'High-Res Art Print',
+              badge: 'Large Wall',
+              cmW: '29.7', cmH: '42.0',
+              inW: '11.7', inH: '16.5',
+              bestFor: 'Statement Wall Frame & Couple Portraits'
+          }
+      ];
+
+      const openSizeGuide = (initialKey = 'original') => {
+          if (sizeGuideTimerRef.current) clearTimeout(sizeGuideTimerRef.current);
+          setSelectedGuideSize(initialKey);
+          setSizeGuideMounted(true);
+          sizeGuideTimerRef.current = setTimeout(() => {
+              setSizeGuideVisible(true);
+          }, 20);
+      };
+
+      const closeSizeGuide = () => {
+          if (sizeGuideTimerRef.current) clearTimeout(sizeGuideTimerRef.current);
+          setSizeGuideVisible(false);
+          sizeGuideTimerRef.current = setTimeout(() => {
+              setSizeGuideMounted(false);
+          }, 280);
+      };
+
+      useEffect(() => {
+          if (sizeGuideMounted || isChatOpen) {
+              document.body.style.overflow = 'hidden';
+          } else {
+              document.body.style.overflow = '';
+          }
+      }, [sizeGuideMounted, isChatOpen]);
+
       // 💬 AUTOMATED CHAT SUPPORT BOT STATE & SMART LOGIC (v2: Actions, Follow-ups, Order Check, Feedback)
       const [isChatOpen, setIsChatOpen] = useState(false);
       const [chatInput, setChatInput] = useState('');
