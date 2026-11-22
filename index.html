@@ -1518,6 +1518,12 @@
       // 🌟 PREMIUM CENTER ALERT LOGIC 🌟
       const [premiumAlert, setPremiumAlert] = useState(null);
       const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+      // 🛡️ PREMIUM CUSTOM CONFIRMATION MODAL (POORI WEBSITE KE LIYE)
+      const [confirmDialog, setConfirmDialog] = useState(null);
+      const openConfirm = ({ title, message, icon = '⚠️', tone = 'amber', confirmText = 'Confirm', cancelText = 'Cancel', onConfirm }) => {
+          setConfirmDialog({ title, message, icon, tone, confirmText, cancelText, onConfirm });
+      };
+
       const [orderModal, setOrderModal] = useState(null);
       // 📦 ADMIN 1-CLICK SHIPPING SLIP GENERATOR STATE & LOGIC
       const DEFAULT_RETURN_ADDR = {
