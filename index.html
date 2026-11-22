@@ -5273,10 +5273,16 @@
             </div>
             
             <div className="space-y-3 md:space-y-4">
-                <button onClick={() => {
-                  if(window.confirm("Are you confirming that your payment is successful? (Order will be finalized now)")) {
-                    finalizeOrder();
-                  }
+              <button onClick={() => {
+                  openConfirm({
+                      icon: '✅',
+                      tone: 'purple',
+                      title: 'Confirm Payment?',
+                      message: 'Are you confirming that your UPI payment is complete? Your order will be finalized now.',
+                      cancelText: 'Cancel',
+                      confirmText: 'Yes, Paid',
+                      onConfirm: () => finalizeOrder()
+                  });
                 }} className="w-full bg-gradient-to-r from-purple-600 to-purple-800 text-white py-3 md:py-4 rounded-xl font-black text-base md:text-lg shadow-xl hover:shadow-2xl transition-transform transform active:scale-95 cursor-pointer">
                   I Have Successfully Paid
                 </button>
