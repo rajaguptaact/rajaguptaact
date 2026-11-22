@@ -8265,6 +8265,69 @@
               </div>
           )}
 
+          {/* 🛡️ PREMIUM UNIVERSAL CONFIRMATION POPUP */}
+          {confirmDialog && (() => {
+              const toneMap = {
+                  rose: {
+                      border: 'border-rose-500',
+                      iconBg: 'bg-rose-100',
+                      btn: 'bg-rose-600 hover:bg-rose-700 text-white'
+                  },
+                  amber: {
+                      border: 'border-amber-500',
+                      iconBg: 'bg-amber-100',
+                      btn: 'bg-amber-600 hover:bg-amber-700 text-white'
+                  },
+                  purple: {
+                      border: 'border-purple-600',
+                      iconBg: 'bg-purple-100',
+                      btn: 'bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-95 text-white'
+                  }
+              };
+              const t = toneMap[confirmDialog.tone] || toneMap.amber;
+              return (
+                  <div
+                      className="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4 backdrop-blur-sm"
+                      onClick={() => setConfirmDialog(null)}
+                  >
+                      <div
+                          className={`bg-white rounded-2xl md:rounded-3xl p-5 md:p-8 w-full max-w-sm md:max-w-md shadow-2xl relative border-t-4 ${t.border} text-center`}
+                          onClick={(e) => e.stopPropagation()}
+                      >
+                          <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${t.iconBg} flex items-center justify-center mx-auto mb-3 md:mb-4 shadow-inner`}>
+                              <span className="text-2xl md:text-3xl">{confirmDialog.icon}</span>
+                          </div>
+                          <h3 className="font-black text-lg md:text-xl text-gray-900 mb-2">
+                              {confirmDialog.title}
+                          </h3>
+                          <p className="text-xs md:text-sm font-bold text-gray-500 mb-5 md:mb-6 leading-relaxed whitespace-pre-line">
+                              {confirmDialog.message}
+                          </p>
+                          <div className="flex gap-3">
+                              <button
+                                  type="button"
+                                  onClick={() => setConfirmDialog(null)}
+                                  className="flex-1 bg-gray-100 text-gray-700 py-2.5 md:py-3 rounded-xl font-black text-xs md:text-sm hover:bg-gray-200 transition active:scale-95 cursor-pointer"
+                              >
+                                  {confirmDialog.cancelText || 'Cancel'}
+                              </button>
+                              <button
+                                  type="button"
+                                  onClick={() => {
+                                      const fn = confirmDialog.onConfirm;
+                                      setConfirmDialog(null);
+                                      if (typeof fn === 'function') fn();
+                                  }}
+                                  className={`flex-1 py-2.5 md:py-3 rounded-xl font-black text-xs md:text-sm shadow-md transition active:scale-95 cursor-pointer ${t.btn}`}
+                              >
+                                  {confirmDialog.confirmText || 'Confirm'}
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              );
+          })()}
+
 
           {/* 🔐 LOGOUT CONFIRMATION POPUP */}
           {showLogoutConfirm && (
