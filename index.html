@@ -1528,6 +1528,18 @@
       };
       const [slipOrder, setSlipOrder] = useState(null);
       const [slipShowPrice, setSlipShowPrice] = useState(true);
+      const [slipManualPrice, setSlipManualPrice] = useState('');
+
+      const getSlipPriceInfo = (ord) => {
+          if (!ord || !slipShowPrice) return null;
+          if (ord.type === 'Commission') {
+              const customVal = String(slipManualPrice || '').trim();
+              if (!customVal) return null;
+              return { label: 'FINAL AMOUNT', value: customVal };
+          }
+          return { label: 'TOTAL PAID', value: ord.displayAmount || ('₹' + (ord.amount || 0)) };
+      };
+      
       const [isEditingReturnAddr, setIsEditingReturnAddr] = useState(false);
       const [returnAddr, setReturnAddr] = useState(() => {
           try {
