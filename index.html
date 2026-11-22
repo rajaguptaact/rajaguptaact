@@ -6027,7 +6027,14 @@
                              <button disabled={pendingDeletes[art.id]} onClick={() => { 
                                  if(window.confirm("Delete this Artwork globally?")) {
                                      setPendingDeletes(prev => ({...prev, [art.id]: { ...art, _isArt: true }}));
-                                     db.collection('RajaStudio').doc(art.id).delete().then(() => {
+                                     db.collection('RajaStudio').doc(art.id).delete().then(async () => {
+                                         try {
+                                             const mockSnap = await db.collection('RajaMockups').where('artId', '==', art.id).get();
+                                             const delJobs = mockSnap.docs.map(d => d.ref.delete());
+                                             [0, 1, 2].forEach(idx => delJobs.push(db.collection('RajaMockups').doc(`${art.id}_m${idx}`).delete()));
+                                             await Promise.allSettled(delJobs);
+                                             if (window.rajaMockupCache && window.rajaMockupCache[art.id]) delete window.rajaMockupCache[art.id];
+                                         } catch(e) { console.log("Mockup cleanup error:", e); }
                                          showToast("🗑️ Delete Successful");
                                          setPendingDeletes(prev => { const newState = {...prev}; delete newState[art.id]; return newState; });
                                      }).catch(() => {
