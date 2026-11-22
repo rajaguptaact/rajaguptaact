@@ -3049,40 +3049,6 @@
       };
 
       useEffect(() => {
-        // 🚨 NAYA LOGIC: LIVE NETWORK PING CYCLE (100% Accurate Live Speed)
-        let liveCheckInterval;
-
-        const checkLiveNetwork = () => {
-            // 1. Agar phone ka internet bilkul band hai (Offline)
-            if (!navigator.onLine) {
-                setIsSlowNetwork(true);
-                return;
-            }
-
-            // 2. 🚀 Asli Live Speed Test (Background mein ping test)
-            const pingImg = new Image();
-            let timer;
-            
-            // Agar ping jaldi aa gaya, matlab internet FAST ho chuka hai!
-            pingImg.onload = () => {
-                clearTimeout(timer);
-                setIsSlowNetwork(false); // 🟢 Net fast hai, message turant hata do!
-            };
-            
-            // Agar 1.2 second mein response nahi aaya, toh net SLOW hai
-            timer = setTimeout(() => {
-                pingImg.src = ""; // Loading rok do
-                setIsSlowNetwork(true); // 🔴 Net slow hai, message dikhao
-            }, 1200); 
-            
-            // Live internet check karne ke liye dummy ping (Cache bypass ke sath)
-            pingImg.src = "https://www.google.com/favicon.ico?_t=" + Date.now();
-        };
-
-        // Website khulte hi Live Cycle shuru kar do (har 2 second mein speed check karega)
-        checkLiveNetwork();
-        liveCheckInterval = setInterval(checkLiveNetwork, 2000);
-
         let unsubArt = () => {};
         let unsubOrd = () => {};
         let unsubAnn = () => {};
@@ -3090,41 +3056,37 @@
 
         try {
             unsubArt = db.collection("RajaStudio").onSnapshot({ includeMetadataChanges: true }, snap => {
-              if (!snap) return; 
+              if (!snap) return;
               if (snap.metadata.hasPendingWrites) return; // 🚨 VIP Treatment Blocked: Server success hone tak wait karega
 
               const fetchedArts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
               setArtworks(fetchedArts);
-              
+
               if (snap.empty) {
                   if (snap.metadata && !snap.metadata.fromCache) {
                       setShowEmptyGallery(true);
                       setIsLoadingGallery(false);
-                      // 🔴 SUCCESS: Data aa gaya. Live Tracker turant band karo.
-                      clearInterval(liveCheckInterval); 
-                      setIsSlowNetwork(false);  
+                      setNetworkStatus('online');
                   }
               } else {
                   setShowEmptyGallery(false);
                   setIsLoadingGallery(false);
-                  // 🔴 SUCCESS: Data aa gaya. Live Tracker turant band karo.
-                  clearInterval(liveCheckInterval); 
-                  setIsSlowNetwork(false);  
+                  setNetworkStatus('online');
               }
             }, (error) => {
                 console.log("Data connection failed:", error);
-                setIsSlowNetwork(true); 
+                setNetworkStatus(navigator.onLine ? 'slow' : 'offline');
             });
 
             // Orders ab sirf Admin Login ke baad hi load honge
-            
+
             unsubAnn = db.collection("announcements").onSnapshot({ includeMetadataChanges: true }, snap => {
               if (snap) {
                 if (snap.metadata.hasPendingWrites) return; // 🚨 VIP Treatment Blocked
                 setAnnouncements(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
               }
             });
-            
+
             unsubBg = db.collection("RajaBackgrounds").onSnapshot(snap => {
               if (snap) setSavedBackgrounds(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
             });
@@ -3133,12 +3095,205 @@
             console.log("Anti-Crash System Active");
         }
 
-        return () => { 
-            // Memory clean up
-            clearInterval(liveCheckInterval);
-            unsubArt(); unsubOrd(); unsubAnn(); unsubBg(); 
+        return () => {
+            unsubArt(); unsubOrd(); unsubAnn(); unsubBg();
         };
       }, []);
+
+      // 🌐 REAL-TIME 3-LAYER NETWORK CHECKER (Zero-Flicker, All Devices & Browsers)
+      useEffect(() => {
+        if (!isLoadingGallery && isDataLoaded) {
+            setNetworkStatus('online');
+            return;
+        }
+
+        let isActive = true;
+        let nextCheckTimer = null;
+        let activeController = null;
+        let currentProbeId = 0;
+        let slowStreak = 0;
+        let failStreak = 0;
+
+        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
+
+        const isSensorSlow = () => {
+            if (!conn) return false;
+            const eff = conn.effectiveType;
+            if (eff === 'slow-2g' || eff === '2g') return true;
+            if (typeof conn.downlink === 'number' && conn.downlink > 0 && conn.downlink < 0.35) return true;
+            if (typeof conn.rtt === 'number' && conn.rtt >= 2000) return true;
+            return false;
+        };
+
+        const scheduleProbe = (delayMs) => {
+            if (!isActive) return;
+            if (nextCheckTimer) clearTimeout(nextCheckTimer);
+            nextCheckTimer = setTimeout(runRealTimeProbe, delayMs);
+        };
+
+        const runRealTimeProbe = async () => {
+            if (!isActive) return;
+            const myProbeId = ++currentProbeId;
+
+            // Layer 1: Instant Offline Sensor
+            if (!navigator.onLine) {
+                slowStreak = 0;
+                failStreak = 0;
+                setNetworkStatus('offline');
+                return;
+            }
+
+            // Tab minimized hone par false warning rokna
+            if (document.visibilityState === 'hidden') {
+                scheduleProbe(2500);
+                return;
+            }
+
+            // Layer 2: Live Mobile Signal Sensor (Android Chrome / Edge)
+            if (isSensorSlow()) {
+                setNetworkStatus('slow');
+            }
+
+            // Layer 3: Lightweight Real-Time Ping (All Devices incl. iOS Safari & Firefox)
+            if (activeController) {
+                try { activeController.abort(); } catch(e) {}
+            }
+            const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            activeController = controller;
+
+            let didTimeout = false;
+            const timeoutId = setTimeout(() => {
+                didTimeout = true;
+                if (controller) {
+                    try { controller.abort(); } catch(e) {}
+                } else if (isActive && myProbeId === currentProbeId) {
+                    slowStreak += 1;
+                    if (slowStreak >= 2 || isSensorSlow()) setNetworkStatus('slow');
+                }
+            }, 2500);
+
+            const startedAt = Date.now();
+            try {
+                const isHttp = window.location.protocol === 'http:' || window.location.protocol === 'https:';
+                const pingUrl = isHttp
+                    ? `${window.location.origin}${window.location.pathname}?_net=${startedAt}`
+                    : `https://www.gstatic.com/generate_204?_net=${startedAt}`;
+
+                await fetch(pingUrl, {
+                    method: isHttp ? 'HEAD' : 'GET',
+                    mode: isHttp ? 'same-origin' : 'no-cors',
+                    cache: 'no-store',
+                    signal: controller ? controller.signal : undefined
+                });
+
+                clearTimeout(timeoutId);
+                if (!isActive || myProbeId !== currentProbeId) return;
+
+                const elapsed = Date.now() - startedAt;
+                failStreak = 0;
+
+                if (elapsed >= 2200 || isSensorSlow()) {
+                    slowStreak += 1;
+                    if (slowStreak >= 2 || isSensorSlow()) {
+                        setNetworkStatus('slow');
+                    }
+                } else {
+                    slowStreak = 0;
+                    setNetworkStatus('online');
+                }
+                scheduleProbe(3000);
+            } catch (err) {
+                clearTimeout(timeoutId);
+                if (!isActive || myProbeId !== currentProbeId) return;
+
+                if (!navigator.onLine) {
+                    slowStreak = 0;
+                    failStreak = 0;
+                    setNetworkStatus('offline');
+                    return;
+                }
+
+                if (didTimeout) {
+                    failStreak = 0;
+                    slowStreak += 1;
+                    if (slowStreak >= 2 || isSensorSlow()) {
+                        setNetworkStatus('slow');
+                    }
+                    scheduleProbe(2500);
+                } else {
+                    // Wi-Fi connected hai par actual internet nahi chal raha
+                    slowStreak = 0;
+                    failStreak += 1;
+                    if (failStreak >= 2) {
+                        setNetworkStatus('offline');
+                    }
+                    scheduleProbe(2000);
+                }
+            }
+        };
+
+        const handleOffline = () => {
+            if (!isActive) return;
+            currentProbeId += 1;
+            slowStreak = 0;
+            failStreak = 0;
+            if (nextCheckTimer) clearTimeout(nextCheckTimer);
+            if (activeController) { try { activeController.abort(); } catch(e) {} }
+            setNetworkStatus('offline');
+        };
+
+        const handleOnline = () => {
+            if (!isActive) return;
+            slowStreak = 0;
+            failStreak = 0;
+            setNetworkStatus(isSensorSlow() ? 'slow' : 'online');
+            runRealTimeProbe();
+        };
+
+        const handleConnChange = () => {
+            if (!isActive) return;
+            if (!navigator.onLine) {
+                setNetworkStatus('offline');
+                return;
+            }
+            if (isSensorSlow()) {
+                slowStreak = 2;
+                setNetworkStatus('slow');
+            } else {
+                slowStreak = 0;
+                runRealTimeProbe();
+            }
+        };
+
+        const handleVisibility = () => {
+            if (isActive && document.visibilityState === 'visible') {
+                runRealTimeProbe();
+            }
+        };
+
+        window.addEventListener('offline', handleOffline);
+        window.addEventListener('online', handleOnline);
+        document.addEventListener('visibilitychange', handleVisibility);
+        if (conn && conn.addEventListener) {
+            conn.addEventListener('change', handleConnChange);
+        }
+
+        runRealTimeProbe();
+
+        return () => {
+            isActive = false;
+            currentProbeId += 1;
+            if (nextCheckTimer) clearTimeout(nextCheckTimer);
+            if (activeController) { try { activeController.abort(); } catch(e) {} }
+            window.removeEventListener('offline', handleOffline);
+            window.removeEventListener('online', handleOnline);
+            document.removeEventListener('visibilitychange', handleVisibility);
+            if (conn && conn.removeEventListener) {
+                conn.removeEventListener('change', handleConnChange);
+            }
+        };
+      }, [isLoadingGallery, isDataLoaded]);
+
 
       // 🔒 ADMIN ONLY ORDERS (Aam visitors ke browser mein orders download nahi honge)
       useEffect(() => {
