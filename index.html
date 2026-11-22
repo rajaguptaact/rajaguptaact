@@ -4820,14 +4820,23 @@
           const hasEmailChanged = checkoutData.email.trim() !== '' && checkoutData.email.trim() !== autoEmail;
           const hasData = checkoutData.name.trim() !== '' || hasEmailChanged || checkoutData.phone.trim() !== '' || checkoutData.address.trim() !== '' || checkoutData.pin.trim() !== '';
           if (hasData) {
-            if (window.confirm("⚠️ WARNING: Navigating away will discard all the details you have entered. Are you sure you want to go back?")) {
-              setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
-              nav(checkoutData.type === 'Commission' ? 'commission' : 'cart');
-            }
+            openConfirm({
+                icon: '⚠️',
+                tone: 'amber',
+                title: 'Discard Shipping Details?',
+                message: 'Navigating away will clear all the shipping & contact details you have entered. Are you sure you want to go back?',
+                cancelText: 'Stay Here',
+                confirmText: 'Yes, Go Back',
+                onConfirm: () => {
+                    setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
+                    nav(checkoutData.type === 'Commission' ? 'commission' : 'cart');
+                }
+            });
           } else {
             nav(checkoutData.type === 'Commission' ? 'commission' : 'cart');
           }
         };
+
 
         return (
           <div className="p-4 md:p-8 max-w-xl md:max-w-3xl lg:max-w-4xl mx-auto min-h-screen">
