@@ -1818,10 +1818,11 @@
                   <span style="white-space:nowrap;">Qty: ${escapeTgHtml(it.qty || 1)}</span>
               </div>`
           ).join('');
-          const priceHtml = slipShowPrice
+          const slipPrice = getSlipPriceInfo(ord);
+          const priceHtml = slipPrice
               ? `<div style="margin-top:8px;padding-top:8px;border-top:2px solid #111;display:flex;justify-content:space-between;font-size:15px;font-weight:900;">
-                    <span>${ord.type === 'Commission' ? 'DECLARED BUDGET' : 'TOTAL PAID'}</span>
-                    <span>${escapeTgHtml(ord.displayAmount || ('₹' + (ord.amount || 0)))}</span>
+                    <span>${escapeTgHtml(slipPrice.label)}</span>
+                    <span>${escapeTgHtml(slipPrice.value)}</span>
                  </div>`
               : '';
 
