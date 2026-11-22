@@ -7240,13 +7240,14 @@
                                   </div>
                                   <div className="text-right shrink-0">
                                       <span className="inline-block bg-gray-900 text-white text-[9px] md:text-xs font-black px-2.5 py-1 uppercase tracking-wider">
-                                          {slipOrder.type === 'Commission' ? 'COMMISSION' : (slipOrder.country === 'International' ? 'INTERNATIONAL' : 'PREPAID ORDER')}
+                                          {getSlipOrderTag(slipOrder)}
                                       </span>
                                       <p className="text-[10px] md:text-xs font-extrabold text-gray-700 mt-1">
                                           {slipOrder.orderId || 'Commission Request'} • {slipOrder.date}
                                       </p>
                                   </div>
                               </div>
+                            
 
                               {/* TO Section */}
                               <div className="border-2 border-gray-900 p-3 md:p-4 mb-3">
