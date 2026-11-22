@@ -1529,16 +1529,62 @@
       const [slipOrder, setSlipOrder] = useState(null);
       const [slipShowPrice, setSlipShowPrice] = useState(true);
       const [slipManualPrice, setSlipManualPrice] = useState('');
+      const [slipCurrency, setSlipCurrency] = useState('INR');
+      const [slipIsPrepaid, setSlipIsPrepaid] = useState(false);
+
+      const openShippingSlip = (ord) => {
+          let baseINR = Math.round(Number(ord.amount) || 0);
+          if (!baseINR && ord.displayAmount) {
+              const rawNum = Number(String(ord.displayAmount).replace(/[^\d]/g, '')) || 0;
+              baseINR = String(ord.displayAmount).includes('$') ? Math.round(rawNum * 83.5) : rawNum;
+          }
+          setSlipOrder(ord);
+          setSlipCurrency('INR');
+          setSlipShowPrice(ord.type !== 'Commission');
+          setSlipIsPrepaid(ord.type !== 'Commission');
+          setSlipManualPrice(baseINR > 0 ? String(baseINR) : '');
+          setIsEditingReturnAddr(false);
+          setReturnAddrDraft(returnAddr);
+      };
+
+      const switchSlipCurrency = (nextCurr) => {
+          if (nextCurr === slipCurrency) return;
+          const cleanNum = Number(String(slipManualPrice || '').replace(/[^\d]/g, ''));
+          if (cleanNum > 0) {
+              if (nextCurr === 'USD') {
+                  setSlipManualPrice(String(Math.ceil(cleanNum / 83.5)));
+              } else {
+                  setSlipManualPrice(String(Math.round(cleanNum * 83.5)));
+              }
+          }
+          setSlipCurrency(nextCurr);
+      };
+
+      const getSlipOrderTag = (ord) => {
+          if (!ord) return 'PREPAID ORDER';
+          if (ord.type === 'Commission') {
+              return slipIsPrepaid ? 'COMMISSION • PREPAID' : 'COMMISSION';
+          }
+          return ord.country === 'International' ? 'INTERNATIONAL • PREPAID' : 'PREPAID ORDER';
+      };
 
       const getSlipPriceInfo = (ord) => {
           if (!ord || !slipShowPrice) return null;
           if (ord.type === 'Commission') {
-              const customVal = String(slipManualPrice || '').trim();
-              if (!customVal) return null;
-              return { label: 'FINAL AMOUNT', value: customVal };
+              const digits = String(slipManualPrice || '').replace(/[^\d]/g, '');
+              if (!digits || Number(digits) <= 0) return null;
+              const formatted = slipCurrency === 'USD'
+                  ? '$' + Number(digits).toLocaleString('en-US')
+                  : '₹' + Number(digits).toLocaleString('en-IN');
+              return { label: slipIsPrepaid ? 'TOTAL PAID' : 'FINAL AMOUNT', value: formatted };
           }
-          return { label: 'TOTAL PAID', value: ord.displayAmount || ('₹' + (ord.amount || 0)) };
+          const baseAmt = Math.round(Number(ord.amount) || 0);
+          const formatted = slipCurrency === 'USD'
+              ? '$' + Math.ceil(baseAmt / 83.5).toLocaleString('en-US')
+              : '₹' + baseAmt.toLocaleString('en-IN');
+          return { label: 'TOTAL PAID', value: baseAmt > 0 ? formatted : (ord.displayAmount || '₹0') };
       };
+
       
       const [isEditingReturnAddr, setIsEditingReturnAddr] = useState(false);
       const [returnAddr, setReturnAddr] = useState(() => {
