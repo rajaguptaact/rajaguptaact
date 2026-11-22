@@ -1013,7 +1013,7 @@
 
       const [isLoadingGallery, setIsLoadingGallery] = useState(true); 
       const [showEmptyGallery, setShowEmptyGallery] = useState(false);
-      const [isSlowNetwork, setIsSlowNetwork] = useState(false);
+      const [networkStatus, setNetworkStatus] = useState(() => (typeof navigator !== 'undefined' && !navigator.onLine) ? 'offline' : 'online');
       
       const [orders, setOrders] = useState([]);
       const [announcements, setAnnouncements] = useState([]);
