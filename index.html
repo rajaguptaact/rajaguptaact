@@ -4304,9 +4304,31 @@
 
         const CheckoutForm = () => {
         
-        // 🚨 STRICT EMAIL LOCK: Sirf perfect spelling allow karega (@gmail.com, @yahoo.com etc.)
-        const isEmailValidNow = checkoutData.email ? /^[a-z0-9._%+-]+@(gmail\.com|yahoo\.com|yahoo\.in|outlook\.com|hotmail\.com|icloud\.com)$/.test(checkoutData.email) : false;
-        const currentEmailError = (checkoutData.email && !isEmailValidNow) ? "❌ Exact format required (e.g. name@gmail.com)" : "";
+        // 🚨 SMART STRICT EMAIL VALIDATION (Sab genuine domains allowed, fake format & typos blocked)
+        const emailVal = (checkoutData.email || '').trim();
+        const emailTypoDomains = new Set([
+            'gamil.com', 'gmial.com', 'gmal.com', 'gmai.com', 'gnail.com', 'gimail.com', 'gmaill.com',
+            'gmail.co', 'gmail.con', 'gmail.cm', 'gmail.om', 'gmail.in', 'gmail.cmo',
+            'yaho.com', 'yhoo.com', 'yahho.com', 'yahoo.con', 'yahoo.cm',
+            'outlok.com', 'outllok.com', 'outlook.con',
+            'hotmal.com', 'hotmial.com', 'hotmail.con',
+            'iclod.com', 'icoud.com', 'icloud.con',
+            'redifmail.com', 'rediffmal.com'
+        ]);
+        const emailParts = emailVal.split('@');
+        const emailDomain = emailParts.length === 2 ? emailParts[1] : '';
+        const isBasicEmailValid = emailVal
+            ? (!emailVal.includes('..') && /^[a-z0-9](?:[a-z0-9._%+-]{0,62}[a-z0-9])?@(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,15}$/.test(emailVal))
+            : false;
+        const isEmailTypo = isBasicEmailValid && emailTypoDomains.has(emailDomain);
+        const isEmailValidNow = isBasicEmailValid && !isEmailTypo;
+        const currentEmailError = !emailVal
+            ? ""
+            : isEmailTypo
+                ? "❌ Check email spelling (e.g. @gmail.com / @yahoo.com)"
+                : !isBasicEmailValid
+                    ? "❌ Please enter a valid email address (e.g. name@example.com)"
+                    : "";
 
         let isPhoneValidNow = false;
         let currentPhoneError = '';
