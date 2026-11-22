@@ -5220,10 +5220,16 @@
               </div>
               
               <div className="space-y-3 md:space-y-4">
-                  <button onClick={() => {
-                    if (window.confirm("Do you confirm this international order?")) {
-                      finalizeOrder();
-                    }
+                <button onClick={() => {
+                    openConfirm({
+                        icon: '🌍',
+                        tone: 'purple',
+                        title: 'Confirm International Order?',
+                        message: 'Are you ready to confirm your international order? Your Order ID will be generated immediately.',
+                        cancelText: 'Cancel',
+                        confirmText: 'Yes, Confirm',
+                        onConfirm: () => finalizeOrder()
+                    });
                   }} className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 md:py-4 rounded-xl font-black text-base md:text-lg shadow-xl hover:shadow-2xl transition-transform transform active:scale-95 cursor-pointer">
                     Confirm International Order
                   </button>
