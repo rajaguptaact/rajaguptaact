@@ -5345,29 +5345,35 @@
             img.src = rawBgFile;
         };
 
-        const clearAllOrders = async () => {
-          if (window.confirm("WARNING: Are you sure you want to permanently delete ALL orders? This action cannot be undone.")) {
-             try {
-                 const batch = db.batch();
-                 orders.forEach(o => {
-                     const docRef = db.collection('orders').doc(o.id);
-                     batch.update(docRef, { isArchived: true });
-                 });
-                 await batch.commit();
-                 
-                 setMyLocalOrders([]);
-                 try { window.localStorage.removeItem('raja_my_orders_v1'); } catch(e){}
-                 
-                 const activeId = activeUserId || window.localStorage.getItem("art_guest_id");
-                 if (activeId) {
-                     db.collection('UserOrders').doc(activeId).delete().catch(e=>{});
-                 }
-
-                 showToast(" ✅ Inbox Cleared! All orders removed from screen.");
-             } catch (error) {
-                 showToast(" ⚠️ Error clearing inbox.");
-             }
-          }
+        
+        const clearAllOrders = () => {
+          openConfirm({
+              icon: '🗑️',
+              tone: 'rose',
+              title: 'Delete All Orders?',
+              message: 'Are you sure you want to permanently clear ALL orders from your Admin Inbox? This action cannot be undone.',
+              cancelText: 'Cancel',
+              confirmText: 'Yes, Delete All',
+              onConfirm: async () => {
+                  try {
+                      const batch = db.batch();
+                      orders.forEach(o => {
+                          const docRef = db.collection('orders').doc(o.id);
+                          batch.update(docRef, { isArchived: true });
+                      });
+                      await batch.commit();
+                      setMyLocalOrders([]);
+                      try { window.localStorage.removeItem('raja_my_orders_v1'); } catch(e){}
+                      const activeId = activeUserId || window.localStorage.getItem("art_guest_id");
+                      if (activeId) {
+                          db.collection('UserOrders').doc(activeId).delete().catch(e=>{});
+                      }
+                      showToast(" ✅ Inbox Cleared! All orders removed from screen.");
+                  } catch (error) {
+                      showToast(" ⚠️ Error clearing inbox.");
+                  }
+              }
+          });
         };
 
   
