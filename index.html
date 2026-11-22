@@ -1672,7 +1672,7 @@
               ctx.font = '700 20px sans-serif';
               ctx.fillText('PROFESSIONAL COLOUR PENCIL STUDIO', PAD, y + 66);
 
-              const orderTag = ord.type === 'Commission' ? 'COMMISSION' : (ord.country === 'International' ? 'INTERNATIONAL' : 'PREPAID ORDER');
+              const orderTag = getSlipOrderTag(ord);
               ctx.font = '900 22px sans-serif';
               const tagW = ctx.measureText(orderTag).width + 36;
               ctx.fillStyle = '#111111';
@@ -1854,7 +1854,7 @@
           }
           const regionLine = getOrderRegionLine(ord);
           const countryName = getOrderCountryName(ord);
-          const orderTag = ord.type === 'Commission' ? 'COMMISSION' : (ord.country === 'International' ? 'INTERNATIONAL' : 'PREPAID ORDER');
+          const orderTag = getSlipOrderTag(ord);
           const itemsArr = Array.isArray(ord.itemDetails) && ord.itemDetails.length > 0
               ? ord.itemDetails
               : [{ title: ord.title || 'Commission Artwork', selectedSize: 'Custom', qty: 1 }];
