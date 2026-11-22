@@ -1713,7 +1713,8 @@
                   iy += 6;
               });
 
-              if (slipShowPrice) {
+              const slipPrice = getSlipPriceInfo(ord);
+              if (slipPrice) {
                   iy += 6;
                   ctx.strokeStyle = '#cccccc';
                   ctx.lineWidth = 2;
@@ -1721,7 +1722,7 @@
                   iy += 36;
                   ctx.fillStyle = '#111111';
                   ctx.font = '900 26px sans-serif';
-                  ctx.fillText(`${ord.type === 'Commission' ? 'DECLARED BUDGET:' : 'TOTAL PAID:'} ${ord.displayAmount || ('₹' + (ord.amount || 0))}`, PAD + 24, iy);
+                  ctx.fillText(`${slipPrice.label}: ${slipPrice.value}`, PAD + 24, iy);
                   iy += 24;
               } else {
                   iy += 8;
