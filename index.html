@@ -3893,14 +3893,23 @@
       const CommissionView = () => {
         const handleCommissionBack = () => {
            if (commissionInput.subject.trim() !== '' || commissionInput.budget !== '' || commissionInput.instagram.trim() !== '' || commissionInput.size !== '') {
-               if (window.confirm("⚠️ WARNING: Navigating away will discard all the details you have entered. Are you sure you want to go back?")) {
-                   setCommissionInput({ subject: '', size: '', budget: '', instagram: '' });
-                   nav('gallery');
-               }
+               openConfirm({
+                   icon: '⚠️',
+                   tone: 'amber',
+                   title: 'Discard Details?',
+                   message: 'Navigating away will clear all the commission details you have entered. Are you sure you want to go back?',
+                   cancelText: 'Stay Here',
+                   confirmText: 'Yes, Go Back',
+                   onConfirm: () => {
+                       setCommissionInput({ subject: '', size: '', budget: '', instagram: '' });
+                       nav('gallery');
+                   }
+               });
            } else {
                nav('gallery');
            }
         };
+
 
 
         return (
