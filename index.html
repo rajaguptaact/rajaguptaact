@@ -7182,7 +7182,9 @@
 
 <button onClick={() => nav('my_orders')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'my_orders' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-800 hover:text-purple-700 hover:bg-purple-50'}`}>Order History</button>
 
+{isAuthorizedAdminEmail ? (
 <button onClick={() => nav('admin')} className={`w-full text-left py-3.5 px-6 md:p-6 border-b transition cursor-pointer flex items-center gap-4 ${view === 'admin' ? 'text-purple-700 font-black bg-purple-50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'}`}>Admin Panel</button>
+) : null}
 
 <button onClick={() => { shareSite(); setMenuOpen(false); }} className="w-full text-left py-3.5 px-6 md:p-6 hover:bg-purple-50 flex items-center gap-4 text-purple-600 transition cursor-pointer border-b">
    Share Website
