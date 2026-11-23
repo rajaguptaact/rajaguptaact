@@ -8570,12 +8570,14 @@
                                   setIsDataLoaded(true);
                               });
                           }} className="flex-1 bg-rose-600 text-white py-2.5 md:py-3 rounded-xl font-black text-xs md:text-sm shadow-md hover:bg-rose-700 transition active:scale-95 cursor-pointer">
-                              Yes, Logout
+                              {hasUnsavedAdminWork ? (logoutDoubleStep ? 'Final Logout' : 'Yes, Discard') : 'Yes, Logout'}
                           </button>
+                          )}
                       </div>
                   </div>
               </div>
-          )}
+              );
+          })()}
 
           
             {/* 🚀 WISHLIST SIZE POPUP */}
