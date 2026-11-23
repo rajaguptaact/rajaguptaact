@@ -4140,21 +4140,24 @@
               {validAnns.map((ann) => (
                 <div key={ann.id} className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl shadow-md border border-purple-100/90 overflow-hidden transition-all hover:shadow-lg">
 
-                  {/* 1. OPTIONAL FULL-WIDTH BANNER IMAGE */}
+                  {/* 1. FIXED 16:9 FULL-WIDTH BANNER IMAGE (Mobile + Desktop Exact Same Ratio) */}
                   {ann.banner ? (
-                    <div className="w-full bg-gray-100 overflow-hidden relative">
-                      <img src={ann.banner} alt={ann.title} className="w-full max-h-[260px] md:max-h-[380px] object-cover block pointer-events-none" />
+                    <div className="w-full aspect-[16/9] bg-gray-100 overflow-hidden relative">
+                      <img src={ann.banner} alt={ann.title} className="w-full h-full object-cover block pointer-events-none" />
                       <div className="img-protect-overlay"></div>
                     </div>
                   ) : null}
 
-                  {/* 2. SLEEK LIVE TIMER STRIP (Sirf jab Timer ON ho) */}
+                  {/* 2. COMPACT SLEEK LIVE TIMER STRIP */}
                   {ann.showTimer && ann.expireAt ? (
-                    <div className="bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-500 px-3.5 py-2 md:px-5 md:py-2.5 flex items-center justify-between gap-2">
-                      <span className="text-[10px] md:text-xs font-black text-white uppercase tracking-wider">Limited Time Offer</span>
-                      <LiveCountdown targetTime={ann.expireAt} />
+                    <div className="bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-500 px-3 py-1.5 md:px-4 md:py-2 flex items-center justify-between gap-2">
+                      <span className="text-[9px] md:text-[11px] font-black text-white uppercase tracking-wider">Limited Offer</span>
+                      <div className="scale-90 md:scale-95 origin-right">
+                        <LiveCountdown targetTime={ann.expireAt} />
+                      </div>
                     </div>
                   ) : null}
+
 
                   {/* 3. CLEAN WHITE TEXT CONTENT BOX */}
                   <div className="p-3.5 md:p-5 flex items-start gap-3 md:gap-4">
