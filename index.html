@@ -3644,19 +3644,9 @@
       };
 
       const GalleryView = () => (
-        <div className="p-3 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-12">
-          {/* 🛠️ BUG FIX 2: Headline Box is smaller on mobile so images show without scrolling */}
-          <div className="text-center space-y-3 mb-6 md:mb-12 glass-panel p-5 md:p-10 rounded-2xl md:rounded-3xl shadow-lg border-t-4 border-t-purple-500 relative mx-2 md:mx-0">
-            <h1 className="text-2xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">
-              Highly Detailed Realistic Portraits
-            </h1>
-            <p className="text-gray-700 font-bold text-[11px] md:text-lg max-w-2xl mx-auto leading-relaxed">
-              Welcome to my professional studio. All gallery pieces are 100% authentic, highly detailed <span className="text-purple-600">Colour Pencil</span> artworks. Every original piece is strictly drawn on premium <span className="text-pink-600">A4 size paper</span>.
-            </p>
-          </div>
-          
+        <div className="p-3 md:p-8 max-w-7xl mx-auto space-y-3 md:space-y-8">
           {isLoadingGallery || !isDataLoaded ? (
-            <div className="min-h-[58vh] md:min-h-[62vh] flex flex-col items-center justify-center text-center px-4 py-12 gap-3.5 md:gap-4 transition-all duration-300">
+            <div className="min-h-[72vh] md:min-h-[75vh] flex flex-col items-center justify-center text-center px-4 py-12 gap-3.5 md:gap-4 transition-all duration-300">
               {networkStatus === 'offline' ? (
                 <>
                   <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-rose-100/90 border border-rose-200 flex items-center justify-center text-2xl shadow-sm">
@@ -3683,16 +3673,28 @@
                 </>
               )}
             </div>
-          ) : artworks.length > 0 ? (
+          ) : (
+            <>
+              {/* ✨ SLEEK COMPACT STUDIO HEADER (Loads with Gallery — Zero Bulky Box) */}
+              <div className="text-center px-2 pt-0.5 pb-1.5 md:pt-1 md:pb-3">
+                <h1 className="text-lg md:text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-700 via-fuchsia-600 to-pink-500 leading-tight">
+                  Highly Detailed Realistic Portraits
+                </h1>
+                <p className="text-gray-600 font-bold text-[10px] md:text-sm max-w-2xl mx-auto mt-1 leading-snug">
+                  100% authentic handmade <span className="text-purple-700 font-black">Colour Pencil</span> artworks — every original strictly on premium <span className="text-pink-600 font-black">A4 paper</span>.
+                </p>
+              </div>
 
-
-              artworks.map(art => <ArtworkCard key={art.id} art={art} getPrice={getPrice} cart={cart || []} addToCart={addToCart} updateGalleryCartQty={updateGalleryCartQty} openSizeGuide={openSizeGuide} openArtZoom={openArtZoom} wishlist={wishlist || []} userLikes={userLikes || []} toggleWishlist={toggleWishlist} handleLikeArt={handleLikeArt} shareArtwork={shareArtwork} setWishlistPopupArt={setWishlistPopupArt} isHidden={view !== 'gallery'} />)
-          ) : showEmptyGallery ? (
-            <div className="text-center p-10 glass-panel rounded-2xl shadow-xl font-bold text-gray-500 text-lg flex flex-col items-center justify-center gap-4 mx-2 md:mx-0">
-              <span className="text-4xl">🖼️</span>
-              <span>No artworks uploaded yet. Please check back later!</span>
-            </div>
-          ) : null}
+              {artworks.length > 0 ? (
+                artworks.map(art => <ArtworkCard key={art.id} art={art} getPrice={getPrice} cart={cart || []} addToCart={addToCart} updateGalleryCartQty={updateGalleryCartQty} openSizeGuide={openSizeGuide} openArtZoom={openArtZoom} wishlist={wishlist || []} userLikes={userLikes || []} toggleWishlist={toggleWishlist} handleLikeArt={handleLikeArt} shareArtwork={shareArtwork} setWishlistPopupArt={setWishlistPopupArt} isHidden={view !== 'gallery'} />)
+              ) : showEmptyGallery ? (
+                <div className="text-center p-10 glass-panel rounded-2xl shadow-xl font-bold text-gray-500 text-lg flex flex-col items-center justify-center gap-4 mx-2 md:mx-0">
+                  <span className="text-4xl">🖼️</span>
+                  <span>No artworks uploaded yet. Please check back later!</span>
+                </div>
+              ) : null}
+            </>
+          )}
         </div>
       );
 
