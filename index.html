@@ -6574,7 +6574,36 @@
                            <p className="text-[10px] md:text-xs font-black text-pink-700 uppercase tracking-wider text-center mb-2">
                              ✂️ Adjust &amp; Crop Banner (16:9 Fixed)
                            </p>
-                           <div className="w-full aspect-[16/9] rounded-lg overflow-hidden bg-gray-100 border-2 border-pink-400 relative mx-auto">
+                           <div
+                             onTouchStart={(e) => {
+                               if (e.touches.length === 1) {
+                                 setAnnBannerDrag({ type: 'pan', x: e.touches[0].clientX, y: e.touches[0].clientY, origX: annBannerCropAdj.x, origY: annBannerCropAdj.y });
+                               } else if (e.touches.length === 2) {
+                                 const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                                 setAnnBannerDrag({ type: 'zoom', dist: dist || 1, origScale: annBannerCropAdj.scale });
+                               }
+                             }}
+                             onTouchMove={(e) => {
+                               if (!annBannerDrag) return;
+                               if (e.cancelable) e.preventDefault();
+                               if (annBannerDrag.type === 'pan' && e.touches.length === 1) {
+                                 const dx = e.touches[0].clientX - annBannerDrag.x;
+                                 const dy = e.touches[0].clientY - annBannerDrag.y;
+                                 setAnnBannerCropAdj(prev => ({
+                                   ...prev,
+                                   x: Math.min(100, Math.max(0, annBannerDrag.origX + dx / 2)),
+                                   y: Math.min(100, Math.max(0, annBannerDrag.origY + dy / 2))
+                                 }));
+                               } else if (annBannerDrag.type === 'zoom' && e.touches.length === 2) {
+                                 const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                                 const nextScale = annBannerDrag.origScale * (dist / annBannerDrag.dist);
+                                 setAnnBannerCropAdj(prev => ({ ...prev, scale: Math.min(200, Math.max(100, nextScale)) }));
+                               }
+                             }}
+                             onTouchEnd={() => setAnnBannerDrag(null)}
+                             style={{ touchAction: 'none' }}
+                             className="w-full aspect-[16/9] rounded-lg overflow-hidden bg-gray-100 border-2 border-pink-400 relative mx-auto"
+                           >
                              <img src={rawAnnBanner} style={{
                                position: 'absolute',
                                top: `${annBannerCropAdj.y}%`,
@@ -6586,18 +6615,30 @@
                                pointerEvents: 'none'
                              }} />
                            </div>
-                           <div className="space-y-2.5 mt-3 text-[10px] md:text-xs font-bold text-gray-700">
+                           <p className="text-[9px] md:text-[10px] font-bold text-gray-400 text-center mt-1.5">
+                             Drag with 1 finger • Pinch with 2 fingers to zoom
+                           </p>
+                           <div className="space-y-2.5 mt-2.5 text-[10px] md:text-xs font-bold text-gray-700">
                              <label className="flex items-center gap-2">
                                <span className="w-16 flex-shrink-0">Left/Right</span>
-                               <input type="range" min="0" max="100" value={annBannerCropAdj.x} onChange={e => setAnnBannerCropAdj({ ...annBannerCropAdj, x: Number(e.target.value) })} className="flex-1 accent-pink-600" />
+                               <span className="w-11 text-pink-700 font-black text-right flex-shrink-0">
+                                 {annBannerCropAdj.x !== 50 ? (annBannerCropAdj.x > 50 ? '+' : '') + Math.round((annBannerCropAdj.x - 50) * 2) : '0'}%
+                               </span>
+                               <input type="range" min="0" max="100" value={annBannerCropAdj.x} onChange={e => setAnnBannerCropAdj({ ...annBannerCropAdj, x: Number(e.target.value) })} className="flex-1 accent-pink-600 min-w-0" />
                              </label>
                              <label className="flex items-center gap-2">
                                <span className="w-16 flex-shrink-0">Top/Bottom</span>
-                               <input type="range" min="0" max="100" value={annBannerCropAdj.y} onChange={e => setAnnBannerCropAdj({ ...annBannerCropAdj, y: Number(e.target.value) })} className="flex-1 accent-pink-600" />
+                               <span className="w-11 text-pink-700 font-black text-right flex-shrink-0">
+                                 {annBannerCropAdj.y !== 50 ? (annBannerCropAdj.y > 50 ? '+' : '') + Math.round((annBannerCropAdj.y - 50) * 2) : '0'}%
+                               </span>
+                               <input type="range" min="0" max="100" value={annBannerCropAdj.y} onChange={e => setAnnBannerCropAdj({ ...annBannerCropAdj, y: Number(e.target.value) })} className="flex-1 accent-pink-600 min-w-0" />
                              </label>
                              <label className="flex items-center gap-2">
                                <span className="w-16 flex-shrink-0">Zoom</span>
-                               <input type="range" min="100" max="200" value={annBannerCropAdj.scale} onChange={e => setAnnBannerCropAdj({ ...annBannerCropAdj, scale: Number(e.target.value) })} className="flex-1 accent-pink-600" />
+                               <span className="w-11 text-pink-700 font-black text-right flex-shrink-0">
+                                 {Math.round(annBannerCropAdj.scale)}%
+                               </span>
+                               <input type="range" min="100" max="200" value={annBannerCropAdj.scale} onChange={e => setAnnBannerCropAdj({ ...annBannerCropAdj, scale: Number(e.target.value) })} className="flex-1 accent-pink-600 min-w-0" />
                              </label>
                            </div>
                            <div className="flex gap-2 mt-3">
