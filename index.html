@@ -5841,6 +5841,31 @@
           }, 150);
         };     
 
+        const handleAnnBanner = (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              const img = new Image();
+              img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX = 1200;
+                let w = img.width; let h = img.height;
+                if (w > MAX) { h *= MAX / w; w = MAX; }
+                canvas.width = Math.round(w);
+                canvas.height = Math.round(h);
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                setAnnBanner(canvas.toDataURL('image/jpeg', 0.85));
+              };
+              img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+
         const postAnnouncement = (e) => {
           e.preventDefault();
           
@@ -5855,72 +5880,80 @@
               finalExpireAt = Date.now() + (Number(annHours) * 60 * 60 * 1000);
           }
 
-          // 🚨 Strict Check: Duplicate Carbon Copy Block (New Upload ke liye)
           if (!editAnnId) {
              const isDuplicate = announcements.some(a => 
                  a.title === annTitle && 
-                 a.message === annMsg
+                 a.message === annMsg &&
+                 (a.banner || '') === (annBanner || '')
              );
              if (isDuplicate) {
                  showPremiumAlert("⚠️ Duplicate Found: This Announcement is already uploaded! Please change details to upload as new.");
-                 return; // Form clear nahi hoga, bas process kill ho jayega
+                 return;
              }
           }
 
           if(editAnnId) {
              const orig = announcements.find(a => a.id === editAnnId);
              if (orig) {
-                 const isChanged = (annTitle !== orig.title) || (annMsg !== orig.message) || (annShowTimer !== (orig.showTimer || false)) || (annHours !== '0') || (annHours === 'custom' && annCustomDate !== '');
+                 const isChanged = (annTitle !== orig.title) || (annMsg !== orig.message) || ((annBanner || '') !== (orig.banner || '')) || (annShowTimer !== (orig.showTimer || false)) || (annHours !== '0') || (annHours === 'custom' && annCustomDate !== '');
                  if (!isChanged) {
                      showToast("⚠️ No changes detected. Edit cancelled.");
-                     setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
+                     setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnBanner(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
                      return;
                  }
              }
 
-             let updateData = { title: annTitle, message: annMsg, showTimer: annShowTimer };
+             let updateData = { title: annTitle, message: annMsg, banner: annBanner || '', showTimer: annShowTimer };
              if (deleteExpire) {
                  updateData.expireAt = firebase.firestore.FieldValue.delete();
              } else if (finalExpireAt) {
                  updateData.expireAt = finalExpireAt;
              }
 
-             setAnnUploadStatus("Processing...");
+             setAnnUploadStatus("Live Updating...");
              setPendingAnnUpdate(editAnnId);
-             annCancelFlag.current = false; // 🚩 Flag down
+             annCancelFlag.current = false;
 
              setTimeout(() => {
-                 if (annCancelFlag.current) return; // 🚨 KILL PROCESS
+                 if (annCancelFlag.current) return;
 
                  db.collection('announcements').doc(editAnnId).update(updateData).then(() => {
-                     if (annCancelFlag.current) return; // 🚨 Success Message Blocked
+                     if (annCancelFlag.current) return;
                      showToast("✅ Notification Updated Globally on all devices!");
                      setTimeout(() => setPendingAnnUpdate(null), 1500);
                      setAnnUploadStatus("");
-                     setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
+                     setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnBanner(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
+                 }).catch(() => {
+                     showToast("❌ ERROR: Network problem. Notification not updated.");
+                     setAnnUploadStatus("");
+                     setPendingAnnUpdate(null);
                  });
-             }, 2500); // 2.5 second buffer
+             }, 2000);
           } else {
-             let newData = { title: annTitle, message: annMsg, showTimer: annShowTimer, date: new Date().toLocaleDateString('en-IN'), createdAt: Date.now() };
+             let newData = { title: annTitle, message: annMsg, banner: annBanner || '', showTimer: annShowTimer, date: new Date().toLocaleDateString('en-IN'), createdAt: Date.now() };
              if (finalExpireAt) {
                  newData.expireAt = finalExpireAt;
              }
              
              setAnnUploadStatus("Publishing...");
-             setPendingAnnPublish({ title: annTitle });
-             annCancelFlag.current = false; // 🚩 Flag down
+             setPendingAnnPublish({ title: annTitle, banner: annBanner || '' });
+             annCancelFlag.current = false;
 
              setTimeout(() => {
-                 if (annCancelFlag.current) return; // 🚨 KILL PROCESS
+                 if (annCancelFlag.current) return;
 
                  db.collection('announcements').add(newData).then(() => {
-                     if (annCancelFlag.current) return; // 🚨 Success Message Blocked
+                     if (annCancelFlag.current) return;
                      showToast("✅ Notification Posted Globally on all devices!");
                      setTimeout(() => setPendingAnnPublish(null), 1500);
                      setAnnUploadStatus("");
-                     setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
+                     setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnBanner(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
+                 }).catch(() => {
+                     showToast("❌ ERROR: Network problem. Notification not published.");
+                     setAnnUploadStatus("");
+                     setPendingAnnPublish(null);
                  });
-             }, 2500); // 2.5 second buffer
+             }, 2000);
           }
         };
 
@@ -5929,6 +5962,7 @@
           setEditAnnId(ann.id);
           setAnnTitle(ann.title);
           setAnnMsg(ann.message);
+          setAnnBanner(ann.banner || '');
           setAnnHours('0'); 
           setAnnShowTimer(ann.showTimer || false);
           setAnnCustomDate('');
@@ -5942,6 +5976,7 @@
           }, 150);
         };
 
+        
         const handleTouchStart = (e) => {
             if (e.touches.length === 1) {
                 setDragStart({ type: 'pan', x: e.touches[0].clientX, y: e.touches[0].clientY, origX: bgCropAdj.x, origY: bgCropAdj.y });
