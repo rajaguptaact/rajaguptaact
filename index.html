@@ -6558,21 +6558,75 @@
                       <fieldset disabled={!!annUploadStatus} className={`w-full border-none p-0 m-0 space-y-2 md:space-y-4 ${!!annUploadStatus ? 'opacity-60 pointer-events-none' : ''}`}>
                      <input required placeholder="Announcement Title" value={annTitle} onChange={e=>setAnnTitle(e.target.value)} className="w-full border-2 p-1.5 md:p-4 rounded-md md:rounded-xl bg-white font-bold text-[10px] md:text-base"/>
                      
-                     {/* 🖼️ OPTIONAL BANNER IMAGE UPLOADER */}
-                     <div className="border-2 border-dashed border-pink-300 p-2 md:p-3 rounded-lg text-center bg-pink-50/70 hover:bg-pink-50 transition">
-                       <label className="font-black text-pink-700 block cursor-pointer w-full py-1 text-[10px] md:text-sm">
-                         {annBanner ? "🖼️ Change Banner Image (Optional)" : "+ Add Banner Image (Optional)"}
-                         <input type="file" accept="image/*" className="hidden" onChange={handleAnnBanner} />
-                       </label>
-                       {annBanner ? (
-                         <div className="mt-2 relative inline-block w-full">
-                           <img src={annBanner} className="w-full max-h-36 md:max-h-48 object-cover rounded-lg border border-pink-200 shadow-sm pointer-events-none" />
-                           <button type="button" onClick={() => setAnnBanner('')} className="mt-1.5 text-[10px] md:text-xs font-black text-rose-600 bg-white border border-rose-200 px-2.5 py-0.5 rounded-md hover:bg-rose-50 cursor-pointer">
-                             ✕ Remove Banner
-                           </button>
+                     {/* 🖼️ OPTIONAL 16:9 BANNER IMAGE UPLOADER + AUTO CROPPER */}
+                     <div className="border-2 border-dashed border-pink-300 p-2.5 md:p-3.5 rounded-xl text-center bg-pink-50/70 transition">
+                       {rawAnnBanner ? (
+                         <div className="bg-white p-3 md:p-4 rounded-xl border border-pink-200 shadow-sm text-left">
+                           <p className="text-[10px] md:text-xs font-black text-pink-700 uppercase tracking-wider text-center mb-2">
+                             ✂️ Adjust &amp; Crop Banner (16:9 Fixed)
+                           </p>
+                           <div className="w-full aspect-[16/9] rounded-lg overflow-hidden bg-gray-100 border-2 border-pink-400 relative mx-auto">
+                             <img src={rawAnnBanner} style={{
+                               position: 'absolute',
+                               top: `${annBannerCropAdj.y}%`,
+                               left: `${annBannerCropAdj.x}%`,
+                               transform: `translate(-50%, -50%) scale(${annBannerCropAdj.scale / 100})`,
+                               width: '100%',
+                               height: '100%',
+                               objectFit: 'cover',
+                               pointerEvents: 'none'
+                             }} />
+                           </div>
+                           <div className="space-y-2.5 mt-3 text-[10px] md:text-xs font-bold text-gray-700">
+                             <label className="flex items-center gap-2">
+                               <span className="w-16 flex-shrink-0">Left/Right</span>
+                               <input type="range" min="0" max="100" value={annBannerCropAdj.x} onChange={e => setAnnBannerCropAdj({ ...annBannerCropAdj, x: Number(e.target.value) })} className="flex-1 accent-pink-600" />
+                             </label>
+                             <label className="flex items-center gap-2">
+                               <span className="w-16 flex-shrink-0">Top/Bottom</span>
+                               <input type="range" min="0" max="100" value={annBannerCropAdj.y} onChange={e => setAnnBannerCropAdj({ ...annBannerCropAdj, y: Number(e.target.value) })} className="flex-1 accent-pink-600" />
+                             </label>
+                             <label className="flex items-center gap-2">
+                               <span className="w-16 flex-shrink-0">Zoom</span>
+                               <input type="range" min="100" max="200" value={annBannerCropAdj.scale} onChange={e => setAnnBannerCropAdj({ ...annBannerCropAdj, scale: Number(e.target.value) })} className="flex-1 accent-pink-600" />
+                             </label>
+                           </div>
+                           <div className="flex gap-2 mt-3">
+                             <button type="button" onClick={applyAnnBannerCrop} className="flex-1 bg-pink-600 hover:bg-pink-700 text-white py-1.5 md:py-2 rounded-lg font-black text-[10px] md:text-xs shadow-sm cursor-pointer">
+                               ✅ Apply 16:9 Crop
+                             </button>
+                             <button type="button" onClick={() => setRawAnnBanner(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 md:py-2 rounded-lg font-black text-[10px] md:text-xs cursor-pointer">
+                               Cancel
+                             </button>
+                           </div>
                          </div>
-                       ) : null}
-                     </div> 
+                       ) : (
+                         <>
+                           <label className="font-black text-pink-700 block cursor-pointer w-full py-1 text-[10px] md:text-sm">
+                             {annBanner ? "🖼️ Change Banner Image (Optional)" : "+ Add Banner Image (Optional)"}
+                             <input type="file" accept="image/*" className="hidden" onChange={handleAnnBanner} />
+                           </label>
+                           <p className="text-[9px] md:text-[11px] font-bold text-gray-500 mt-0.5">
+                             Recommended Size: <span className="text-pink-700 font-black">16:9 Banner (1200 × 675 px)</span>
+                           </p>
+                           {annBanner ? (
+                             <div className="mt-2.5 w-full">
+                               <div className="w-full aspect-[16/9] rounded-lg overflow-hidden border border-pink-200 shadow-sm bg-gray-100">
+                                 <img src={annBanner} className="w-full h-full object-cover pointer-events-none" />
+                               </div>
+                               <div className="flex justify-center gap-2 mt-2">
+                                 <button type="button" onClick={() => { setRawAnnBanner(annBanner); setAnnBannerCropAdj({ scale: 100, x: 50, y: 50 }); }} className="text-[10px] md:text-xs font-black text-purple-700 bg-white border border-purple-200 px-2.5 py-1 rounded-md hover:bg-purple-50 cursor-pointer">
+                                   ✂️ Adjust Crop
+                                 </button>
+                                 <button type="button" onClick={() => setAnnBanner('')} className="text-[10px] md:text-xs font-black text-rose-600 bg-white border border-rose-200 px-2.5 py-1 rounded-md hover:bg-rose-50 cursor-pointer">
+                                   ✕ Remove Banner
+                                 </button>
+                               </div>
+                             </div>
+                           ) : null}
+                         </>
+                       )}
+                     </div>
                      <div>
                        <textarea required maxLength={2000} placeholder="Message details (Max 2000 characters)..." value={annMsg} onChange={e=>setAnnMsg(e.target.value.slice(0, 2000))} className={`w-full border-2 p-1.5 md:p-4 rounded-md md:rounded-xl font-medium select-text text-[10px] md:text-base transition-colors outline-none ${(annMsg || '').length >= 2000 ? 'border-red-400 bg-red-50 focus:border-red-500' : 'bg-white border-gray-200 focus:border-pink-500'}`} rows="3"></textarea>
                        <div className="flex justify-between items-center mt-0.5 px-1">
