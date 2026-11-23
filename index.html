@@ -4110,44 +4110,68 @@
       };
 
 
-
+      // 🔔 PREMIUM BANNER-STYLE NOTIFICATIONS VIEW
       const PublicNotificationsView = () => {
-        // Auto-Remove Filter: Sirf wo dikhayega jinka time bacha hai (ya permanent hain)
         const validAnns = announcements.filter(a => !a.expireAt || a.expireAt > Date.now());
-        
+
         return (
-        <div className="p-4 md:p-6 max-w-4xl mx-auto min-h-screen">
-          <div className="mb-6 md:mb-8 text-center">
-             <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 mb-2">Studio Announcements</h2>
-             <p className="text-gray-600 font-bold text-sm md:text-base">Stay updated with our newest artworks and exclusive studio offers</p>
+        <div className="p-3.5 md:p-6 max-w-3xl mx-auto min-h-screen">
+          <button onClick={() => nav('gallery')} className="mb-3 md:mb-5 text-purple-600 font-bold text-xs md:text-base flex items-center gap-1.5 hover:text-purple-800 transition cursor-pointer">
+             &larr; Back to Gallery
+          </button>
+
+          <div className="flex items-center justify-between gap-2 mb-4 md:mb-6 pb-3 border-b border-purple-100">
+              <h2 className="text-xl md:text-3xl font-black text-purple-900 tracking-tight">Notifications</h2>
+              {validAnns.length > 0 && (
+                  <span className="bg-purple-100 text-purple-700 border border-purple-200 text-[10px] md:text-xs font-black px-2.5 md:px-3 py-1 rounded-full">
+                      {validAnns.length} {validAnns.length === 1 ? 'Update' : 'Updates'}
+                  </span>
+              )}
           </div>
+
           {validAnns.length === 0 ? (
-            <div className="text-center p-8 md:p-12 glass-panel rounded-3xl shadow-md font-bold text-gray-500 text-base md:text-lg">No new announcements at this time.</div>
+            <div className="glass-panel p-8 md:p-10 rounded-2xl text-center border border-purple-100 shadow-sm">
+              <p className="text-gray-500 font-bold text-sm md:text-base">No new notifications at this time.</p>
+            </div>
           ) : (
-            <div className="space-y-3 md:space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {validAnns.map((ann) => (
-                <div key={ann.id} className="glass-panel p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-lg border-l-[6px] md:border-l-8 border-purple-500 relative overflow-hidden">
-                  
-                  {/* 1. PREMIUM TIMER (Top Left Corner - Ab ek line mein date ke samne rahega) */}
-                  {ann.showTimer && ann.expireAt && (
-                      <LiveCountdown targetTime={ann.expireAt} isCorner={true} />
-                  )}
+                <div key={ann.id} className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl shadow-md border border-purple-100/90 overflow-hidden transition-all hover:shadow-lg">
 
-                  {/* 2. DATE ONLY (Top Right Corner) */}
-                  <div className="absolute top-0 right-0 bg-purple-100 text-purple-700 text-[9px] md:text-xs font-black px-2.5 py-1 md:px-4 md:py-2 rounded-bl-xl md:rounded-bl-2xl border-b border-l border-purple-200 shadow-sm z-10">
-                      {ann.date}
-                  </div>
+                  {/* 1. OPTIONAL FULL-WIDTH BANNER IMAGE */}
+                  {ann.banner ? (
+                    <div className="w-full bg-gray-100 overflow-hidden relative">
+                      <img src={ann.banner} alt={ann.title} className="w-full max-h-[260px] md:max-h-[380px] object-cover block pointer-events-none" />
+                      <div className="img-protect-overlay"></div>
+                    </div>
+                  ) : null}
 
-                  {/* DYNAMIC MARGIN LOGIC: Timer hai toh gap dega, nahi hai toh dono device mein upar shift ho jayega */}
-                  <div className={`flex flex-col ${ann.showTimer && ann.expireAt ? 'mt-8 md:mt-5' : 'mt-2 md:mt-1'}`}>
+                  {/* 2. SLEEK LIVE TIMER STRIP (Sirf jab Timer ON ho) */}
+                  {ann.showTimer && ann.expireAt ? (
+                    <div className="bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-500 px-3.5 py-2 md:px-5 md:py-2.5 flex items-center justify-between gap-2">
+                      <span className="text-[10px] md:text-xs font-black text-white uppercase tracking-wider">Limited Time Offer</span>
+                      <LiveCountdown targetTime={ann.expireAt} />
+                    </div>
+                  ) : null}
 
-                      {/* 3. TITLE (Highlight) */}
-                      <h3 className="text-base md:text-2xl font-black text-gray-900 mb-1.5 md:mb-3 truncate w-full" title={ann.title}>
+                  {/* 3. CLEAN WHITE TEXT CONTENT BOX */}
+                  <div className="p-3.5 md:p-5 flex items-start gap-3 md:gap-4">
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-purple-50 border border-purple-100 flex items-center justify-center flex-shrink-0 text-sm md:text-lg shadow-xs mt-0.5">
+                      🔔
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h3 className="text-sm md:text-lg font-black text-gray-900 leading-snug">
                           {ann.title}
-                      </h3>
-
-                      {/* 4. MESSAGE (Tail) */}
-                      <p className="text-gray-700 font-medium whitespace-pre-wrap text-xs md:text-base leading-relaxed">{ann.message}</p>
+                        </h3>
+                        <span className="text-[9px] md:text-xs font-bold text-gray-400 whitespace-nowrap flex-shrink-0 mt-0.5">
+                          {ann.date}
+                        </span>
+                      </div>
+                      <p className="text-gray-600 font-medium whitespace-pre-wrap text-xs md:text-sm leading-relaxed">
+                        {ann.message}
+                      </p>
+                    </div>
                   </div>
 
                 </div>
@@ -4158,7 +4182,7 @@
         );
       };
 
-
+      
       
       const MyOrdersView = () => {
         const handleRecoverOrders = async (e) => {
