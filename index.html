@@ -7404,17 +7404,20 @@
                 <span className="uppercase">RAJA GUPTA ACT</span>
               </div>
               <div className="flex gap-2.5 md:gap-4 items-center">
-                 <button 
-                    key={currency}
-                    onClick={() => setCurrency(currency === 'INR' ? 'USD' : 'INR')} 
-                    title="Switch Currency"
-                    className="animate-coin-flip w-9 h-9 md:w-11 md:h-11 rounded-full bg-gradient-to-br from-yellow-200 via-yellow-400 to-amber-500 text-amber-950 border-2 border-amber-500 shadow-[0_3px_10px_rgba(245,158,11,0.45),inset_0_2px_3px_rgba(255,255,255,0.85)] hover:brightness-105 active:scale-90 transition cursor-pointer flex items-center justify-center flex-shrink-0 p-0.5"
-                 >
-                    <div className="w-full h-full rounded-full border border-dashed border-amber-700/50 flex flex-col items-center justify-center leading-none">
-                       <span className="text-[12px] md:text-sm font-black leading-none drop-shadow-[0_1px_0_rgba(255,255,255,0.6)]">{currency === 'INR' ? '₹' : '$'}</span>
-                       <span className="text-[7px] md:text-[8px] font-black tracking-tighter leading-none mt-0.5 drop-shadow-[0_1px_0_rgba(255,255,255,0.6)]">{currency === 'INR' ? 'INR' : 'USD'}</span>
-                    </div>
-                 </button>
+                 {!(isLoadingGallery || !isDataLoaded) ? (
+                   <button 
+                      key={currency}
+                      onClick={() => setCurrency(currency === 'INR' ? 'USD' : 'INR')} 
+                      title="Switch Currency"
+                      className="animate-coin-flip w-9 h-9 md:w-11 md:h-11 rounded-full bg-gradient-to-br from-yellow-200 via-yellow-400 to-amber-500 text-amber-950 border-2 border-amber-500 shadow-[0_3px_10px_rgba(245,158,11,0.45),inset_0_2px_3px_rgba(255,255,255,0.85)] hover:brightness-105 active:scale-90 transition cursor-pointer flex items-center justify-center flex-shrink-0 p-0.5"
+                   >
+                      <div className="w-full h-full rounded-full border border-dashed border-amber-700/50 flex flex-col items-center justify-center leading-none">
+                         <span className="text-[12px] md:text-sm font-black leading-none drop-shadow-[0_1px_0_rgba(255,255,255,0.6)]">{currency === 'INR' ? '₹' : '$'}</span>
+                         <span className="text-[7px] md:text-[8px] font-black tracking-tighter leading-none mt-0.5 drop-shadow-[0_1px_0_rgba(255,255,255,0.6)]">{currency === 'INR' ? 'INR' : 'USD'}</span>
+                      </div>
+                   </button>
+                 ) : null}
+
                  <button onClick={() => setMenuOpen(!menuOpen)} className="bg-gradient-to-r from-purple-600 to-pink-500 text-white font-black px-4 md:px-7 py-2 md:py-3 rounded-lg md:rounded-xl shadow-md md:shadow-lg flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition cursor-pointer text-xs md:text-base tracking-wide">
                    {menuOpen ? "CLOSE" : "MENU"}
                  </button>
