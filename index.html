@@ -7583,31 +7583,6 @@
                     </button>
                   </div>
 
-                  {/* 👤 CLEAN TOP PROFILE CARD */}
-                  <div className="p-3 md:p-4">
-                    {currentUser ? (
-                      <div className="p-3 md:p-4 rounded-2xl bg-gradient-to-br from-purple-50/90 via-white to-pink-50/90 border border-purple-100 shadow-sm flex items-center gap-3">
-                        <img src={currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + (currentUser.displayName || 'User') + '&background=a855f7&color=fff'} className="w-11 h-11 md:w-12 md:h-12 rounded-full border-2 border-purple-200 shadow-sm object-cover flex-shrink-0" />
-                        <div className="overflow-hidden flex-1 min-w-0">
-                          <p className="font-black text-gray-900 text-xs md:text-sm truncate leading-tight">{currentUser.displayName || 'My Account'}</p>
-                          <p className="font-bold text-gray-500 text-[10px] md:text-xs truncate mt-0.5">{currentUser.email}</p>
-                          <div className="flex items-center justify-between gap-2 mt-2 w-full">
-                            <button onClick={() => { setLogoutDoubleStep(false); setShowLogoutConfirm(true); }} className="text-rose-500 text-[10px] md:text-xs font-black uppercase tracking-wider hover:underline cursor-pointer">Logout</button>
-                            {isAuthorizedAdminEmail ? (
-                              <button onClick={() => nav('admin')} className={`px-3 md:px-3.5 py-1 md:py-1.5 rounded-lg font-black text-[10px] md:text-xs tracking-wider uppercase bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md hover:opacity-90 transition active:scale-95 cursor-pointer ${view === 'admin' ? 'ring-2 ring-purple-300 ring-offset-1' : ''}`}>
-                                ADMIN
-                              </button>
-                            ) : null}
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <a href="login.html" className="w-full text-left px-4 py-3 rounded-2xl border border-purple-100 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition cursor-pointer flex items-center justify-between text-purple-700 font-black text-xs md:text-sm shadow-sm">
-                        <span>Login / Signup</span>
-                        <span className="text-base leading-none">&rarr;</span>
-                      </a>
-                    )}
-                  </div>
 
                   {/* 📋 COMPACT UNIFORM MENU LIST */}
                   <div className="px-3 md:px-4 pb-4 space-y-1">
