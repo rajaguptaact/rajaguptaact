@@ -8439,23 +8439,48 @@
           })()}
 
 
-          {/* 🔐 LOGOUT CONFIRMATION POPUP */}
-          {showLogoutConfirm && (
-              <div className="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)}>
-                  <div className="bg-white rounded-2xl md:rounded-3xl p-5 md:p-8 w-full max-w-sm shadow-2xl relative border-t-4 border-rose-500 text-center" onClick={e => e.stopPropagation()}>
-                      <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-3 md:mb-4">
-                          <span className="text-2xl">🔓</span>
+          {/* 🔐 LOGOUT CONFIRMATION POPUP (WITH SMART ADMIN WORK PROTECTION) */}
+          {showLogoutConfirm && (() => {
+              const isAdminBusy = isAdmin && (
+                  !!artUploadStatus || !!annUploadStatus || isBgUploading || isGeneratingPreview ||
+                  Object.keys(pendingDeletes).length > 0 || !!pendingArtPublish || !!pendingArtUpdate || !!pendingAnnPublish || !!pendingAnnUpdate
+              );
+              const hasUnsavedAdminWork = isAdmin && !isAdminBusy && (
+                  !!editArtId || !!editAnnId || !!rawBgFile ||
+                  !!(uploadData.title && uploadData.title.trim()) || !!(uploadData.desc && uploadData.desc.trim()) || !!uploadData.image ||
+                  !!(annTitle && annTitle.trim()) || !!(annMsg && annMsg.trim())
+              );
+              return (
+              <div className="fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => { setShowLogoutConfirm(false); setLogoutDoubleStep(false); }}>
+                  <div className={`bg-white rounded-2xl md:rounded-3xl p-5 md:p-8 w-full max-w-sm md:max-w-md shadow-2xl relative border-t-4 ${isAdminBusy ? 'border-amber-500' : 'border-rose-500'} text-center`} onClick={e => e.stopPropagation()}>
+                      <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full ${isAdminBusy ? 'bg-amber-100' : 'bg-rose-100'} flex items-center justify-center mx-auto mb-3 md:mb-4`}>
+                          <span className="text-2xl">{isAdminBusy ? '⏳' : hasUnsavedAdminWork ? '⚠️' : '🔓'}</span>
                       </div>
-                      <h3 className="font-black text-lg md:text-xl text-gray-900 mb-2">Confirm Logout</h3>
+                      <h3 className="font-black text-lg md:text-xl text-gray-900 mb-2">
+                          {isAdminBusy ? 'Work In Progress!' : hasUnsavedAdminWork ? (logoutDoubleStep ? 'Final Confirmation' : 'Unsaved Admin Work!') : 'Confirm Logout'}
+                      </h3>
                       <p className="text-xs md:text-sm font-bold text-gray-500 mb-5 md:mb-6 leading-relaxed">
-                          Are you sure you want to log out? Your Cart, Wishlist & Orders are safely saved in your Gmail account.
+                          {isAdminBusy
+                              ? 'An upload, update, or delete process is currently running in Admin Panel. Please wait until it finishes before logging out.'
+                              : hasUnsavedAdminWork
+                                  ? (logoutDoubleStep
+                                      ? 'Tap "Final Logout" to discard your unsaved Admin edits and log out now.'
+                                      : 'You have unsaved edits or form data in Admin Panel. Logging out now will lose that work. Are you sure?')
+                                  : 'Are you sure you want to log out? Your Cart, Wishlist & Orders are safely saved in your Gmail account.'}
                       </p>
                       <div className="flex gap-3">
-                          <button type="button" onClick={() => setShowLogoutConfirm(false)} className="flex-1 bg-gray-100 text-gray-700 py-2.5 md:py-3 rounded-xl font-black text-xs md:text-sm hover:bg-gray-200 transition active:scale-95 cursor-pointer">
-                              Cancel
+                          <button type="button" onClick={() => { setShowLogoutConfirm(false); setLogoutDoubleStep(false); }} className="flex-1 bg-gray-100 text-gray-700 py-2.5 md:py-3 rounded-xl font-black text-xs md:text-sm hover:bg-gray-200 transition active:scale-95 cursor-pointer">
+                              {isAdminBusy ? 'OK, Wait' : 'Cancel'}
                           </button>
+                          {!isAdminBusy && (
                           <button type="button" onClick={() => {
+                              if (hasUnsavedAdminWork && !logoutDoubleStep) {
+                                  setLogoutDoubleStep(true);
+                                  return;
+                              }
                               setShowLogoutConfirm(false);
+                              setLogoutDoubleStep(false);
+                              setIsAuthorizedAdminEmail(false);
                               setMenuOpen(false);
                               isLoggingOutRef.current = true;
                               setIsDataLoaded(false);
