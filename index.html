@@ -7507,7 +7507,7 @@
                             </div>
                           </div>
 
-                          <div className="pt-3 flex items-center justify-between gap-2">
+                          <div className={`pt-3 flex items-center gap-2 ${isAuthorizedAdminEmail ? 'justify-between' : 'justify-center'}`}>
                             <button
                               type="button"
                               onClick={() => { setProfileMenuOpen(false); setLogoutDoubleStep(false); setShowLogoutConfirm(true); }}
