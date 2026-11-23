@@ -6601,8 +6601,9 @@
                                }
                              }}
                              onTouchEnd={() => setAnnBannerDrag(null)}
-                             style={{ touchAction: 'none' }}
-                             className="w-full aspect-[16/9] rounded-lg overflow-hidden bg-gray-100 border-2 border-pink-400 relative mx-auto"
+                             onContextMenu={(e) => e.preventDefault()}
+                             style={{ touchAction: 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
+                             className="w-full aspect-[16/9] rounded-lg overflow-hidden bg-gray-100 border-2 border-pink-400 relative mx-auto select-none"
                            >
                              <img src={rawAnnBanner} style={{
                                position: 'absolute',
