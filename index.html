@@ -6491,11 +6491,11 @@
                     <span>{editAnnId ? "Edit Announcement" : "Post Announcement"}</span>
                     {!annUploadStatus && (
                         <button type="button" onClick={() => { 
-                            const isEmpty = !annTitle && !annMsg && annHours === '0' && !annShowTimer && !annCustomDate;
+                            const isEmpty = !annTitle && !annMsg && !annBanner && annHours === '0' && !annShowTimer && !annCustomDate;
                             if (isEmpty && !editAnnId) {
                                 showToast("⚠️ Form is already empty! Nothing to clear.");
                             } else {
-                                setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
+                                setEditAnnId(null); setAnnTitle(''); setAnnMsg(''); setAnnBanner(''); setAnnHours('0'); setAnnShowTimer(false); setAnnCustomDate('');
                                 showToast("🧹 Form cleared successfully!");
                             }
                         }} className="text-[10px] md:text-xs text-red-500 underline font-bold cursor-pointer hover:text-red-700">
@@ -6505,8 +6505,24 @@
                   </h3>
                   
                   <form onSubmit={postAnnouncement} className="space-y-1.5 md:space-y-4">
-                      <fieldset disabled={!!annUploadStatus} className={`w-full border-none p-0 m-0 ${!!annUploadStatus ? 'opacity-60 pointer-events-none' : ''}`}>
+                      <fieldset disabled={!!annUploadStatus} className={`w-full border-none p-0 m-0 space-y-2 md:space-y-4 ${!!annUploadStatus ? 'opacity-60 pointer-events-none' : ''}`}>
                      <input required placeholder="Announcement Title" value={annTitle} onChange={e=>setAnnTitle(e.target.value)} className="w-full border-2 p-1.5 md:p-4 rounded-md md:rounded-xl bg-white font-bold text-[10px] md:text-base"/>
+                     
+                     {/* 🖼️ OPTIONAL BANNER IMAGE UPLOADER */}
+                     <div className="border-2 border-dashed border-pink-300 p-2 md:p-3 rounded-lg text-center bg-pink-50/70 hover:bg-pink-50 transition">
+                       <label className="font-black text-pink-700 block cursor-pointer w-full py-1 text-[10px] md:text-sm">
+                         {annBanner ? "🖼️ Change Banner Image (Optional)" : "+ Add Banner Image (Optional)"}
+                         <input type="file" accept="image/*" className="hidden" onChange={handleAnnBanner} />
+                       </label>
+                       {annBanner ? (
+                         <div className="mt-2 relative inline-block w-full">
+                           <img src={annBanner} className="w-full max-h-36 md:max-h-48 object-cover rounded-lg border border-pink-200 shadow-sm pointer-events-none" />
+                           <button type="button" onClick={() => setAnnBanner('')} className="mt-1.5 text-[10px] md:text-xs font-black text-rose-600 bg-white border border-rose-200 px-2.5 py-0.5 rounded-md hover:bg-rose-50 cursor-pointer">
+                             ✕ Remove Banner
+                           </button>
+                         </div>
+                       ) : null}
+                     </div> 
                      <div>
                        <textarea required maxLength={2000} placeholder="Message details (Max 2000 characters)..." value={annMsg} onChange={e=>setAnnMsg(e.target.value.slice(0, 2000))} className={`w-full border-2 p-1.5 md:p-4 rounded-md md:rounded-xl font-medium select-text text-[10px] md:text-base transition-colors outline-none ${(annMsg || '').length >= 2000 ? 'border-red-400 bg-red-50 focus:border-red-500' : 'bg-white border-gray-200 focus:border-pink-500'}`} rows="3"></textarea>
                        <div className="flex justify-between items-center mt-0.5 px-1">
