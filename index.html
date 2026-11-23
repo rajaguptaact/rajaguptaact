@@ -1518,6 +1518,30 @@
       // 🌟 PREMIUM CENTER ALERT LOGIC 🌟
       const [premiumAlert, setPremiumAlert] = useState(null);
       const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+      const [logoutDoubleStep, setLogoutDoubleStep] = useState(false);
+      const [isAuthorizedAdminEmail, setIsAuthorizedAdminEmail] = useState(false);
+
+      // 🔐 PRIVATE SERVER-SIDE ADMIN EMAIL CHECK (index.html mein koi Gmail nahi)
+      useEffect(() => {
+          let isMounted = true;
+          if (!currentUser || !currentUser.email) {
+              setIsAuthorizedAdminEmail(false);
+              return;
+          }
+          fetch(GAS_WEB_APP_URL, {
+              method: 'POST',
+              body: JSON.stringify({ action: 'check_admin_email', email: currentUser.email })
+          })
+          .then(res => res.json())
+          .then(data => {
+              if (isMounted) setIsAuthorizedAdminEmail(Boolean(data && data.isAdminEmail === true));
+          })
+          .catch(() => {
+              if (isMounted) setIsAuthorizedAdminEmail(false);
+          });
+          return () => { isMounted = false; };
+      }, [currentUser]);
+
       // 🛡️ PREMIUM CUSTOM CONFIRMATION MODAL (POORI WEBSITE KE LIYE)
       const [confirmDialog, setConfirmDialog] = useState(null);
       const openConfirm = ({ title, message, icon = '⚠️', tone = 'amber', confirmText = 'Confirm', cancelText = 'Cancel', onConfirm }) => {
