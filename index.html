@@ -2890,6 +2890,7 @@
       const [pendingDeletes, setPendingDeletes] = useState({}); // 🚨 Delete Loading State
 
       const [currency, setCurrency] = useState('INR');
+      const [currencyMenuOpen, setCurrencyMenuOpen] = useState(false);
       
       const getPrice = (amtINR) => {
          if (!amtINR) return '';
