@@ -4085,25 +4085,31 @@
 
 
 
-      // 🔴 PREMIUM TIMER COMPONENT (SMALLER & COMPACT)
-      const LiveCountdown = ({ targetTime, isCorner }) => {
+      const LiveCountdown = ({ targetTime, isCorner, timerOnly }) => {
           const [timeLeft, setTimeLeft] = useState(targetTime - Date.now());
           useEffect(() => {
               const interval = setInterval(() => setTimeLeft(targetTime - Date.now()), 1000);
               return () => clearInterval(interval);
           }, [targetTime]);
           
-          if (timeLeft <= 0) return <span className="text-gray-500 font-black text-[9px] md:text-[10px] bg-gray-100 px-2 py-1 rounded-md border border-gray-200">Offer Expired</span>;
+          if (timeLeft <= 0) return <span className="text-gray-400 font-black text-[10px] md:text-xs">Offer Expired</span>;
           
           const d = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
           const h = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
           const m = Math.floor((timeLeft / 1000 / 60) % 60);
           const s = Math.floor((timeLeft / 1000) % 60);
+
+          if (timerOnly) {
+              return (
+                  <span className="inline-flex items-center gap-1.5 text-[10px] md:text-sm font-black font-mono text-amber-300 bg-white/10 px-2 py-0.5 md:px-2.5 md:py-1 rounded-md tracking-wide">
+                      {d > 0 ? `${d}d ` : ''}{h}h {m}m {s}s
+                  </span>
+              );
+          }
           
           return (
               <div className={`inline-flex items-center gap-1.5 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-2.5 py-1.5 md:px-3 md:py-2 shadow-sm ${isCorner ? 'rounded-br-xl md:rounded-br-2xl absolute top-0 left-0 z-10' : 'rounded-full'}`}>
                   <svg className="w-3 h-3 md:w-3.5 md:h-3.5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                  {/* Ab mobile aur desktop dono mein 'Offer Ends In' dikhega aur compact rahega */}
                   <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest">Offer Ends In:</span>
                   <span className="text-[9px] md:text-[10px] font-black font-mono bg-black/20 px-1.5 py-0.5 rounded shadow-inner">
                       {d > 0 ? `${d}d ` : ''}{h}h {m}m {s}s
@@ -4111,6 +4117,7 @@
               </div>
           );
       };
+
 
 
       // 🔔 PREMIUM BANNER-STYLE NOTIFICATIONS VIEW
