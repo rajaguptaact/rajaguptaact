@@ -2915,6 +2915,8 @@
       const [annShowTimer, setAnnShowTimer] = useState(false);
       const [annCustomDate, setAnnCustomDate] = useState('');
       const [annBanner, setAnnBanner] = useState('');
+      const [rawAnnBanner, setRawAnnBanner] = useState(null);
+      const [annBannerCropAdj, setAnnBannerCropAdj] = useState({ scale: 100, x: 50, y: 50 });
 
       const [editArtId, setEditArtId] = useState(null);
       const [editAnnId, setEditAnnId] = useState(null);
