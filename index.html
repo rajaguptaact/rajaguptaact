@@ -8558,9 +8558,10 @@
 
 
                               // Agar Checkout/Payment beech mein tha toh safe Gallery dikhayein, baaki har page wahin rahega (NO reload)
-                              if (view === 'checkout_form' || view === 'payment') {
+                              if (view === 'checkout_form' || view === 'payment' || view === 'admin') {
                                   setView('gallery');
                               }
+
 
                               firebase.auth().signOut().then(() => {
                                   showToast("✅ Logged out successfully");
