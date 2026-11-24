@@ -185,7 +185,7 @@
         );
       });
 
-      const ArtworkDetailView = ({ art, mode = 'original', nav, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, openArtZoom, wishlist, userLikes, handleLikeArt, shareArtwork, setWishlistPopupArt }) => {
+      const ArtworkDetailView = ({ art, mode = 'original', nav, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, openArtZoom, wishlist, userLikes, handleLikeArt, shareArtwork, toggleWishlist, setWishlistPopupArt }) => {
         window.rajaMockupCache = window.rajaMockupCache || {};
 
         const isPrintMode = mode === 'print';
