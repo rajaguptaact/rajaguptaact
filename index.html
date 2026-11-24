@@ -3131,7 +3131,17 @@
             });
 
             unsubBg = db.collection("RajaBackgrounds").onSnapshot(snap => {
-              if (snap) setSavedBackgrounds(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+              if (snap) {
+                const allDocs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const logoDoc = allDocs.find(d => d.id === 'site_logo' || d.isSiteLogo);
+                const liveLogo = (logoDoc && logoDoc.image) ? logoDoc.image : '';
+                setSiteLogo(liveLogo);
+                try {
+                  if (liveLogo) window.localStorage.setItem('raja_site_logo_v1', liveLogo);
+                  else window.localStorage.removeItem('raja_site_logo_v1');
+                } catch(e) {}
+                setSavedBackgrounds(allDocs.filter(d => d.id !== 'site_logo' && !d.isSiteLogo).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+              }
             });
 
         } catch (err) {
