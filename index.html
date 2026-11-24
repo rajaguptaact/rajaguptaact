@@ -7904,6 +7904,34 @@
             {view === 'refund' ? RefundView({nav}) : null}
             {view === 'faq' ? FAQFullView({nav}) : null}
             {view === 'about' ? AboutView({nav, artistPhoto}) : null}
+            {view === 'artwork_detail' ? (() => {
+              const activeArt = artworks.find(a => a.id === selectedArtId);
+              if (!activeArt) {
+                return (
+                  <div className="p-10 text-center min-h-[60vh] flex flex-col items-center justify-center gap-3">
+                    <p className="text-gray-500 font-bold">Loading artwork...</p>
+                    <button onClick={() => nav('gallery')} className="text-purple-700 font-bold underline cursor-pointer">&larr; Back to Home</button>
+                  </div>
+                );
+              }
+              return (
+                <ArtworkDetailView
+                  art={activeArt}
+                  nav={nav}
+                  getPrice={getPrice}
+                  cart={cart || []}
+                  addToCart={addToCart}
+                  updateGalleryCartQty={updateGalleryCartQty}
+                  openSizeGuide={openSizeGuide}
+                  openArtZoom={openArtZoom}
+                  wishlist={wishlist || []}
+                  userLikes={userLikes || []}
+                  handleLikeArt={handleLikeArt}
+                  shareArtwork={shareArtwork}
+                  setWishlistPopupArt={setWishlistPopupArt}
+                />
+              );
+            })() : null}
 
 
             {view === 'admin' ? (
