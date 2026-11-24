@@ -1017,8 +1017,14 @@
   }, []);
 
       const [view, setView] = useState('gallery');
+      const [selectedArtId, setSelectedArtId] = useState(null);
       const [menuOpen, setMenuOpen] = useState(false);
-      
+      const openArtworkDetail = (art) => {
+          if (!art || !art.id) return;
+          setSelectedArtId(art.id);
+          nav('artwork_detail');
+      };
+
       const [isAdmin, setIsAdmin] = useState(false);
       const [adminStep, setAdminStep] = useState(1); 
       const [password, setPassword] = useState('');
