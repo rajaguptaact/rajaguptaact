@@ -104,551 +104,419 @@
         db.settings({ experimentalForceLongPolling: true, useFetchStreams: false });
     } catch(e) {}
 
-      const ArtworkCard = React.memo(({ art, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, openArtZoom, wishlist, userLikes, toggleWishlist, handleLikeArt, shareArtwork, setWishlistPopupArt, isHidden }) => {
+      const ArtworkGridCard = React.memo(({ art, onOpenDetail, wishlist, userLikes, handleLikeArt, setWishlistPopupArt }) => {
+        const isLiked = userLikes?.includes(art.id);
+        const isWishlisted = wishlist?.some(w => w.id === art.id);
 
-      // Global memory cache taaki mockups dobara fetch na hoan
-      window.rajaMockupCache = window.rajaMockupCache || {};
+        return (
+          <div
+            id={'art-' + art.id}
+            onClick={() => onOpenDetail(art)}
+            style={{ WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
+            className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-md hover:shadow-xl border border-purple-100/80 overflow-hidden flex flex-col cursor-pointer transition-all duration-300 group select-none"
+          >
+            {/* 1 Clean Sharp Artwork Photo */}
+            <div className="w-full aspect-[4/5] bg-gray-100 relative overflow-hidden">
+              <img
+                src={art.image}
+                alt={art.title}
+                onContextMenu={(e) => e.preventDefault()}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+              />
+              <div className="img-protect-overlay"></div>
+            </div>
 
-      const scrollRef = useRef(null);
-      const [mockups, setMockups] = useState(() => {
-          if (window.rajaMockupCache[art.id] && window.rajaMockupCache[art.id].length > 0) return window.rajaMockupCache[art.id];
-          if (art.customMockups && art.customMockups.length > 0) return art.customMockups;
-          return [];
-      });
-      const [loadingMockups, setLoadingMockups] = useState(() => {
-          if (window.rajaMockupCache[art.id] && window.rajaMockupCache[art.id].length > 0) return false;
-          if (art.customMockups && art.customMockups.length > 0) return false;
-          return true;
-      });
-      const [mockupRetryTick, setMockupRetryTick] = useState(0);
-      const [isDescOpen, setIsDescOpen] = useState(false);
-      const [selectedSizeId, setSelectedSizeId] = useState('original');
+            {/* Title + 2-Line Unique Description */}
+            <div className="p-2.5 md:p-4 flex-1 flex flex-col justify-between text-left">
+              <div>
+                <h2 className="text-sm md:text-lg font-bold text-gray-900 leading-snug line-clamp-1 group-hover:text-purple-700 transition-colors">
+                  {art.title}
+                </h2>
+                <p className="text-[11px] md:text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">
+                  {art.desc || 'Handcrafted realistic colour pencil artwork on premium A4 paper.'}
+                </p>
+              </div>
 
-      // 🏷️ LONG-PRESS & HOVER TOOLTIP LOGIC (Like / Share / Wishlist)
-      const [activeTip, setActiveTip] = useState(null);
-      const tipPressTimerRef = useRef(null);
-      const tipHideTimerRef = useRef(null);
-      const tipTriggeredRef = useRef(false);
+              {/* Clean Bottom Strip: Like + Wishlist + View Details */}
+              <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center justify-between gap-1">
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); handleLikeArt(art); }}
+                    aria-label="Like artwork"
+                    className="flex items-center gap-1 active:scale-90 transition cursor-pointer"
+                  >
+                    <svg className={`w-4 h-4 md:w-5 md:h-5 ${isLiked ? 'text-red-500 fill-red-500' : 'text-gray-700 fill-none hover:text-red-500'}`} stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setWishlistPopupArt(art); }}
+                    aria-label="Save to wishlist"
+                    className="active:scale-90 transition cursor-pointer"
+                  >
+                    <svg className={`w-4 h-4 md:w-5 md:h-5 ${isWishlisted ? 'text-purple-700 fill-purple-700' : 'text-gray-700 fill-none hover:text-purple-700'}`} stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                    </svg>
+                  </button>
+                </div>
 
-      useEffect(() => {
-          return () => {
-              if (tipPressTimerRef.current) clearTimeout(tipPressTimerRef.current);
-              if (tipHideTimerRef.current) clearTimeout(tipHideTimerRef.current);
-          };
-      }, []);
-
-      const startTipPress = (tipKey) => {
-          if (window.getSelection) { try { window.getSelection().removeAllRanges(); } catch(e) {} }
-          if (tipPressTimerRef.current) clearTimeout(tipPressTimerRef.current);
-          if (tipHideTimerRef.current) clearTimeout(tipHideTimerRef.current);
-          tipTriggeredRef.current = false;
-          tipPressTimerRef.current = setTimeout(() => {
-              if (window.getSelection) { try { window.getSelection().removeAllRanges(); } catch(e) {} }
-              tipTriggeredRef.current = true;
-              setActiveTip(tipKey);
-          }, 400);
-      };
-
-      const endTipPress = () => {
-          if (tipPressTimerRef.current) clearTimeout(tipPressTimerRef.current);
-          if (tipTriggeredRef.current) {
-              if (tipHideTimerRef.current) clearTimeout(tipHideTimerRef.current);
-              tipHideTimerRef.current = setTimeout(() => {
-                  setActiveTip(null);
-              }, 2000);
-              setTimeout(() => {
-                  tipTriggeredRef.current = false;
-              }, 350);
-          }
-      };
-
-      const cancelTipPress = () => {
-          if (tipPressTimerRef.current) clearTimeout(tipPressTimerRef.current);
-      };
-
-      const handleTipMouseEnter = (tipKey) => {
-          if (window.matchMedia && window.matchMedia('(hover: hover)').matches) {
-              if (tipHideTimerRef.current) clearTimeout(tipHideTimerRef.current);
-              setActiveTip(tipKey);
-          }
-      };
-
-      const handleTipMouseLeave = () => {
-          if (window.matchMedia && window.matchMedia('(hover: hover)').matches) {
-              setActiveTip(null);
-          }
-      };
-
-      const handleTipAction = (actionFn) => {
-          if (tipTriggeredRef.current) {
-              tipTriggeredRef.current = false;
-              return;
-          }
-          if (tipHideTimerRef.current) clearTimeout(tipHideTimerRef.current);
-          setActiveTip(null);
-          actionFn();
-      };
-
-      useEffect(() => {
-          let isMounted = true;
-          let retryTimer = null;
-
-          if (window.rajaMockupCache[art.id] && window.rajaMockupCache[art.id].length > 0) {
-              setMockups(window.rajaMockupCache[art.id]);
-              setLoadingMockups(false);
-              return;
-          }
-          if (art.customMockups && art.customMockups.length > 0) {
-              window.rajaMockupCache[art.id] = art.customMockups;
-              setMockups(art.customMockups);
-              setLoadingMockups(false);
-              return;
-          }
-
-          const fetchMockupsSafe = async (attempt = 1) => {
-              if (!isMounted) return;
-              setLoadingMockups(true);
-              try {
-                  let snap = await db.collection('RajaMockups').where('artId', '==', art.id).get();
-                  let fetched = snap.docs.map(d => d.data()).sort((a,b) => a.index - b.index).map(d => d.image).filter(Boolean);
-
-                  // Login/Logout ya cache glitch par seedha Firebase server se dubara check karega
-                  if (fetched.length === 0 && navigator.onLine) {
-                      snap = await db.collection('RajaMockups').where('artId', '==', art.id).get({ source: 'server' });
-                      fetched = snap.docs.map(d => d.data()).sort((a,b) => a.index - b.index).map(d => d.image).filter(Boolean);
-                  }
-
-                  if (!isMounted) return;
-                  if (fetched.length > 0) {
-                      window.rajaMockupCache[art.id] = fetched;
-                      setMockups(fetched);
-                      setLoadingMockups(false);
-                      return;
-                  }
-                  throw new Error('Empty mockups');
-              } catch (e) {
-                  if (!isMounted) return;
-                  if (attempt < 4) {
-                      retryTimer = setTimeout(() => fetchMockupsSafe(attempt + 1), attempt * 1200);
-                  } else {
-                      setLoadingMockups(false);
-                  }
-              }
-          };
-
-          fetchMockupsSafe(1);
-
-          const handleBackOnline = () => {
-              if (isMounted && (!window.rajaMockupCache[art.id] || window.rajaMockupCache[art.id].length === 0)) {
-                  fetchMockupsSafe(1);
-              }
-          };
-          window.addEventListener('online', handleBackOnline);
-
-          return () => {
-              isMounted = false;
-              if (retryTimer) clearTimeout(retryTimer);
-              window.removeEventListener('online', handleBackOnline);
-          };
-      }, [art.id, art.customMockups, mockupRetryTick]);
-
-
-      useEffect(() => {
-          if (mockups.length > 0) {
-              mockups.forEach(src => {
-                  const img = new Image();
-                  img.src = src; 
-              });
-          }
-      }, [mockups]);
-
-      useEffect(() => {
-        const interval = setInterval(() => {
-          if (scrollRef.current && window.innerWidth < 768 && mockups.length > 0) { 
-            const maxScroll = scrollRef.current.scrollWidth - scrollRef.current.clientWidth;
-            if (scrollRef.current.scrollLeft >= maxScroll - 50) {
-              scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' }); 
-            } else {
-              const childWidth = scrollRef.current.firstElementChild ? scrollRef.current.firstElementChild.offsetWidth + 16 : scrollRef.current.clientWidth;
-              scrollRef.current.scrollBy({ left: childWidth, behavior: 'smooth' }); 
-            }
-          }
-        }, 3500); 
-        return () => clearInterval(interval);
-      }, [mockups.length]);
-
-      const hasOrigDiscount = art.priceOriginalOld && art.priceOriginal && Number(art.priceOriginalOld) > Number(art.priceOriginal);
-      const origDiscountPct = hasOrigDiscount ? Math.round(((Number(art.priceOriginalOld) - Number(art.priceOriginal)) / Number(art.priceOriginalOld)) * 100) : 0;
-
-      const sizeOptions = [
-          {
-              id: 'original',
-              pillTitle: 'Original',
-              pillSub: 'A4 Size',
-              barLabel: 'Original Artwork • A4 Size',
-              cartSize: 'Original A4 Colour Pencil',
-              price: art.priceOriginal || art.priceOriginalOld,
-              oldPrice: art.priceOriginal ? art.priceOriginalOld : null,
-              isOriginal: true,
-              isSold: !!art.isSold
-          },
-          {
-              id: 'a3',
-              pillTitle: 'A3',
-              pillSub: 'HD Print',
-              barLabel: 'HD Print • A3 Size',
-              cartSize: 'Print A3',
-              price: art.priceA3,
-              oldPrice: null,
-              isOriginal: false,
-              isSold: false
-          },
-          {
-              id: 'a4',
-              pillTitle: 'A4',
-              pillSub: 'HD Print',
-              barLabel: 'HD Print • A4 Size',
-              cartSize: 'Print A4',
-              price: art.priceA4,
-              oldPrice: null,
-              isOriginal: false,
-              isSold: false
-          },
-          {
-              id: 'a5',
-              pillTitle: 'A5',
-              pillSub: 'HD Print',
-              barLabel: 'HD Print • A5 Size',
-              cartSize: 'Print A5',
-              price: art.priceA5,
-              oldPrice: null,
-              isOriginal: false,
-              isSold: false
-          }
-      ];
-
-      const activeOpt = sizeOptions.find(o => o.id === selectedSizeId) || sizeOptions[0];
-      const activeCartItem = Array.isArray(cart) ? cart.find(c => c.id === art.id && c.selectedSize === activeOpt.cartSize) : null;
-
-      return (
-        <div id={'art-' + art.id} style={{ WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }} className="glass-panel rounded-3xl shadow-xl overflow-hidden p-3.5 md:p-8 mb-6 md:mb-10 select-none">
-
-          {/* Compact Header */}
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2.5 border-b border-gray-200/80">
-            <h2 className="text-lg md:text-2xl font-black text-gray-900 leading-tight">
-              {art.title}
-            </h2>
-            <span className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 text-[9px] md:text-xs font-black px-2.5 py-0.5 md:py-1 rounded-full border border-purple-200 shrink-0">
-              100% COLOUR PENCIL
-            </span>
-          </div>
-
-          {/* Photo Angles Slider */}
-          <div className="relative">
-            <p className="text-[9px] md:hidden text-gray-400 font-bold uppercase tracking-widest text-center mb-1.5 animate-pulse">
-              &larr; Auto Viewing Angles &rarr;
-            </p>
-            <div ref={scrollRef} className="flex overflow-x-auto gap-3 md:gap-5 mb-2 pb-2 hide-scrollbar snap-x snap-mandatory scroll-smooth pt-0.5">
-              {mockups.length > 0 ? (
-                 mockups.map((m, i) => (
-                    <div key={i} className="flex-none w-[68%] md:w-[42%] lg:w-[30%] snap-center">
-                      <div
-                        onClick={() => openArtZoom && openArtZoom(art)}
-                        title="Tap to view HD Artwork"
-                        className="w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-[0_4px_15px_rgba(0,0,0,0.1)] relative flex items-center justify-center bg-gray-100 border border-gray-200 cursor-zoom-in group"
-                      >
-                         <img src={m} className="w-full h-full object-cover transition-transform group-hover:scale-[1.03] duration-500" onContextMenu={(e) => e.preventDefault()} />
-                         <div className="img-protect-overlay"></div>
-                         <span className="absolute bottom-2.5 right-2.5 z-30 pointer-events-none bg-black/55 backdrop-blur-sm text-white/95 p-1.5 rounded-full shadow border border-white/20 flex items-center justify-center">
-                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                             <circle cx="11" cy="11" r="7"></circle>
-                             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 8v6M8 11h6"></path>
-                           </svg>
-                         </span>
-                      </div>
-                    </div>
-                 ))
-              ) : loadingMockups ? (
-                 <div className="flex flex-col justify-center items-center h-56 md:h-64 w-full rounded-2xl bg-purple-50/60 border border-purple-100 text-purple-500 font-bold gap-2">
-                   <svg className="animate-spin h-6 w-6 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                   <span className="text-xs md:text-sm animate-pulse">Loading High Quality Angles...</span>
-                 </div>
-              ) : (
-                 <div className="flex flex-col justify-center items-center h-56 md:h-64 w-full rounded-2xl bg-gray-50 border border-dashed border-purple-200 text-center px-4 gap-3">
-                   <p className="text-xs md:text-sm font-bold text-gray-500">Slow network — viewing angles couldn't load yet.</p>
-                   <button
-                     type="button"
-                     onClick={() => { setLoadingMockups(true); setMockupRetryTick(t => t + 1); }}
-                     className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl font-black text-xs shadow-sm active:scale-95 transition cursor-pointer"
-                   >
-                     ↻ Retry Loading Angles
-                   </button>
-                 </div>
-              )}
+                <span className="text-[10px] md:text-xs font-bold text-purple-700 group-hover:text-pink-600 transition flex items-center gap-0.5 whitespace-nowrap">
+                  View Details &rarr;
+                </span>
+              </div>
             </div>
           </div>
+        );
+      });
 
-          {/* Compact 1-Line Social Bar with Long-Press & Hover Tooltips */}
-          <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <div className="flex items-center gap-3.5">
-                  {/* LIKE BUTTON */}
-                  <div className="relative flex items-center">
-                      <span className={`absolute bottom-full left-0 mb-2 bg-gray-900 text-white text-[10px] md:text-xs font-black px-2.5 py-1 rounded-lg shadow-lg whitespace-nowrap pointer-events-none select-none z-30 transition-all duration-200 ${activeTip === 'like' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'}`}>
-                          Like
-                          <span className="absolute top-full left-3 -mt-1 w-2 h-2 bg-gray-900 rotate-45"></span>
-                      </span>
+      const ArtworkDetailView = ({ art, nav, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, openArtZoom, wishlist, userLikes, handleLikeArt, shareArtwork, setWishlistPopupArt }) => {
+        window.rajaMockupCache = window.rajaMockupCache || {};
+
+        const [mockups, setMockups] = useState(() => {
+            if (window.rajaMockupCache[art.id] && window.rajaMockupCache[art.id].length > 0) return window.rajaMockupCache[art.id];
+            if (art.customMockups && art.customMockups.length > 0) return art.customMockups;
+            return [];
+        });
+        const [loadingMockups, setLoadingMockups] = useState(() => {
+            if (window.rajaMockupCache[art.id] && window.rajaMockupCache[art.id].length > 0) return false;
+            if (art.customMockups && art.customMockups.length > 0) return false;
+            return true;
+        });
+        const [activeImgIdx, setActiveImgIdx] = useState(0);
+        const [selectedSizeId, setSelectedSizeId] = useState('original');
+
+        useEffect(() => {
+            setActiveImgIdx(0);
+            setSelectedSizeId('original');
+            window.scrollTo(0, 0);
+        }, [art.id]);
+
+        useEffect(() => {
+            let isMounted = true;
+            let retryTimer = null;
+
+            if (window.rajaMockupCache[art.id] && window.rajaMockupCache[art.id].length > 0) {
+                setMockups(window.rajaMockupCache[art.id]);
+                setLoadingMockups(false);
+                return;
+            }
+            if (art.customMockups && art.customMockups.length > 0) {
+                window.rajaMockupCache[art.id] = art.customMockups;
+                setMockups(art.customMockups);
+                setLoadingMockups(false);
+                return;
+            }
+
+            const fetchMockupsSafe = async (attempt = 1) => {
+                if (!isMounted) return;
+                setLoadingMockups(true);
+                try {
+                    let snap = await db.collection('RajaMockups').where('artId', '==', art.id).get();
+                    let fetched = snap.docs.map(d => d.data()).sort((a,b) => a.index - b.index).map(d => d.image).filter(Boolean);
+
+                    if (fetched.length === 0 && navigator.onLine) {
+                        snap = await db.collection('RajaMockups').where('artId', '==', art.id).get({ source: 'server' });
+                        fetched = snap.docs.map(d => d.data()).sort((a,b) => a.index - b.index).map(d => d.image).filter(Boolean);
+                    }
+
+                    if (!isMounted) return;
+                    if (fetched.length > 0) {
+                        window.rajaMockupCache[art.id] = fetched;
+                        setMockups(fetched);
+                        setLoadingMockups(false);
+                        return;
+                    }
+                    throw new Error('Empty mockups');
+                } catch (e) {
+                    if (!isMounted) return;
+                    if (attempt < 4) {
+                        retryTimer = setTimeout(() => fetchMockupsSafe(attempt + 1), attempt * 1200);
+                    } else {
+                        setLoadingMockups(false);
+                    }
+                }
+            };
+
+            fetchMockupsSafe(1);
+            return () => { isMounted = false; if (retryTimer) clearTimeout(retryTimer); };
+        }, [art.id, art.customMockups]);
+
+        const allImages = [art.image, ...mockups].filter(Boolean);
+        const currentMainImg = allImages[activeImgIdx] || art.image;
+
+        const hasOrigDiscount = art.priceOriginalOld && art.priceOriginal && Number(art.priceOriginalOld) > Number(art.priceOriginal);
+        const origDiscountPct = hasOrigDiscount ? Math.round(((Number(art.priceOriginalOld) - Number(art.priceOriginal)) / Number(art.priceOriginalOld)) * 100) : 0;
+
+        const sizeOptions = [
+            { id: 'original', pillTitle: 'Original', pillSub: 'A4 Size', barLabel: 'Original Artwork • A4 Size', cartSize: 'Original A4 Colour Pencil', price: art.priceOriginal || art.priceOriginalOld, oldPrice: art.priceOriginal ? art.priceOriginalOld : null, isOriginal: true, isSold: !!art.isSold },
+            { id: 'a3', pillTitle: 'A3', pillSub: 'HD Print', barLabel: 'HD Print • A3 Size', cartSize: 'Print A3', price: art.priceA3, oldPrice: null, isOriginal: false, isSold: false },
+            { id: 'a4', pillTitle: 'A4', pillSub: 'HD Print', barLabel: 'HD Print • A4 Size', cartSize: 'Print A4', price: art.priceA4, oldPrice: null, isOriginal: false, isSold: false },
+            { id: 'a5', pillTitle: 'A5', pillSub: 'HD Print', barLabel: 'HD Print • A5 Size', cartSize: 'Print A5', price: art.priceA5, oldPrice: null, isOriginal: false, isSold: false }
+        ];
+
+        const activeOpt = sizeOptions.find(o => o.id === selectedSizeId) || sizeOptions[0];
+        const activeCartItem = Array.isArray(cart) ? cart.find(c => c.id === art.id && c.selectedSize === activeOpt.cartSize) : null;
+
+        return (
+          <div style={{ WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }} className="p-3.5 md:p-8 max-w-5xl mx-auto min-h-screen select-none">
+            {/* Top Back Breadcrumb */}
+            <button
+              type="button"
+              onClick={() => nav('gallery')}
+              className="mb-4 md:mb-6 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer"
+            >
+              &larr; Back to Home
+            </button>
+
+            <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl border border-purple-100/80 overflow-hidden p-4 md:p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
+
+                {/* LEFT: LARGE MAIN PHOTO + CLICKABLE THUMBNAILS */}
+                <div className="lg:col-span-6 space-y-3">
+                  <div
+                    onClick={() => openArtZoom && openArtZoom(art)}
+                    title="Tap for Protected HD Full View"
+                    className="w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-md border border-gray-200 bg-gray-100 relative cursor-zoom-in group"
+                  >
+                    <img
+                      src={currentMainImg}
+                      alt={art.title}
+                      onContextMenu={(e) => e.preventDefault()}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                    />
+                    <div className="img-protect-overlay"></div>
+                    <span className="absolute bottom-3 right-3 z-30 pointer-events-none bg-black/60 backdrop-blur-sm text-white p-2 rounded-full shadow border border-white/20 flex items-center justify-center">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 8v6M8 11h6"></path>
+                      </svg>
+                    </span>
+                  </div>
+
+                  {/* Full View Label + Photo Counter */}
+                  <div className="flex items-center justify-between px-1 text-xs md:text-sm text-gray-500">
+                    <button
+                      type="button"
+                      onClick={() => openArtZoom && openArtZoom(art)}
+                      className="italic font-semibold text-purple-700 hover:underline cursor-pointer"
+                    >
+                      Full view
+                    </button>
+                    <span className="font-bold tracking-wider">
+                      {activeImgIdx + 1} / {allImages.length}
+                    </span>
+                  </div>
+
+                  {/* Small Angle Thumbnails Row */}
+                  <div className="flex items-center gap-2.5 overflow-x-auto pb-1 hide-scrollbar">
+                    {allImages.map((imgSrc, idx) => (
                       <button
-                          type="button"
-                          onContextMenu={(e) => e.preventDefault()}
-                          onTouchStart={() => startTipPress('like')}
-                          onTouchEnd={endTipPress}
-                          onTouchMove={cancelTipPress}
-                          onTouchCancel={cancelTipPress}
-                          onMouseEnter={() => handleTipMouseEnter('like')}
-                          onMouseLeave={handleTipMouseLeave}
-                          onClick={() => handleTipAction(() => handleLikeArt(art))}
-                          style={{ WebkitTouchCallout: 'none' }}
-                          className="flex items-center gap-1.5 transform active:scale-90 transition-transform cursor-pointer select-none"
+                        key={idx}
+                        type="button"
+                        onClick={() => setActiveImgIdx(idx)}
+                        className={`flex-none w-16 h-20 md:w-20 md:h-24 rounded-xl overflow-hidden border-2 transition-all cursor-pointer relative ${
+                          activeImgIdx === idx
+                            ? 'border-purple-600 ring-2 ring-purple-200 scale-[1.02]'
+                            : 'border-gray-200 opacity-75 hover:opacity-100'
+                        }`}
                       >
+                        <img src={imgSrc} alt={`Angle ${idx + 1}`} className="w-full h-full object-cover" />
+                        <div className="img-protect-overlay"></div>
+                      </button>
+                    ))}
+                    {loadingMockups && allImages.length === 1 ? (
+                      <div className="flex-none w-16 h-20 md:w-20 md:h-24 rounded-xl border border-dashed border-purple-200 bg-purple-50/50 flex items-center justify-center">
+                        <svg className="animate-spin h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+                {/* RIGHT: TITLE, SOCIAL BAR, DESCRIPTION, DETAILS TABLE, SIZE & CART */}
+                <div className="lg:col-span-6 flex flex-col justify-between space-y-5 text-left">
+                  <div className="space-y-4">
+                    {/* Tag + Title */}
+                    <div>
+                      <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.22em] text-pink-600 mb-1">
+                        100% Colour Pencil Studio
+                      </p>
+                      <h1 className="text-2xl md:text-4xl font-bold text-gray-900 leading-tight">
+                        {art.title}
+                      </h1>
+                    </div>
+
+                    {/* Social Bar: Like, Share, Wishlist */}
+                    <div className="flex items-center justify-between py-2.5 border-y border-gray-100">
+                      <div className="flex items-center gap-4">
+                        <button
+                          type="button"
+                          onClick={() => handleLikeArt(art)}
+                          className="flex items-center gap-1.5 active:scale-90 transition cursor-pointer"
+                        >
                           <svg className={`w-6 h-6 ${userLikes?.includes(art.id) ? 'text-red-500 fill-red-500' : 'text-gray-900 fill-none hover:text-gray-600'}`} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                          <span className="font-black text-xs md:text-sm text-gray-900">
+                          <span className="font-bold text-xs md:text-sm text-gray-900">
                             {Number(Math.max(0, Number(art.realLikes) || 0) + (Number(art.fakeLikes) || 0)).toLocaleString('en-IN')}
                           </span>
-                      </button>
-                  </div>
-
-                  {/* SHARE BUTTON */}
-                  <div className="relative flex items-center">
-                      <span className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-gray-900 text-white text-[10px] md:text-xs font-black px-2.5 py-1 rounded-lg shadow-lg whitespace-nowrap pointer-events-none select-none z-30 transition-all duration-200 ${activeTip === 'share' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'}`}>
-                          Share
-                          <span className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-gray-900 rotate-45"></span>
-                      </span>
-                      <button
+                        </button>
+                        <button
                           type="button"
-                          onContextMenu={(e) => e.preventDefault()}
-                          onTouchStart={() => startTipPress('share')}
-                          onTouchEnd={endTipPress}
-                          onTouchMove={cancelTipPress}
-                          onTouchCancel={cancelTipPress}
-                          onMouseEnter={() => handleTipMouseEnter('share')}
-                          onMouseLeave={handleTipMouseLeave}
-                          onClick={() => handleTipAction(() => shareArtwork(art))}
-                          style={{ WebkitTouchCallout: 'none' }}
-                          className="transform active:scale-75 transition-transform text-gray-900 hover:text-gray-600 cursor-pointer select-none"
+                          onClick={() => shareArtwork(art)}
+                          className="flex items-center gap-1 text-gray-800 hover:text-purple-700 active:scale-90 transition cursor-pointer text-xs md:text-sm font-bold"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                          <span>Share</span>
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setWishlistPopupArt(art)}
+                        className="flex items-center gap-1 text-gray-800 hover:text-purple-700 active:scale-90 transition cursor-pointer text-xs md:text-sm font-bold"
                       >
-                          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                        <svg className={`w-5 h-5 ${wishlist?.some(w => w.id === art.id) ? 'text-purple-700 fill-purple-700' : 'text-gray-900 fill-none'}`} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+                        <span>Save</span>
                       </button>
-                  </div>
-              </div>
+                    </div>
 
-              {/* WISHLIST BUTTON */}
-              <div className="relative flex items-center">
-                  <span className={`absolute bottom-full right-0 mb-2 bg-gray-900 text-white text-[10px] md:text-xs font-black px-2.5 py-1 rounded-lg shadow-lg whitespace-nowrap pointer-events-none select-none z-30 transition-all duration-200 ${activeTip === 'wishlist' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'}`}>
-                      Wishlist
-                      <span className="absolute top-full right-2.5 -mt-1 w-2 h-2 bg-gray-900 rotate-45"></span>
-                  </span>
-                  <button
-                      type="button"
-                      onContextMenu={(e) => e.preventDefault()}
-                      onTouchStart={() => startTipPress('wishlist')}
-                      onTouchEnd={endTipPress}
-                      onTouchMove={cancelTipPress}
-                      onTouchCancel={cancelTipPress}
-                      onMouseEnter={() => handleTipMouseEnter('wishlist')}
-                      onMouseLeave={handleTipMouseLeave}
-                      onClick={() => handleTipAction(() => setWishlistPopupArt(art))}
-                      style={{ WebkitTouchCallout: 'none' }}
-                      className="transform active:scale-90 transition cursor-pointer select-none"
-                  >
-                      <svg className={`w-6 h-6 ${wishlist?.some(w => w.id === art.id) ? 'text-gray-900 fill-gray-900' : 'text-gray-900 fill-none hover:text-gray-600'}`} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
-                  </button>
-              </div>
-          </div>
-
-
-          {/* Myntra-Style SELECT SIZE + Size Guide Row */}
-          <div className="mt-3 md:mt-4">
-            <div className="flex items-center justify-between mb-2 md:mb-3">
-              <span className="text-[11px] md:text-sm font-black uppercase tracking-wider text-gray-700">
-                Select Size
-              </span>
-              <button
-                type="button"
-                onClick={() => openSizeGuide(activeOpt.id)}
-                className="text-[11px] md:text-sm font-black text-pink-600 hover:text-purple-700 flex items-center gap-0.5 cursor-pointer active:scale-95 transition"
-              >
-                <span>Size Guide</span>
-                <span className="text-sm md:text-base leading-none">›</span>
-              </button>
-            </div>
-
-            {/* 4 Sleek Myntra-Style Size Pills */}
-            <div className="grid grid-cols-4 gap-1.5 md:gap-3">
-              {sizeOptions.map((opt) => {
-                const isActive = selectedSizeId === opt.id;
-                const inCartObj = Array.isArray(cart) ? cart.find(c => c.id === art.id && c.selectedSize === opt.cartSize) : null;
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => setSelectedSizeId(opt.id)}
-                    className={`relative rounded-xl md:rounded-2xl py-2 px-1 md:py-3.5 md:px-3 border-2 text-center transition-all duration-200 active:scale-95 cursor-pointer ${
-                      isActive
-                        ? opt.isOriginal
-                          ? 'border-purple-600 bg-purple-600 text-white shadow-md'
-                          : 'border-pink-500 bg-pink-500 text-white shadow-md'
-                        : 'border-gray-200 bg-white text-gray-800 hover:border-purple-300'
-                    }`}
-                  >
-                    {/* Discount / Sold Mini Tag on Original Pill */}
-                    {opt.isOriginal && opt.isSold && (
-                      <span className="absolute -top-2 md:-top-2.5 left-1/2 -translate-x-1/2 bg-gray-600 text-white text-[7px] md:text-[10px] font-black px-1.5 md:px-2.5 py-0.5 rounded-full uppercase whitespace-nowrap shadow">
-                        Sold
-                      </span>
-                    )}
-                    {opt.isOriginal && !opt.isSold && hasOrigDiscount && (
-                      <span className="absolute -top-2 md:-top-2.5 left-1/2 -translate-x-1/2 bg-yellow-400 text-gray-900 text-[7px] md:text-[10px] font-black px-1.5 md:px-2.5 py-0.5 rounded-full uppercase whitespace-nowrap shadow border border-yellow-200 animate-heartbeat">
-                        {origDiscountPct}% OFF
-                      </span>
-                    )}
-
-                    {/* Live In-Cart Mini Badge */}
-                    {inCartObj && (
-                      <span className={`absolute -top-1.5 -right-1 md:-top-2 md:-right-1.5 w-4 h-4 md:w-5 md:h-5 rounded-full text-[8px] md:text-[10px] font-black flex items-center justify-center shadow border border-white ${
-                        isActive ? 'bg-gray-900 text-white' : 'bg-emerald-500 text-white'
-                      }`}>
-                        {opt.isOriginal ? '✓' : (inCartObj.qty || 1)}
-                      </span>
-                    )}
-
-                    <p className="font-black text-[11px] md:text-base leading-tight">{opt.pillTitle}</p>
-                    <p className={`text-[9px] md:text-xs font-bold leading-tight mt-0.5 ${
-                      isActive ? 'text-white/90' : 'text-gray-400'
-                    }`}>
-                      {opt.pillSub}
+                    {/* Full Description */}
+                    <p className="text-xs md:text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                      {art.desc}
                     </p>
-                  </button>
-                );
-              })}
-            </div>
 
-            {/* Live Price + Add to Cart / Stepper Bar */}
-            <div className={`mt-3 md:mt-4 rounded-2xl p-3 md:p-5 border-2 flex items-center justify-between gap-3 transition-colors duration-200 ${
-              activeOpt.isOriginal
-                ? 'bg-purple-50/90 border-purple-200/80'
-                : 'bg-pink-50/90 border-pink-200/80'
-            }`}>
-              <div className="min-w-0">
-                <p className="text-[9px] md:text-xs font-extrabold uppercase tracking-wider text-gray-500 truncate">
-                  {activeOpt.barLabel}
-                </p>
-                <div className="flex items-baseline flex-wrap gap-1.5 md:gap-2.5 mt-0.5 md:mt-1">
-                  <span className={`text-xl md:text-3xl font-black leading-none ${
-                    activeOpt.isOriginal ? 'text-purple-700' : 'text-pink-600'
-                  }`}>
-                    {getPrice(activeOpt.price)}
-                  </span>
-                  {activeOpt.isOriginal && hasOrigDiscount && (
-                    <>
-                      <span className="line-through text-gray-400 text-[11px] md:text-base font-bold">
-                        {getPrice(art.priceOriginalOld)}
-                      </span>
-                      <span className="bg-yellow-400 text-gray-900 text-[8px] md:text-xs font-black px-1.5 md:px-2 py-0.5 rounded-md uppercase shadow-sm">
-                        {origDiscountPct}% OFF
-                      </span>
-                    </>
-                  )}
+                    {/* Clean Boutique Artwork Details Table */}
+                    <div className="border-t border-b border-gray-200/80 divide-y divide-gray-100 text-xs md:text-sm">
+                      <div className="py-2.5 grid grid-cols-12 gap-2">
+                        <span className="col-span-5 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">Medium</span>
+                        <span className="col-span-7 font-semibold text-gray-800">100% Artist-Grade Colour Pencils</span>
+                      </div>
+                      <div className="py-2.5 grid grid-cols-12 gap-2">
+                        <span className="col-span-5 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">Original Size</span>
+                        <span className="col-span-7 font-semibold text-gray-800">A4 (21.0 &times; 29.7 cm)</span>
+                      </div>
+                      <div className="py-2.5 grid grid-cols-12 gap-2">
+                        <span className="col-span-5 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">Frame</span>
+                        <span className="col-span-7 font-semibold text-gray-800">Unframed (Safe Transit)</span>
+                      </div>
+                      <div className="py-2.5 grid grid-cols-12 gap-2">
+                        <span className="col-span-5 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">Uniqueness</span>
+                        <span className="col-span-7 font-semibold text-gray-800">One-of-a-kind Handmade Original</span>
+                      </div>
+                    </div>
+
+                    {/* Size Selector + Live Price + Add to Cart */}
+                    <div className="pt-1">
+                      <div className="flex items-center justify-between mb-2.5">
+                        <span className="text-[11px] md:text-xs font-bold uppercase tracking-widest text-gray-700">
+                          Select Size
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => openSizeGuide(activeOpt.id)}
+                          className="text-xs md:text-sm font-bold text-pink-600 hover:text-purple-700 flex items-center gap-0.5 cursor-pointer active:scale-95 transition"
+                        >
+                          <span>Size Guide</span>
+                          <span className="text-base leading-none">&rsaquo;</span>
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-4 gap-1.5 md:gap-2.5">
+                        {sizeOptions.map((opt) => {
+                          const isActive = selectedSizeId === opt.id;
+                          const inCartObj = Array.isArray(cart) ? cart.find(c => c.id === art.id && c.selectedSize === opt.cartSize) : null;
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => setSelectedSizeId(opt.id)}
+                              className={`relative rounded-xl py-2 px-1 md:py-3 md:px-2 border-2 text-center transition-all duration-200 active:scale-95 cursor-pointer ${
+                                isActive
+                                  ? opt.isOriginal
+                                    ? 'border-purple-600 bg-purple-600 text-white shadow-md'
+                                    : 'border-pink-500 bg-pink-500 text-white shadow-md'
+                                  : 'border-gray-200 bg-white text-gray-800 hover:border-purple-300'
+                              }`}
+                            >
+                              {opt.isOriginal && opt.isSold && (
+                                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gray-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase whitespace-nowrap shadow">Sold</span>
+                              )}
+                              {opt.isOriginal && !opt.isSold && hasOrigDiscount && (
+                                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-yellow-400 text-gray-900 text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase whitespace-nowrap shadow animate-heartbeat">{origDiscountPct}% OFF</span>
+                              )}
+                              {inCartObj && (
+                                <span className={`absolute -top-1.5 -right-1 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center shadow border border-white ${isActive ? 'bg-gray-900 text-white' : 'bg-emerald-500 text-white'}`}>
+                                  {opt.isOriginal ? '✓' : (inCartObj.qty || 1)}
+                                </span>
+                              )}
+                              <p className="font-bold text-xs md:text-sm leading-tight">{opt.pillTitle}</p>
+                              <p className={`text-[9px] md:text-[11px] font-medium leading-tight mt-0.5 ${isActive ? 'text-white/90' : 'text-gray-400'}`}>{opt.pillSub}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Price & Action Bar */}
+                      <div className={`mt-3.5 rounded-2xl p-3.5 md:p-4 border-2 flex items-center justify-between gap-3 ${activeOpt.isOriginal ? 'bg-purple-50/90 border-purple-200/80' : 'bg-pink-50/90 border-pink-200/80'}`}>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 truncate">{activeOpt.barLabel}</p>
+                          <div className="flex items-baseline flex-wrap gap-1.5 mt-0.5">
+                            <span className={`text-xl md:text-2xl font-bold leading-none ${activeOpt.isOriginal ? 'text-purple-700' : 'text-pink-600'}`}>
+                              {getPrice(activeOpt.price)}
+                            </span>
+                            {activeOpt.isOriginal && hasOrigDiscount && (
+                              <>
+                                <span className="line-through text-gray-400 text-xs font-semibold">{getPrice(art.priceOriginalOld)}</span>
+                                <span className="bg-yellow-400 text-gray-900 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">{origDiscountPct}% OFF</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="shrink-0">
+                          {activeOpt.isOriginal && activeOpt.isSold ? (
+                            <button type="button" disabled className="bg-gray-400 text-gray-100 px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm shadow cursor-not-allowed">SOLD OUT</button>
+                          ) : activeCartItem ? (
+                            activeOpt.isOriginal ? (
+                              <div className="flex items-center gap-2 bg-white border-2 border-purple-200 rounded-xl p-1 shadow-sm">
+                                <span className="text-xs font-bold text-purple-700 pl-2">Qty: 1</span>
+                                <button type="button" onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, -1)} className="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-3 py-1.5 rounded-lg font-bold text-xs transition active:scale-95 cursor-pointer">Remove</button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center bg-pink-500 text-white rounded-xl shadow-md overflow-hidden">
+                                <button type="button" onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, -1)} className="w-9 h-9 flex items-center justify-center font-bold text-lg hover:bg-pink-600 active:scale-90 transition cursor-pointer">&minus;</button>
+                                <span className="w-7 text-center font-bold text-xs md:text-sm select-none">{activeCartItem.qty || 1}</span>
+                                <button type="button" onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, 1)} className="w-9 h-9 flex items-center justify-center font-bold text-lg hover:bg-pink-600 active:scale-90 transition cursor-pointer">+</button>
+                              </div>
+                            )
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => addToCart(art, activeOpt.cartSize, activeOpt.price, activeOpt.oldPrice)}
+                              className={`px-5 md:px-7 py-2.5 md:py-3 rounded-xl font-bold text-xs md:text-sm text-white shadow-md transition active:scale-95 cursor-pointer ${activeOpt.isOriginal ? 'bg-purple-600 hover:bg-purple-700' : 'bg-pink-500 hover:bg-pink-600'}`}
+                            >
+                              Add to Cart
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Packaging & Shipping Note */}
+                      <div className="mt-4 space-y-1.5 text-[11px] md:text-xs text-gray-500 leading-relaxed">
+                        <p>&bull; Sealed in a waterproof sleeve with sturdy cardboard backing / hard art tube.</p>
+                        <p>&bull; Ships within 2&ndash;4 working days. Tracking ID shared on WhatsApp &amp; Email.</p>
+                        <p>&bull; Worldwide shipping available.</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Right Action Control */}
-              <div className="shrink-0">
-                {activeOpt.isOriginal && activeOpt.isSold ? (
-                  <button
-                    type="button"
-                    disabled
-                    className="bg-gray-400 text-gray-100 px-4 md:px-8 py-2.5 md:py-3.5 rounded-xl font-black text-xs md:text-base shadow cursor-not-allowed"
-                  >
-                    SOLD OUT
-                  </button>
-                ) : activeCartItem ? (
-                  activeOpt.isOriginal ? (
-                    <div className="flex items-center gap-1.5 md:gap-2.5 bg-white border-2 border-purple-200 rounded-xl p-1 md:p-1.5 shadow-sm">
-                      <span className="text-[10px] md:text-sm font-black text-purple-700 pl-2 md:pl-3">Qty: 1</span>
-                      <button
-                        type="button"
-                        onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, -1)}
-                        className="bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg font-black text-[10px] md:text-sm transition active:scale-95 cursor-pointer"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center bg-pink-500 text-white rounded-xl shadow-md overflow-hidden border border-pink-600/20">
-                      <button
-                        type="button"
-                        onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, -1)}
-                        className="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center font-black text-base md:text-xl hover:bg-pink-600 active:scale-90 transition cursor-pointer"
-                        aria-label="Decrease quantity"
-                      >
-                        −
-                      </button>
-                      <span className="w-7 md:w-10 text-center font-black text-xs md:text-base select-none">
-                        {activeCartItem.qty || 1}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, 1)}
-                        className="w-9 h-9 md:w-12 md:h-12 flex items-center justify-center font-black text-base md:text-xl hover:bg-pink-600 active:scale-90 transition cursor-pointer"
-                        aria-label="Increase quantity"
-                      >
-                        +
-                      </button>
-                    </div>
-                  )
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => addToCart(art, activeOpt.cartSize, activeOpt.price, activeOpt.oldPrice)}
-                    className={`px-4 md:px-8 py-2.5 md:py-3.5 rounded-xl font-black text-xs md:text-base text-white shadow-md transition active:scale-95 cursor-pointer ${
-                      activeOpt.isOriginal
-                        ? 'bg-purple-600 hover:bg-purple-700'
-                        : 'bg-pink-500 hover:bg-pink-600'
-                    }`}
-                  >
-                    Add to Cart
-                  </button>
-                )}
               </div>
             </div>
           </div>
+        );
+      };
 
-
-
-          {/* Clean Amazon-Style Description Toggle */}
-          <div className="w-full mt-3 pt-2.5 border-t border-gray-200/80">
-            <button 
-              type="button"
-              onClick={() => setIsDescOpen(!isDescOpen)}
-              className="w-full flex justify-between items-center text-left focus:outline-none cursor-pointer group"
-            >
-              <span className="font-black text-gray-900 text-xs md:text-base capitalize">
-                About this artwork
-              </span>
-              <svg className={`w-4 h-4 md:w-5 md:h-5 text-gray-500 transform transition-transform duration-300 ${isDescOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-            </button>
-            
-            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isDescOpen ? 'max-h-96 mt-2.5 opacity-100' : 'max-h-0 opacity-0'}`}>
-              <p className="text-gray-600 font-medium text-xs md:text-sm leading-relaxed whitespace-pre-wrap">
-                 {art.desc}
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-    }, (prev, next) => prev.isHidden && next.isHidden);
-
-
+    
     const FAQItem = ({ question, answer }) => {
       const [isOpen, setIsOpen] = useState(false);
       return (
