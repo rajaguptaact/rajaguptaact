@@ -104,9 +104,11 @@
         db.settings({ experimentalForceLongPolling: true, useFetchStreams: false });
     } catch(e) {}
 
-      const ArtworkGridCard = React.memo(({ art, mode = 'original', onOpenDetail, wishlist, userLikes, handleLikeArt, setWishlistPopupArt }) => {
+      const ArtworkGridCard = React.memo(({ art, mode = 'original', onOpenDetail, wishlist, userLikes, handleLikeArt, toggleWishlist, setWishlistPopupArt }) => {
         const isLiked = userLikes?.includes(art.id);
-        const isWishlisted = wishlist?.some(w => w.id === art.id);
+        const isWishlisted = mode === 'original'
+          ? wishlist?.some(w => w.id === art.id && (w.selectedSize || '').includes('Original'))
+          : wishlist?.some(w => w.id === art.id && (w.selectedSize || '').includes('Print'));
 
         return (
           <div
