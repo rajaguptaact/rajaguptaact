@@ -5442,7 +5442,68 @@
       };
 
       const AdminPanel = () => {
+        const handleSiteLogoUpload = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            setIsLogoUploading(true);
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX = 256;
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > h && w > MAX) { h = Math.round(h * (MAX / w)); w = MAX; }
+                    else if (h > MAX) { w = Math.round(w * (MAX / h)); h = MAX; }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.clearRect(0, 0, w, h);
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const pngData = canvas.toDataURL('image/png');
+                    db.collection('RajaBackgrounds').doc('site_logo').set({
+                        isSiteLogo: true,
+                        image: pngData,
+                        updatedAt: Date.now()
+                    }).then(() => {
+                        setIsLogoUploading(false);
+                        showToast("✅ Website Logo Updated Live on All Devices!");
+                    }).catch(() => {
+                        setIsLogoUploading(false);
+                        showToast("❌ Failed to save logo. Please try again.");
+                    });
+                };
+                img.onerror = () => {
+                    setIsLogoUploading(false);
+                    showToast("❌ Invalid image file.");
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        };
+
+        const removeSiteLogo = () => {
+            openConfirm({
+                icon: '🗑️',
+                tone: 'rose',
+                title: 'Remove Website Logo?',
+                message: 'Are you sure you want to remove the logo from the website header?',
+                cancelText: 'Cancel',
+                confirmText: 'Yes, Remove',
+                onConfirm: () => {
+                    db.collection('RajaBackgrounds').doc('site_logo').delete()
+                        .then(() => showToast("🗑️ Website Logo Removed"))
+                        .catch(() => showToast("❌ Could not remove logo. Try again."));
+                }
+            });
+        };
+
         const handleBgSelect = (e) => {
+
             const file = e.target.files[0];
             if(file) {
                 const reader = new FileReader();
