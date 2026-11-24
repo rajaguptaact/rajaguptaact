@@ -3145,7 +3145,16 @@
                   if (liveLogo) window.localStorage.setItem('raja_site_logo_v1', liveLogo);
                   else window.localStorage.removeItem('raja_site_logo_v1');
                 } catch(e) {}
-                setSavedBackgrounds(allDocs.filter(d => d.id !== 'site_logo' && !d.isSiteLogo).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
+
+                const artistDoc = allDocs.find(d => d.id === 'artist_photo' || d.isArtistPhoto);
+                const liveArtistPhoto = (artistDoc && artistDoc.image) ? artistDoc.image : '';
+                setArtistPhoto(liveArtistPhoto);
+                try {
+                  if (liveArtistPhoto) window.localStorage.setItem('raja_artist_photo_v1', liveArtistPhoto);
+                  else window.localStorage.removeItem('raja_artist_photo_v1');
+                } catch(e) {}
+
+                setSavedBackgrounds(allDocs.filter(d => d.id !== 'site_logo' && !d.isSiteLogo && d.id !== 'artist_photo' && !d.isArtistPhoto).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0)));
               }
             });
 
