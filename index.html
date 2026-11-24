@@ -1244,11 +1244,10 @@
           if (urlParams.get('open') === 'terms') setView('terms');
           if (urlParams.get('open') === 'privacy') setView('privacy');
           if (urlParams.get('art')) {
-              setTimeout(() => { 
-                  const el = document.getElementById('art-' + urlParams.get('art')); 
-                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
-              }, 1500);
+              setSelectedArtId(urlParams.get('art'));
+              setView('artwork_detail');
           }
+
           if (urlParams.has('open')) window.history.replaceState({}, document.title, window.location.pathname);
 
           let unsubCart = () => {};
