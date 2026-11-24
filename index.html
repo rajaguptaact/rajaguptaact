@@ -8097,6 +8097,41 @@
             {view === 'refund' ? RefundView({nav}) : null}
             {view === 'faq' ? FAQFullView({nav}) : null}
             {view === 'about' ? AboutView({nav, artistPhoto}) : null}
+            {(view === 'originals' || view === 'prints') ? (
+              <div className="p-3.5 md:p-8 max-w-7xl mx-auto min-h-screen space-y-5 md:space-y-8">
+                <button type="button" onClick={() => nav('gallery')} className="text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
+                  &larr; Back to Home
+                </button>
+                <div className="border-b border-purple-200/70 pb-3 text-left">
+                  <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.22em] text-pink-600">
+                    {view === 'originals' ? '100% Handmade A4 Colour Pencil' : 'High-Resolution A3 • A4 • A5 Prints'}
+                  </p>
+                  <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mt-0.5">
+                    {view === 'originals' ? 'Original Artworks' : 'Fine Art Prints'}
+                  </h1>
+                </div>
+                {artworks.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-6">
+                    {artworks.map(art => (
+                      <ArtworkGridCard
+                        key={art.id + '-' + view}
+                        art={art}
+                        mode={view === 'prints' ? 'print' : 'original'}
+                        onOpenDetail={openArtworkDetail}
+                        wishlist={wishlist || []}
+                        userLikes={userLikes || []}
+                        handleLikeArt={handleLikeArt}
+                        setWishlistPopupArt={setWishlistPopupArt}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center p-10 bg-white/80 rounded-2xl border border-purple-100 text-gray-500 font-bold">
+                    No artworks available right now.
+                  </div>
+                )}
+              </div>
+            ) : null}
             {view === 'artwork_detail' ? (() => {
               const activeArt = artworks.find(a => a.id === selectedArtId);
               if (!activeArt) {
@@ -8110,6 +8145,7 @@
               return (
                 <ArtworkDetailView
                   art={activeArt}
+                  mode={selectedArtMode}
                   nav={nav}
                   getPrice={getPrice}
                   cart={cart || []}
