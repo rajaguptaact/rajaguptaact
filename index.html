@@ -889,12 +889,15 @@
 
       const [view, setView] = useState('gallery');
       const [selectedArtId, setSelectedArtId] = useState(null);
+      const [selectedArtMode, setSelectedArtMode] = useState('original');
       const [menuOpen, setMenuOpen] = useState(false);
-      const openArtworkDetail = (art) => {
+      const openArtworkDetail = (art, mode = 'original') => {
           if (!art || !art.id) return;
           setSelectedArtId(art.id);
+          setSelectedArtMode(mode === 'print' ? 'print' : 'original');
           nav('artwork_detail');
       };
+
 
       const [isAdmin, setIsAdmin] = useState(false);
       const [adminStep, setAdminStep] = useState(1); 
