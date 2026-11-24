@@ -968,6 +968,10 @@
           try { return window.localStorage.getItem('raja_site_logo_v1') || ''; } catch(e) { return ''; }
       });
       const [isLogoUploading, setIsLogoUploading] = useState(false);
+      const [artistPhoto, setArtistPhoto] = useState(() => {
+          try { return window.localStorage.getItem('raja_artist_photo_v1') || ''; } catch(e) { return ''; }
+      });
+      const [isArtistPhotoUploading, setIsArtistPhotoUploading] = useState(false);
 
       const [searchWaInput, setSearchWaInput] = useState('');
       const [hasSearched, setHasSearched] = useState(false);
