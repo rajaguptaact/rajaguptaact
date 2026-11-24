@@ -6307,7 +6307,51 @@
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
               <div className="space-y-6 md:space-y-8">
 
+                {/* 🎨 WEBSITE HEADER LOGO MANAGER */}
+                <div className="glass-panel rounded-2xl md:rounded-3xl shadow-sm border border-purple-200 bg-purple-50/40 overflow-hidden relative">
+                  <button type="button" onClick={() => setIsLogoManagerOpen(!isLogoManagerOpen)} className="w-full text-left p-3 md:p-6 focus:outline-none flex justify-between items-center cursor-pointer hover:bg-purple-100/50 transition">
+                     <h3 className="text-base md:text-xl font-black text-purple-900 flex items-center gap-2">
+                        🎨 Website Logo (Header)
+                     </h3>
+                     <svg className={`w-4 h-4 md:w-6 md:h-6 text-purple-700 transform transition-transform duration-300 flex-shrink-0 ${isLogoManagerOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </button>
+
+                  <div className={`px-3 md:px-6 pb-4 md:pb-6 pt-1 md:pt-2 space-y-3 ${isLogoManagerOpen ? 'block' : 'hidden'}`}>
+                    <p className="text-[10px] md:text-xs font-bold text-gray-500">
+                      Upload a transparent <strong>PNG</strong> logo (square ratio best). It updates live next to your brand name on all devices.
+                    </p>
+
+                    {/* Live Header Preview */}
+                    <div className="bg-white rounded-xl border border-purple-100 p-3 md:p-4 flex items-center justify-center gap-2 shadow-xs">
+                      {siteLogo ? (
+                        <img src={siteLogo} alt="Current Logo" className="w-8 h-8 md:w-10 md:h-10 rounded-full object-contain flex-shrink-0" />
+                      ) : (
+                        <span className="text-[10px] md:text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-md">No Logo</span>
+                      )}
+                      <span
+                        style={{ fontFamily: "'Cinzel Decorative', serif", fontWeight: 900 }}
+                        className="text-base md:text-2xl tracking-wide leading-none text-transparent bg-clip-text bg-gradient-to-r from-indigo-900 via-purple-700 to-pink-600"
+                      >
+                        Raja Gupta Act
+                      </span>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <label className={`flex-1 text-center py-2.5 md:py-3 px-3 rounded-xl font-black text-xs md:text-sm text-white shadow-md transition ${isLogoUploading ? 'bg-gray-400 cursor-wait' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-95 active:scale-95 cursor-pointer'}`}>
+                        {isLogoUploading ? '⏳ Uploading...' : (siteLogo ? '🔄 Change Logo (PNG)' : '+ Upload Logo (PNG)')}
+                        <input type="file" accept="image/png,image/jpeg,image/webp" disabled={isLogoUploading} className="hidden" onChange={handleSiteLogoUpload} />
+                      </label>
+                      {siteLogo ? (
+                        <button type="button" onClick={removeSiteLogo} disabled={isLogoUploading} className="px-3.5 md:px-5 py-2.5 md:py-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-black text-xs md:text-sm active:scale-95 transition cursor-pointer">
+                          Remove
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="glass-panel rounded-2xl md:rounded-3xl shadow-sm border border-gray-200 bg-emerald-50/30 overflow-hidden relative">
+
                   <button type="button" onClick={() => setIsBgManagerOpen(!isBgManagerOpen)} className="w-full text-left p-3 md:p-6 focus:outline-none flex justify-between items-center cursor-pointer hover:bg-emerald-100/50 transition">
                      <h3 className="text-base md:text-xl font-black text-emerald-900 flex items-center gap-2">
                         Manage Custom Backgrounds
