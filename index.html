@@ -107,8 +107,8 @@
       const ArtworkGridCard = React.memo(({ art, mode = 'original', onOpenDetail, wishlist, userLikes, handleLikeArt, toggleWishlist, setWishlistPopupArt }) => {
         const isLiked = userLikes?.includes(art.id);
         const isWishlisted = mode === 'original'
-          ? wishlist?.some(w => w.id === art.id && (w.selectedSize || '').includes('Original'))
-          : wishlist?.some(w => w.id === art.id && (w.selectedSize || '').includes('Print'));
+          ? wishlist?.some(w => w.id === art.id && (w.savedSize || 'Original A4 Colour Pencil').includes('Original'))
+          : wishlist?.some(w => w.id === art.id && ((w.savedSize || '').includes('Print') || ['A3', 'A4', 'A5'].includes(w.savedSize)));
 
         return (
           <div
