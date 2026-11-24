@@ -962,7 +962,12 @@
       const [isDevicesOpen, setIsDevicesOpen] = useState(false);
       const [isOrdersOpen, setIsOrdersOpen] = useState(false);
       const [isBgManagerOpen, setIsBgManagerOpen] = useState(false); 
-      
+      const [isLogoManagerOpen, setIsLogoManagerOpen] = useState(false);
+      const [siteLogo, setSiteLogo] = useState(() => {
+          try { return window.localStorage.getItem('raja_site_logo_v1') || ''; } catch(e) { return ''; }
+      });
+      const [isLogoUploading, setIsLogoUploading] = useState(false);
+
       const [searchWaInput, setSearchWaInput] = useState('');
       const [hasSearched, setHasSearched] = useState(false);
       const [recoveredOrders, setRecoveredOrders] = useState([]);
