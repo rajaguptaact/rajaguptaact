@@ -3475,7 +3475,8 @@
 
       const [lastAddedTime, setLastAddedTime] = useState(0);
 
-      const addToCart = (art, size, price, oldPrice) => {
+      const addToCart = (art, size, price, oldPrice, qtyToAdd = 1) => {
+        const safeAddQty = (size && size.includes('Original')) ? 1 : Math.min(3, Math.max(1, Number(qtyToAdd) || 1));
         const now = Date.now();
         if (now - lastAddedTime < 3000) { // 🚨 3 Second ka timer
             showToast("⏳ Wait 3s before adding another item."); // 🚨 Chota message jo badi screen mein fit hoga
