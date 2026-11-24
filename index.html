@@ -471,7 +471,7 @@
                       }}
                       className="flex items-center gap-1 text-gray-800 hover:text-purple-700 active:scale-90 transition cursor-pointer text-xs md:text-sm font-bold"
                     >
-                      <svg className={`w-5 h-5 ${(!isPrintMode ? wishlist?.some(w => w.id === art.id && (w.selectedSize || '').includes('Original')) : wishlist?.some(w => w.id === art.id && (w.selectedSize || '').includes('Print'))) ? 'text-purple-700 fill-purple-700' : 'text-gray-900 fill-none'}`} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+                      <svg className={`w-5 h-5 ${(!isPrintMode ? wishlist?.some(w => w.id === art.id && (w.savedSize || 'Original A4 Colour Pencil').includes('Original')) : wishlist?.some(w => w.id === art.id && ((w.savedSize || '').includes('Print') || ['A3', 'A4', 'A5'].includes(w.savedSize)))) ? 'text-purple-700 fill-purple-700' : 'text-gray-900 fill-none'}`} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
                       <span>Save</span>
                     </button>
                   </div>
