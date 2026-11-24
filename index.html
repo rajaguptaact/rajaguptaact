@@ -847,7 +847,75 @@
       </div>
     );
 
-            // NEW ORDER BILL COMPONENT (Amazon Style)
+    const AboutView = ({ nav, artistPhoto }) => (
+      <div className="p-4 md:p-10 max-w-3xl mx-auto min-h-screen">
+        <button onClick={() => nav('gallery')} className="mb-5 md:mb-8 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
+          &larr; Back to Home
+        </button>
+
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl border border-purple-100/80 overflow-hidden">
+          {/* Artist Portrait Photo */}
+          {artistPhoto ? (
+            <div className="p-4 md:p-8 pb-0">
+              <div className="w-full max-w-md mx-auto aspect-[4/4] rounded-2xl overflow-hidden shadow-md border border-purple-100 bg-purple-50/40 relative">
+                <img src={artistPhoto} alt="Raja Gupta" className="w-full h-full object-cover" />
+                <div className="img-protect-overlay"></div>
+              </div>
+            </div>
+          ) : null}
+
+          {/* Artist Intro */}
+          <div className="p-6 md:p-12 text-left space-y-6 md:space-y-8">
+            <div className="space-y-2 border-b border-purple-100 pb-6 md:pb-8">
+              <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] text-purple-600">The Artist</p>
+              <h1 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight leading-tight">
+                Raja Gupta
+              </h1>
+              <p className="text-sm md:text-lg italic text-purple-700 font-medium">
+                Colour Pencil Portrait Artist &bull; Deoghar, Jharkhand, India
+              </p>
+              <p className="text-sm md:text-base text-gray-600 leading-relaxed pt-3">
+                I am a self-taught colour pencil artist based in Deoghar, Jharkhand, India. Every piece in my studio is 100% handcrafted on premium A4 paper, focusing on lifelike portraits and devotional artworks built layer by layer with patience and precision.
+              </p>
+            </div>
+
+            {/* The Story */}
+            <div className="space-y-3 md:space-y-4">
+              <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] text-pink-600">The Story</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug">
+                Looking closely, and bringing every detail to life.
+              </h2>
+              <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                What started as a deep passion for realistic drawing soon grew into <strong>Raja Gupta Act</strong> — a dedicated colour pencil studio. Over time, my artworks have been recognised across national and virtual art competitions, earning honours and awards that inspire me to push every stroke and detail further.
+              </p>
+              <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                Whether it is a one-of-a-kind original artwork or a custom portrait commission, every piece is created by hand to bring warmth, emotion, and lasting beauty into your space.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-4 border-t border-purple-100 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => nav('gallery')}
+                className="flex-1 min-w-[140px] bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-5 rounded-xl font-bold text-xs md:text-sm shadow-md hover:opacity-95 active:scale-95 transition cursor-pointer"
+              >
+                Explore Artworks
+              </button>
+              <button
+                type="button"
+                onClick={() => nav('commission')}
+                className="flex-1 min-w-[140px] bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 py-3 px-5 rounded-xl font-bold text-xs md:text-sm active:scale-95 transition cursor-pointer"
+              >
+                Book a Commission
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    // NEW ORDER BILL COMPONENT (Amazon Style)
     const OrderBill = ({ ord }) => {
         const [isOpen, setIsOpen] = useState(false);
         const isCommission = ord.type === 'Commission';
