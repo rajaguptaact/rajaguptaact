@@ -5584,9 +5584,68 @@
             });
         };
 
-        const handleBgSelect = (e) => {
-
+          const handleArtistPhotoUpload = (e) => {
             const file = e.target.files[0];
+            if (!file) return;
+            setIsArtistPhotoUploading(true);
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX = 800;
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > h && w > MAX) { h = Math.round(h * (MAX / w)); w = MAX; }
+                    else if (h > MAX) { w = Math.round(w * (MAX / h)); h = MAX; }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const jpgData = canvas.toDataURL('image/jpeg', 0.88);
+                    db.collection('RajaBackgrounds').doc('artist_photo').set({
+                        isArtistPhoto: true,
+                        image: jpgData,
+                        updatedAt: Date.now()
+                    }).then(() => {
+                        setIsArtistPhotoUploading(false);
+                        showToast("✅ Artist Photo Updated Live!");
+                    }).catch(() => {
+                        setIsArtistPhotoUploading(false);
+                        showToast("❌ Failed to save artist photo.");
+                    });
+                };
+                img.onerror = () => {
+                    setIsArtistPhotoUploading(false);
+                    showToast("❌ Invalid image file.");
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        };
+
+        const removeArtistPhoto = () => {
+            openConfirm({
+                icon: '🗑️',
+                tone: 'rose',
+                title: 'Remove Artist Photo?',
+                message: 'Are you sure you want to remove your photo from the About page?',
+                cancelText: 'Cancel',
+                confirmText: 'Yes, Remove',
+                onConfirm: () => {
+                    db.collection('RajaBackgrounds').doc('artist_photo').delete()
+                        .then(() => showToast("🗑️ Artist Photo Removed"))
+                        .catch(() => showToast("❌ Could not remove photo."));
+                }
+            });
+        };
+
+        const handleBgSelect = (e) => {
+            const file = e.target.files[0];
+
             if(file) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
