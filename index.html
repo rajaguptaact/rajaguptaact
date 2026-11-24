@@ -3512,7 +3512,7 @@
                 price: Number(price),
                 priceOriginalOld: oldPrice ? Number(oldPrice) : null,
                 cartId: Date.now(),
-                qty: 1
+                qty: safeAddQty
             };
             
             setCart(prev => {
@@ -3520,7 +3520,7 @@
                 if (existingIndex >= 0 && (!size || !size.includes('Original'))) {
                     const newCart = [...prev];
                     if ((newCart[existingIndex].qty || 1) < 3) {
-                        newCart[existingIndex] = { ...newCart[existingIndex], qty: (newCart[existingIndex].qty || 1) + 1 };
+                        newCart[existingIndex] = { ...newCart[existingIndex], qty: Math.min(3, (newCart[existingIndex].qty || 1) + safeAddQty) };
                         setTimeout(() => showToast("☑️ Item quantity updated in Cart!"), 0);
                         try { window.localStorage.setItem('raja_cart_live_v1', JSON.stringify(newCart)); } catch(e){}
                         return newCart;
