@@ -161,7 +161,12 @@
                   </button>
                   <button
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); setWishlistPopupArt(art); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (mode === 'original') toggleWishlist(art, 'Original A4 Colour Pencil');
+                      else setWishlistPopupArt(art);
+                    }}
+
                     aria-label="Save to wishlist"
                     className="active:scale-90 transition cursor-pointer"
                   >
