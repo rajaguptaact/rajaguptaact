@@ -5154,8 +5154,8 @@
                                {hasDiscount ? (
                                    <>
                                        <span className="line-through text-gray-400 text-[10px] md:text-sm font-bold">{getPrice(currentArt.priceOriginalOld)}</span>
-                                       <span className="bg-yellow-400 text-gray-900 text-[8px] md:text-[10px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide shadow-sm">
-                                           {Math.round(((Number(currentArt.priceOriginalOld) - Number(currentArt.priceOriginal)) / Number(currentArt.priceOriginalOld)) * 100)}% OFF
+                                       <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-pink-600">
+                                           SAVE {Math.round(((Number(currentArt.priceOriginalOld) - Number(currentArt.priceOriginal)) / Number(currentArt.priceOriginalOld)) * 100)}%
                                        </span>
                                    </>
                                ) : null}
