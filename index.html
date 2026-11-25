@@ -8807,7 +8807,7 @@
                           zoomScale > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'
                       }`}
                   >
-                      {/* Zoomable Single Artwork */}
+                      {/* Zoomable Active Angle Artwork */}
                       <div
                           className={`relative flex items-center justify-center max-w-full max-h-full transition-transform ${
                               zoomGestureRef.current.mode === 'none' ? 'duration-200 ease-out' : 'duration-0'
@@ -8817,13 +8817,14 @@
                           }}
                       >
                           <img
-                              src={zoomArt.image}
+                              src={(zoomImgList && zoomImgList[zoomImgIdx]) || zoomArt.image}
                               alt={zoomArt.title}
                               draggable={false}
                               onContextMenu={(e) => e.preventDefault()}
-                              className="max-w-[92vw] max-h-[72dvh] md:max-h-[74dvh] object-contain rounded-lg shadow-2xl pointer-events-none select-none"
+                              className="max-w-[92vw] max-h-[64dvh] md:max-h-[68dvh] object-contain rounded-lg shadow-2xl pointer-events-none select-none"
                           />
                       </div>
+
 
                       {/* Anti-Theft Repeating Diagonal Watermark Layer */}
                       <div
