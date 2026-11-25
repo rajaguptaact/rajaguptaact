@@ -2587,7 +2587,7 @@
               if (found) {
                   const dispId = found.orderId || cleanId;
                   return {
-                      text: `Here are the details for your order ${dispId}:\n• Type: ${found.type || 'Studio Order'}\n• Date: ${found.date || 'N/A'}${found.time ? ` • ${found.time}` : ''}\n• Items: ${formatChatOrderItems(found)}\n• Total: ${found.displayAmount || 'N/A'}\n\nFor live shipping or tracking updates, open My Orders or message Raja directly on WhatsApp.`,
+                      text: `Here are the details for your order ${dispId}:\n• Type: ${found.type === 'Gallery Purchase' ? 'Studio Order' : (found.type || 'Studio Order')}\n• Date: ${found.date || 'N/A'}${found.time ? ` • ${found.time}` : ''}\n• Items: ${formatChatOrderItems(found)}\n• Total: ${found.displayAmount || 'N/A'}\n\nFor live shipping or tracking updates, open My Orders or message Raja directly on WhatsApp.`,
                       actions: [{ label: 'Open My Orders', view: 'my_orders' }],
                       showWhatsApp: true,
                       waText: `Hi Raja! I need an update regarding my order ${dispId}.`,
