@@ -197,9 +197,11 @@
             if (art.customMockups && art.customMockups.length > 0) return false;
             return true;
         });
+        
         const [activeImgIdx, setActiveImgIdx] = useState(0);
         const [selectedSizeId, setSelectedSizeId] = useState(isPrintMode ? 'a4' : 'original');
         const [localQty, setLocalQty] = useState(1);
+        const swipeRef = useRef({ active: false, startX: 0, startY: 0, moved: false, lastTouchTime: 0 });
 
         useEffect(() => {
             setActiveImgIdx(0);
@@ -368,36 +370,46 @@
                 <div
                   onTouchStart={(e) => {
                     if (e.touches.length === 1) {
-                      setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY, moved: false });
+                      swipeRef.current = {
+                        active: true,
+                        startX: e.touches[0].clientX,
+                        startY: e.touches[0].clientY,
+                        moved: false,
+                        lastTouchTime: Date.now()
+                      };
                     }
                   }}
                   onTouchMove={(e) => {
-                    if (!dragStart || e.touches.length !== 1) return;
-                    const dx = e.touches[0].clientX - dragStart.x;
-                    if (Math.abs(dx) > 12) {
-                      setDragStart(prev => prev ? { ...prev, moved: true } : null);
+                    if (!swipeRef.current.active || e.touches.length !== 1) return;
+                    const dx = e.touches[0].clientX - swipeRef.current.startX;
+                    const dy = e.touches[0].clientY - swipeRef.current.startY;
+                    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                      swipeRef.current.moved = true;
                     }
                   }}
                   onTouchEnd={(e) => {
-                    if (!dragStart) return;
-                    const endX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : dragStart.x;
-                    const diffX = endX - dragStart.x;
-                    const wasSwiped = dragStart.moved || Math.abs(diffX) > 45;
-                    setDragStart(null);
-                    if (wasSwiped && allImages.length > 1) {
-                      if (diffX < -45) {
+                    if (!swipeRef.current.active) return;
+                    const endX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : swipeRef.current.startX;
+                    const endY = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : swipeRef.current.startY;
+                    const diffX = endX - swipeRef.current.startX;
+                    const diffY = endY - swipeRef.current.startY;
+                    const wasMoved = swipeRef.current.moved;
+                    swipeRef.current.active = false;
+                    swipeRef.current.lastTouchTime = Date.now();
+
+                    if (Math.abs(diffX) > 38 && Math.abs(diffX) > Math.abs(diffY) && allImages.length > 1) {
+                      if (diffX < 0) {
                         setActiveImgIdx(prev => (prev + 1) % allImages.length);
-                      } else if (diffX > 45) {
+                      } else {
                         setActiveImgIdx(prev => (prev - 1 + allImages.length) % allImages.length);
                       }
-                    } else if (!wasSwiped) {
+                    } else if (!wasMoved && Math.abs(diffX) < 12 && Math.abs(diffY) < 12) {
                       openArtZoom && openArtZoom({ ...art, image: currentMainImg, images: allImages, activeIndex: activeImgIdx });
                     }
                   }}
                   onClick={() => {
-                    if (!dragStart) {
-                      openArtZoom && openArtZoom({ ...art, image: currentMainImg, images: allImages, activeIndex: activeImgIdx });
-                    }
+                    if (Date.now() - swipeRef.current.lastTouchTime < 400) return;
+                    openArtZoom && openArtZoom({ ...art, image: currentMainImg, images: allImages, activeIndex: activeImgIdx });
                   }}
                   title="Swipe left/right or tap for Full View"
                   style={{ touchAction: 'pan-y' }}
