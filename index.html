@@ -2703,9 +2703,27 @@
               ['how much', 'kitne ka', 'cash on delivery', 'cod'])) {
               return topicToReply('payment');
           }
+          // 7b. Originals vs Prints
+          if (hasIntentMatch(words, clean,
+              ['original', 'originals', 'print', 'prints', 'asli'],
+              ['originals vs prints', 'original vs print', 'difference between'])) {
+              return topicToReply('originals_vs_prints');
+          }
+          // 7c. Wishlist / Save
+          if (hasIntentMatch(words, clean,
+              ['wishlist', 'wish', 'save', 'saved', 'bookmark'],
+              ['save to wishlist', 'my wishlist'])) {
+              return topicToReply('wishlist_info');
+          }
+          // 7d. About Artist
+          if (hasIntentMatch(words, clean,
+              ['about', 'artist', 'bio', 'story', 'deoghar'],
+              ['about the artist', 'who is raja'])) {
+              return topicToReply('artist_info');
+          }
           // 8. How to Buy / Place Order
           if (hasIntentMatch(words, clean,
-              ['buy', 'purchase', 'order', 'ordr', 'cart', 'checkout', 'gallery', 'kharidna', 'kharide', 'khareed', 'shop', 'website'],
+              ['buy', 'purchase', 'order', 'ordr', 'cart', 'checkout', 'home', 'gallery', 'kharidna', 'kharide', 'khareed', 'shop', 'website'],
               ['how to buy', 'how to order', 'order kaise', 'kaise le', 'kaise kare', 'place order'])) {
               return topicToReply('buy');
           }
