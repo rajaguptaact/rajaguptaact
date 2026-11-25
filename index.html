@@ -1055,6 +1055,54 @@
         </div>
       </div>
     );
+    
+    const CareView = ({ nav }) => (
+      <div className="px-5 py-6 md:px-10 md:py-12 max-w-3xl mx-auto min-h-screen text-left">
+        <button onClick={() => nav('gallery')} className="mb-8 md:mb-10 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
+           &larr; Back to Home
+        </button>
+
+        <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.26em] text-purple-600 mb-3">Artwork Longevity</p>
+        <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+          Care Instructions
+        </h1>
+        <p className="text-sm md:text-base text-gray-600 leading-relaxed pb-8 border-b border-purple-200/70">
+          Handmade colour pencil artworks and archival fine art prints can stay vibrant for decades when cared for properly. Follow these simple guidelines to protect your piece.
+        </p>
+
+        <div className="space-y-9 md:space-y-11 mt-9 text-gray-700 text-sm md:text-base leading-relaxed">
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">1. Handle with Clean, Dry Hands</h2>
+            <p>Always hold your artwork or print gently by its outer edges. Avoid touching the drawn surface directly with bare fingers, as natural skin oils or moisture can leave marks or smudge fine colour pencil layers.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">2. Frame It Promptly</h2>
+            <p>All Originals and Art Prints ship unframed for safe transit. We recommend framing your piece behind clear glass or UV-protective acrylic soon after delivery. Using a thin mount (mat board) inside the frame keeps the artwork from touching the glass directly.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">3. Keep Away from Direct Sunlight</h2>
+            <p>Display your framed artwork on a wall away from harsh, direct sunlight. Prolonged exposure to strong UV rays can gradually fade colour pencil pigments and art prints over time.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">4. Avoid Moisture &amp; Extreme Heat</h2>
+            <p>Do not hang paper artworks on damp walls, in bathrooms, near kitchen steam, or directly below air-conditioning vents or heaters. High humidity can cause paper to warp or ripple.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">5. Safe Cleaning</h2>
+            <p>Never use water, damp cloths, or chemical sprays on the artwork itself. Once framed, simply wipe the outer glass gently with a dry, soft microfiber cloth to remove dust.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">6. Storage Before Framing</h2>
+            <p>Until you get the piece framed, keep it stored flat inside its original protective sleeve and rigid backing in a cool, dry place. Do not fold, roll tightly, or stack heavy objects on top of it.</p>
+          </section>
+        </div>
+      </div>
+    );
 
     const FAQFullView = ({ nav }) => {
       const faqs = [
