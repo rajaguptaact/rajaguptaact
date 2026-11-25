@@ -8365,7 +8365,7 @@
 
                 <div className="flex-1 overflow-y-auto hide-scrollbar">
                   {/* Top Brand Header inside Menu */}
-                  <div className="px-4 py-4 md:px-6 md:py-5 bg-white border-b border-gray-100 flex justify-between items-center sticky top-0 z-10">
+                  <div className="px-4 py-2.5 md:px-6 md:py-4 bg-white border-b border-gray-100 flex justify-between items-center sticky top-0 z-10">
                     <div onClick={() => nav('gallery')} className="flex items-center gap-2 cursor-pointer select-none min-w-0">
                       {siteLogo ? (
                         <img src={siteLogo} alt="Logo" className="w-7 h-7 rounded-full object-contain flex-shrink-0" />
@@ -8382,33 +8382,33 @@
                     </button>
                   </div>
 
-                  {/* Boutique Sectioned Menu List */}
-                  <div className="px-5 md:px-6 py-4 space-y-5">
+                  {/* Boutique Sectioned Menu List (Compact Single-Screen Fit) */}
+                  <div className="px-5 md:px-6 py-2.5 md:py-3.5 space-y-2.5 md:space-y-4">
                     {/* SHOP SECTION */}
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-gray-400 mb-2">Shop</p>
+                      <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.22em] text-gray-400 mb-0.5 md:mb-1">Shop</p>
                       <div className="divide-y divide-gray-100">
-                        <button onClick={() => nav('gallery')} className={`w-full text-left py-3 transition cursor-pointer flex items-center justify-between text-base font-semibold ${view === 'gallery' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
+                        <button onClick={() => nav('gallery')} className={`w-full text-left py-1.5 md:py-2.5 transition cursor-pointer flex items-center justify-between text-sm md:text-base font-semibold ${view === 'gallery' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
                           <span>Home</span>
                         </button>
-                        <button onClick={() => nav('originals')} className={`w-full text-left py-3 transition cursor-pointer flex items-center justify-between text-base font-semibold ${view === 'originals' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
+                        <button onClick={() => nav('originals')} className={`w-full text-left py-1.5 md:py-2.5 transition cursor-pointer flex items-center justify-between text-sm md:text-base font-semibold ${view === 'originals' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
                           <span>Originals</span>
                         </button>
-                        <button onClick={() => nav('prints')} className={`w-full text-left py-3 transition cursor-pointer flex items-center justify-between text-base font-semibold ${view === 'prints' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
+                        <button onClick={() => nav('prints')} className={`w-full text-left py-1.5 md:py-2.5 transition cursor-pointer flex items-center justify-between text-sm md:text-base font-semibold ${view === 'prints' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
                           <span>Prints</span>
                         </button>
-                        <button onClick={() => nav('commission')} className={`w-full text-left py-3 transition cursor-pointer flex items-center justify-between text-base font-semibold ${view === 'commission' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
+                        <button onClick={() => nav('commission')} className={`w-full text-left py-1.5 md:py-2.5 transition cursor-pointer flex items-center justify-between text-sm md:text-base font-semibold ${view === 'commission' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
                           <span>Commission</span>
                         </button>
-                        <button onClick={() => nav('cart')} className={`w-full text-left py-3 transition cursor-pointer flex items-center justify-between text-base font-semibold ${view === 'cart' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
+                        <button onClick={() => nav('cart')} className={`w-full text-left py-1.5 md:py-2.5 transition cursor-pointer flex items-center justify-between text-sm md:text-base font-semibold ${view === 'cart' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
                           <span>Cart</span>
                           {!isLoadingGallery && isDataLoaded && cart.length > 0 ? <span className="bg-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{cart.length}</span> : null}
                         </button>
-                        <button onClick={() => nav('wishlist')} className={`w-full text-left py-3 transition cursor-pointer flex items-center justify-between text-base font-semibold ${view === 'wishlist' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
+                        <button onClick={() => nav('wishlist')} className={`w-full text-left py-1.5 md:py-2.5 transition cursor-pointer flex items-center justify-between text-sm md:text-base font-semibold ${view === 'wishlist' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
                           <span>Wishlist</span>
                           {!isLoadingGallery && isDataLoaded && wishlist?.length > 0 ? <span className="bg-gray-900 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{wishlist.length}</span> : null}
                         </button>
-                        <button onClick={() => nav('my_orders')} className={`w-full text-left py-3 transition cursor-pointer flex items-center justify-between text-base font-semibold ${view === 'my_orders' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
+                        <button onClick={() => nav('my_orders')} className={`w-full text-left py-1.5 md:py-2.5 transition cursor-pointer flex items-center justify-between text-sm md:text-base font-semibold ${view === 'my_orders' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
                           <span>My Orders</span>
                         </button>
                       </div>
@@ -8416,18 +8416,18 @@
 
                     {/* STUDIO SECTION */}
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-gray-400 mb-2">Studio</p>
+                      <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.22em] text-gray-400 mb-0.5 md:mb-1">Studio</p>
                       <div className="divide-y divide-gray-100">
-                        <button onClick={() => nav('about')} className={`w-full text-left py-3 transition cursor-pointer flex items-center justify-between text-base font-semibold ${view === 'about' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
+                        <button onClick={() => nav('about')} className={`w-full text-left py-1.5 md:py-2.5 transition cursor-pointer flex items-center justify-between text-sm md:text-base font-semibold ${view === 'about' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
                           <span>About the Artist</span>
                         </button>
-                        <button onClick={() => nav('public_notifications')} className={`w-full text-left py-3 transition cursor-pointer flex items-center justify-between text-base font-semibold ${view === 'public_notifications' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
+                        <button onClick={() => nav('public_notifications')} className={`w-full text-left py-1.5 md:py-2.5 transition cursor-pointer flex items-center justify-between text-sm md:text-base font-semibold ${view === 'public_notifications' ? 'text-purple-700 font-bold' : 'text-gray-800 hover:text-purple-700'}`}>
                           <span>Notifications</span>
                           {announcements.some(a => (!a.expireAt || a.expireAt > Date.now()) && (Date.now() - a.createdAt < 24 * 60 * 60 * 1000)) ? (
                             <span className="bg-yellow-400 text-gray-900 text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse">NEW</span>
                           ) : null}
                         </button>
-                        <button type="button" onClick={() => { setMenuOpen(false); openSizeGuide('original'); }} className="w-full text-left py-3 text-gray-800 hover:text-purple-700 transition cursor-pointer text-base font-semibold">
+                        <button type="button" onClick={() => { setMenuOpen(false); openSizeGuide('original'); }} className="w-full text-left py-1.5 md:py-2.5 text-gray-800 hover:text-purple-700 transition cursor-pointer text-sm md:text-base font-semibold">
                           Size Guide
                         </button>
                       </div>
@@ -8435,12 +8435,12 @@
 
                     {/* HELP SECTION */}
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-gray-400 mb-2">Help</p>
+                      <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.22em] text-gray-400 mb-0.5 md:mb-1">Help</p>
                       <div className="divide-y divide-gray-100">
-                        <button type="button" onClick={() => { setMenuOpen(false); setIsChatOpen(true); }} className="w-full text-left py-3 text-emerald-700 hover:text-emerald-800 transition cursor-pointer text-base font-semibold">
+                        <button type="button" onClick={() => { setMenuOpen(false); setIsChatOpen(true); }} className="w-full text-left py-1.5 md:py-2.5 text-emerald-700 hover:text-emerald-800 transition cursor-pointer text-sm md:text-base font-semibold">
                           Live Support
                         </button>
-                        <button onClick={() => { shareSite(); setMenuOpen(false); }} className="w-full text-left py-3 text-gray-800 hover:text-purple-700 transition cursor-pointer text-base font-semibold">
+                        <button onClick={() => { shareSite(); setMenuOpen(false); }} className="w-full text-left py-1.5 md:py-2.5 text-gray-800 hover:text-purple-700 transition cursor-pointer text-sm md:text-base font-semibold">
                           Share Studio
                         </button>
                       </div>
