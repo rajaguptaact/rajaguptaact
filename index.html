@@ -363,19 +363,52 @@
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 md:gap-10">
 
-              {/* LEFT: WHITE GALLERY FRAME PHOTO + CLICKABLE THUMBNAILS */}
+              {/* LEFT: WHITE GALLERY FRAME PHOTO + LEFT-RIGHT SWIPE + THUMBNAILS */}
               <div className="lg:col-span-6 space-y-3">
                 <div
-                  onClick={() => openArtZoom && openArtZoom(art)}
-                  title="Tap for Protected HD Full View"
-                  className="bg-white p-3 md:p-4 shadow-[0_10px_32px_rgba(30,17,54,0.12)] border border-purple-100/80 cursor-zoom-in group"
+                  onTouchStart={(e) => {
+                    if (e.touches.length === 1) {
+                      setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY, moved: false });
+                    }
+                  }}
+                  onTouchMove={(e) => {
+                    if (!dragStart || e.touches.length !== 1) return;
+                    const dx = e.touches[0].clientX - dragStart.x;
+                    if (Math.abs(dx) > 12) {
+                      setDragStart(prev => prev ? { ...prev, moved: true } : null);
+                    }
+                  }}
+                  onTouchEnd={(e) => {
+                    if (!dragStart) return;
+                    const endX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : dragStart.x;
+                    const diffX = endX - dragStart.x;
+                    const wasSwiped = dragStart.moved || Math.abs(diffX) > 45;
+                    setDragStart(null);
+                    if (wasSwiped && allImages.length > 1) {
+                      if (diffX < -45) {
+                        setActiveImgIdx(prev => (prev + 1) % allImages.length);
+                      } else if (diffX > 45) {
+                        setActiveImgIdx(prev => (prev - 1 + allImages.length) % allImages.length);
+                      }
+                    } else if (!wasSwiped) {
+                      openArtZoom && openArtZoom({ ...art, image: currentMainImg, images: allImages, activeIndex: activeImgIdx });
+                    }
+                  }}
+                  onClick={() => {
+                    if (!dragStart) {
+                      openArtZoom && openArtZoom({ ...art, image: currentMainImg, images: allImages, activeIndex: activeImgIdx });
+                    }
+                  }}
+                  title="Swipe left/right or tap for Full View"
+                  style={{ touchAction: 'pan-y' }}
+                  className="bg-white p-3 md:p-4 shadow-[0_10px_32px_rgba(30,17,54,0.12)] border border-purple-100/80 cursor-zoom-in group select-none"
                 >
-                  <div className="w-full aspect-[4/5] overflow-hidden bg-gray-100 relative">
+                  <div className={`w-full ${activeImgIdx === 0 ? 'min-h-[320px] md:min-h-[420px] flex items-center justify-center bg-[#faf7fc]' : 'aspect-[4/5] bg-gray-100'} overflow-hidden relative`}>
                     <img
                       src={currentMainImg}
                       alt={art.title}
                       onContextMenu={(e) => e.preventDefault()}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                      className={activeImgIdx === 0 ? 'w-full h-auto max-h-[72dvh] object-contain transition-transform duration-300' : 'w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]'}
                     />
                     <div className="img-protect-overlay"></div>
                     <span className="absolute bottom-3 right-3 z-30 pointer-events-none bg-black/60 backdrop-blur-sm text-white p-2 rounded-full shadow border border-white/20 flex items-center justify-center">
@@ -391,7 +424,7 @@
                 <div className="flex items-center justify-between px-1 text-xs md:text-sm text-gray-500">
                   <button
                     type="button"
-                    onClick={() => openArtZoom && openArtZoom(art)}
+                    onClick={() => openArtZoom && openArtZoom({ ...art, image: currentMainImg, images: allImages, activeIndex: activeImgIdx })}
                     className="italic font-semibold text-purple-700 hover:underline cursor-pointer"
                   >
                     Full view
@@ -425,6 +458,7 @@
                   ) : null}
                 </div>
               </div>
+
 
               {/* RIGHT: TITLE, DESCRIPTION, 5-ROW DYNAMIC TABLE, SINGLE-LINE PRICE & QTY */}
               <div className="lg:col-span-6 bg-white/90 backdrop-blur-sm rounded-3xl shadow-lg border border-purple-100/80 p-5 md:p-8 flex flex-col justify-between space-y-5 text-left">
