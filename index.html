@@ -2123,10 +2123,17 @@
           };
       };
 
+      const [zoomImgList, setZoomImgList] = useState([]);
+      const [zoomImgIdx, setZoomImgIdx] = useState(0);
+
       const openArtZoom = (artObj) => {
           if (!artObj || !artObj.image) return;
           if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
+          const list = Array.isArray(artObj.images) && artObj.images.length > 0 ? artObj.images : [artObj.image];
+          const startIdx = Math.max(0, Math.min(list.length - 1, Number(artObj.activeIndex) || 0));
           setZoomArt(artObj);
+          setZoomImgList(list);
+          setZoomImgIdx(startIdx);
           setZoomScale(1);
           setZoomOffset({ x: 0, y: 0 });
           setZoomArtMounted(true);
@@ -2134,6 +2141,15 @@
               setZoomArtVisible(true);
           }, 20);
       };
+
+      const switchZoomAngle = (nextIdx) => {
+          if (!Array.isArray(zoomImgList) || zoomImgList.length <= 1) return;
+          const wrapped = (nextIdx + zoomImgList.length) % zoomImgList.length;
+          setZoomImgIdx(wrapped);
+          setZoomScale(1);
+          setZoomOffset({ x: 0, y: 0 });
+      };
+
 
       const closeArtZoom = () => {
           if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
