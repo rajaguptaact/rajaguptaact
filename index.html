@@ -2522,6 +2522,16 @@
               ],
               followUps: ['originals_vs_prints', 'commission', 'whatsapp']
           },
+          {   
+              id: 'payment',
+              label: '💳 Payment & Refunds',
+              question: 'What are the Payment & Refund rules?',
+              answer: "• Studio Orders are verified by Raja after UPI payment confirmation (or Wise/Remitly/PayPal/Bank Transfer for International orders), and confirmation is sent on WhatsApp.\n• Because original artworks and custom commissions are handmade, cancellations and refunds follow our Refund Policy.\n• If any parcel ever arrives damaged, message us on WhatsApp within 48 hours with an unboxing video for immediate help.",
+              actions: [
+                  { label: 'View Refund Policy', view: 'refund' }
+              ],
+              followUps: ['buy', 'delivery', 'whatsapp']
+          },
           {
               id: 'whatsapp',
               label: '💬 Talk to Artist',
