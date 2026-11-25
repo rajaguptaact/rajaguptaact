@@ -51,6 +51,18 @@
     }
     .animate-slide-right { animation: slideFromRight 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
     .animate-slide-left { animation: slideFromLeft 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+    @keyframes revealTopDown {
+      0% { clip-path: inset(0 0 100% 0); opacity: 0.4; }
+      100% { clip-path: inset(0 0 0 0); opacity: 1; }
+    }
+    .animate-reveal-down {
+      animation: revealTopDown 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .hd-art-crisp {
+      filter: contrast(1.04) saturate(1.05);
+      image-rendering: -webkit-optimize-contrast;
+    }
+
 
     /* CUSTOM HEARTBEAT ANIMATION FOR BADGE */
     @keyframes heartbeat {
