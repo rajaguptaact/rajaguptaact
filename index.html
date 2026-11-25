@@ -146,7 +146,7 @@
                 src={art.image}
                 alt={art.title}
                 onContextMenu={(e) => e.preventDefault()}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                className="w-full h-full object-cover hd-art-crisp transition-transform duration-500 group-hover:scale-[1.04]"
               />
               <div className="img-protect-overlay"></div>
               {mode === 'original' && art.isSold ? (
@@ -451,7 +451,7 @@
                       src={currentMainImg}
                       alt={art.title}
                       onContextMenu={(e) => e.preventDefault()}
-                      className={`w-full h-full ${activeImgIdx === 0 ? 'object-contain' : 'object-cover'} ${slideDir === 'left' ? 'animate-slide-left' : 'animate-slide-right'}`}
+                      className={`w-full h-full hd-art-crisp ${activeImgIdx === 0 ? 'object-contain' : 'object-cover'} ${slideDir === 'left' ? 'animate-slide-left' : 'animate-slide-right'}`}
                     />
                     <div className="img-protect-overlay"></div>
                   </div>
