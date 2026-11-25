@@ -2201,10 +2201,17 @@
                       startX: e.touches[0].clientX,
                       startY: e.touches[0].clientY,
                       origX: zoomOffset.x,
-                      origY: zoomOffset.y
+                      origY: zoomOffset.y,
+                      swiped: false
                   };
               } else {
-                  zoomGestureRef.current.mode = 'none';
+                  zoomGestureRef.current = {
+                      ...zoomGestureRef.current,
+                      mode: 'swipe',
+                      startX: e.touches[0].clientX,
+                      startY: e.touches[0].clientY,
+                      swiped: false
+                  };
               }
           }
       };
