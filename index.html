@@ -8512,6 +8512,7 @@
             {view === 'privacy' ? PrivacyView({nav}) : null}
             {view === 'refund' ? RefundView({nav}) : null}
             {view === 'disclaimer' ? DisclaimerView({nav}) : null}
+            {view === 'care' ? CareView({nav}) : null}
             {view === 'faq' ? FAQFullView({nav}) : null}
             {view === 'about' ? AboutView({nav, artistPhoto}) : null}
             {(view === 'originals' || view === 'prints') ? (
@@ -8764,6 +8765,7 @@
                     <button type="button" onClick={() => nav('privacy')} className="hover:text-pink-300 transition cursor-pointer">Privacy Policy</button>
                     <button type="button" onClick={() => nav('refund')} className="hover:text-pink-300 transition cursor-pointer">Refund &amp; Payment Policy</button>
                     <button type="button" onClick={() => nav('disclaimer')} className="hover:text-pink-300 transition cursor-pointer">Disclaimer</button>
+                    <button type="button" onClick={() => nav('care')} className="hover:text-pink-300 transition cursor-pointer">Care Instructions</button>
                     <button type="button" onClick={() => nav('faq')} className="hover:text-pink-300 transition cursor-pointer">FAQ</button>
                   </div>
                 </div>
