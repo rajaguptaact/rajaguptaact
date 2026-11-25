@@ -209,12 +209,22 @@
         });
         
         const [activeImgIdx, setActiveImgIdx] = useState(0);
+        const [slideDir, setSlideDir] = useState('right');
         const [selectedSizeId, setSelectedSizeId] = useState(isPrintMode ? 'a4' : 'original');
         const [localQty, setLocalQty] = useState(1);
         const swipeRef = useRef({ active: false, startX: 0, startY: 0, moved: false, lastTouchTime: 0 });
 
+        const goToAngle = (targetIdx, dir = 'right') => {
+            const list = [art.image, ...(mockups || [])].filter(Boolean);
+            if (!list.length) return;
+            const wrapped = (targetIdx + list.length) % list.length;
+            setSlideDir(dir === 'left' ? 'left' : 'right');
+            setActiveImgIdx(wrapped);
+        };
+
         useEffect(() => {
             setActiveImgIdx(0);
+            setSlideDir('right');
             setSelectedSizeId(mode === 'print' ? 'a4' : 'original');
             setLocalQty(1);
             window.scrollTo(0, 0);
@@ -375,7 +385,7 @@
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 md:gap-10">
 
-              {/* LEFT: WHITE GALLERY FRAME PHOTO + LEFT-RIGHT SWIPE + THUMBNAILS */}
+              {/* LEFT: FIXED 4:5 WHITE GALLERY FRAME + SMOOTH SLIDE + THUMBNAILS */}
               <div className="lg:col-span-6 space-y-3">
                 <div
                   onTouchStart={(e) => {
@@ -407,12 +417,9 @@
                     swipeRef.current.active = false;
                     swipeRef.current.lastTouchTime = Date.now();
 
-                    if (Math.abs(diffX) > 38 && Math.abs(diffX) > Math.abs(diffY) && allImages.length > 1) {
-                      if (diffX < 0) {
-                        setActiveImgIdx(prev => (prev + 1) % allImages.length);
-                      } else {
-                        setActiveImgIdx(prev => (prev - 1 + allImages.length) % allImages.length);
-                      }
+                    if (Math.abs(diffX) > 36 && Math.abs(diffX) > Math.abs(diffY) && allImages.length > 1) {
+                      if (diffX < 0) goToAngle(activeImgIdx + 1, 'right');
+                      else goToAngle(activeImgIdx - 1, 'left');
                     } else if (!wasMoved && Math.abs(diffX) < 12 && Math.abs(diffY) < 12) {
                       openArtZoom && openArtZoom({ ...art, image: currentMainImg, images: allImages, activeIndex: activeImgIdx });
                     }
@@ -425,22 +432,19 @@
                   style={{ touchAction: 'pan-y' }}
                   className="bg-white p-3 md:p-4 shadow-[0_10px_32px_rgba(30,17,54,0.12)] border border-purple-100/80 cursor-zoom-in group select-none"
                 >
-                  <div className={`w-full ${activeImgIdx === 0 ? 'min-h-[320px] md:min-h-[420px] flex items-center justify-center bg-[#faf7fc]' : 'aspect-[4/5] bg-gray-100'} overflow-hidden relative`}>
+                  <div className="w-full aspect-[4/5] bg-white overflow-hidden relative flex items-center justify-center">
                     <img
+                      key={`${art.id}-${activeImgIdx}-${slideDir}`}
                       src={currentMainImg}
                       alt={art.title}
                       onContextMenu={(e) => e.preventDefault()}
-                      className={activeImgIdx === 0 ? 'w-full h-auto max-h-[72dvh] object-contain transition-transform duration-300' : 'w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]'}
+                      className={`w-full h-full ${activeImgIdx === 0 ? 'object-contain' : 'object-cover'} ${slideDir === 'left' ? 'animate-slide-left' : 'animate-slide-right'}`}
                     />
                     <div className="img-protect-overlay"></div>
-                    <span className="absolute bottom-3 right-3 z-30 pointer-events-none bg-black/60 backdrop-blur-sm text-white p-2 rounded-full shadow border border-white/20 flex items-center justify-center">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                        <circle cx="11" cy="11" r="7"></circle>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 8v6M8 11h6"></path>
-                      </svg>
-                    </span>
                   </div>
                 </div>
+
+
 
                 {/* Full View Label + Photo Counter */}
                 <div className="flex items-center justify-between px-1 text-xs md:text-sm text-gray-500">
