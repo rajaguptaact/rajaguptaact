@@ -4670,8 +4670,15 @@
                 </div>
               </div>
 
-              <div className="space-y-4 md:space-y-6">
-                <ExpandablePolicy />
+              <div className="space-y-3 md:space-y-4">
+                <button
+                  type="button"
+                  onClick={() => nav('refund')}
+                  className="w-full py-3.5 px-4 border-y border-purple-200/80 flex items-center justify-between text-left text-xs md:text-base font-bold text-purple-800 hover:text-pink-600 transition cursor-pointer group"
+                >
+                  <span>Read Payment &amp; Refund Policy</span>
+                  <span className="text-base md:text-lg group-hover:translate-x-1 transition-transform">&rarr;</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => nav('faq')}
