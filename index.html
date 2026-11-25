@@ -2437,19 +2437,32 @@
           {
               id: 'buy',
               label: '🛒 How to Buy',
-              question: 'How do I buy an artwork from the Gallery?',
-              answer: "Buying an artwork is simple:\n1. Open Gallery and select your favorite artwork.\n2. Choose Original Artwork or a Print Size (A5 / A4 / A3) and tap Add to Cart.\n3. Open Cart → Checkout and enter your Name, Email, WhatsApp number, Country, PIN Code, and full delivery address.\n4. Complete payment on the Scan & Pay screen (UPI / PhonePe / GPay / Paytm) and tap confirm to get your instant Order ID.\n\nTip: Tap the currency button (₹ INR / $ USD) at the top-right anytime to switch prices.",
+              question: 'How do I buy an Original or Print?',
+              answer: "Buying from Raja Gupta Act is simple:\n1. On Home, Originals, or Prints, tap any artwork card to open its full Detail Page.\n2. Swipe left/right on the main photo or tap thumbnails to view all angles (`1 / 4` to `4 / 4`), or tap 'Full view' to zoom.\n3. Choose your size/quantity, tap Add to Cart, then open Cart → Checkout and enter your Name, Email, WhatsApp, Country, PIN Code, and Address.\n4. Complete payment on Scan & Pay (UPI / PhonePe / GPay / Paytm) or confirm International order to get your instant Order ID.\n\nUse the currency button (₹ INR / $ USD) in the top-right header anytime to switch prices.",
               actions: [
-                  { label: 'Browse Gallery', view: 'gallery' },
+                  { label: 'Go to Home', view: 'gallery' },
+                  { label: 'View Originals', view: 'originals' },
+                  { label: 'View Prints', view: 'prints' },
                   { label: 'View Cart', view: 'cart' }
               ],
-              followUps: ['delivery', 'payment', 'sizes']
+              followUps: ['originals_vs_prints', 'delivery', 'payment']
+          },
+          {
+              id: 'originals_vs_prints',
+              label: '🖼️ Originals vs Prints',
+              question: 'What is the difference between Originals and Prints?',
+              answer: "• Originals: Every original artwork is 100% handmade on A4 paper using artist-grade colour pencils (1-of-1 unique piece).\n• Art Prints: High-resolution prints available in A3, A4, and A5 sizes.\n\nOn Home, Originals and Art Prints are shown in two separate sections — and you can also open Originals or Prints directly from the Menu or Footer.",
+              actions: [
+                  { label: 'Browse Originals', view: 'originals' },
+                  { label: 'Browse Prints', view: 'prints' }
+              ],
+              followUps: ['sizes', 'buy', 'wishlist_info']
           },
           {
               id: 'commission',
               label: '🎨 Custom Commission',
               question: 'How do I book a Custom Commission?',
-              answer: "To order a custom handmade portrait or drawing:\n1. Open Menu → Commission.\n2. Enter your Artwork Subject (what you want drawn), Instagram ID, Preferred Paper Size (A4 / A3), and Estimated Budget.\n3. Fill in your Name, Email, WhatsApp Number, and Delivery Address, then submit your request.\n\nNo payment is taken on the website for commissions. Your request is saved in Order History, and Raja will contact you personally on WhatsApp/Instagram to review your reference photo and finalize the timeline and price.",
+              answer: "To request a custom handmade colour pencil portrait:\n1. Open Menu → Commission.\n2. Enter your Artwork Subject details, Instagram ID (required), Preferred Paper Size (A4 or A3), and Estimated Budget.\n3. Fill in your Shipping & Contact Details and submit your request.\n\nNo payment is collected on the website for commissions. Your request is saved under Commission in Order History, and Raja will reach out on WhatsApp / Instagram to review your reference photo and guide you further.",
               actions: [
                   { label: 'Open Commission Form', view: 'commission' }
               ],
@@ -2457,54 +2470,63 @@
           },
           {
               id: 'sizes',
-              label: '📏 Sizes & Quality',
-              question: 'What are the Artwork Sizes & Quality?',
-              answer: "Every original artwork is 100% handmade in A4 size using artist-grade colored pencils on heavy acid-free paper. High-resolution art prints are available in A5, A4, and A3 sizes.\n\n• Original Artwork (A4): 21.0 × 29.7 cm (8.3 × 11.7 in)\n• A5 Print: 14.8 × 21.0 cm (5.8 × 8.3 in)\n• A4 Print: 21.0 × 29.7 cm (8.3 × 11.7 in)\n• A3 Print: 29.7 × 42.0 cm (11.7 × 16.5 in)",
+              label: '📏 Sizes & Details',
+              question: 'What are the Artwork Sizes & Specifications?',
+              answer: "Each size displays its full 5-row specifications table (Artwork Type, Medium, Dimensions, Frame, Uniqueness) on the Detail Page:\n\n• Original Artwork (A4): 21.0 × 29.7 cm (8.3 × 11.7 in)\n• A3 Print: 29.7 × 42.0 cm (11.7 × 16.5 in)\n• A4 Print: 21.0 × 29.7 cm (8.3 × 11.7 in)\n• A5 Print: 14.8 × 21.0 cm (5.8 × 8.3 in)\n\nAll pieces ship unframed for safe transit.",
               actions: [
-                  { label: 'Open Size Guide', view: 'size_guide' },
-                  { label: 'Browse Gallery', view: 'gallery' }
+                  { label: 'Open Size Guide', view: 'size_guide' }
               ],
-              followUps: ['commission', 'buy', 'packaging']
+              followUps: ['originals_vs_prints', 'commission', 'packaging']
+          },
+          {
+              id: 'wishlist_info',
+              label: '🔖 Wishlist & Saving',
+              question: 'How does saving to Wishlist work?',
+              answer: "• On Originals: Tapping the bookmark icon directly saves or removes the Original A4 Colour Pencil item in your Wishlist.\n• On Prints: Tapping the bookmark icon opens the print size selector so you can save or remove A3, A4, or A5 prints.\n\nSign in with Google from the top-right profile icon to sync your Wishlist, Cart, and Order History across devices.",
+              actions: [
+                  { label: 'Open Wishlist', view: 'wishlist' }
+              ],
+              followUps: ['buy', 'history', 'originals_vs_prints']
           },
           {
               id: 'delivery',
               label: '🚚 Delivery & Shipping',
               question: 'What is the Delivery Time & Shipping process?',
-              answer: "• Dispatch Time: Gallery orders ship within 2–4 working days after payment verification. Custom commissions ship after your final artwork approval.\n• India Delivery: 5–8 working days after dispatch.\n• International Delivery: 12–21 working days (worldwide shipping available; local customs duties, if any, are paid by the buyer).\n\nA courier Tracking ID is shared with you on WhatsApp/Email once your parcel is shipped.",
+              answer: "• Dispatch Time: Studio Orders ship within 2–4 working days after payment confirmation. Custom commissions ship after your final artwork approval.\n• India Delivery: 5–8 working days after dispatch.\n• International Delivery: 12–21 working days (worldwide shipping available; any local import/customs duties are paid by the buyer).\n\nTracking details are shared on WhatsApp / Email once dispatched.",
               followUps: ['packaging', 'check_order', 'whatsapp']
           },
           {
               id: 'packaging',
               label: '📦 Packaging & Framing',
-              question: 'Is packaging safe & are frames included?',
-              answer: "Every original drawing and print is sealed in a protective sleeve with rigid cardboard backing or a hard art tube so it arrives 100% bend-free and waterproof.\n\nArtworks are shipped unframed by default so they travel safely and you can choose a frame matching your room decor.",
+              question: 'How are artworks packaged and are they framed?',
+              answer: "Every artwork and print is packed in a protective sleeve with rigid cardboard backing or a hard art tube so it stays safe, flat, and protected during transit.\n\nArtworks are shipped unframed so you can choose a frame that fits your space.",
               followUps: ['delivery', 'buy', 'whatsapp']
           },
           {
               id: 'history',
               label: '📋 Order History',
               question: 'How do I check or recover my Order History?',
-              answer: "Open Menu → Orders anytime to view your Gallery and Commission orders.\n\nIf an older order is not visible (for example, after changing phones or clearing browser data), simply tap the Profile icon at the top-right → Login / Signup → Continue with Google using the same Gmail used at checkout, then open Menu → Orders to recover your past orders.",
+              answer: "Open Menu → My Orders anytime to view your Studio Orders and Commission requests.\n\nIf you switched devices or cleared browser data, tap the Profile icon at top-right → Login / Signup → Continue with Google (using your checkout Gmail), then open My Orders and tap Sync & Recover Past Orders.",
               actions: [
-                  { label: 'Open Order History', view: 'my_orders' }
+                  { label: 'Open My Orders', view: 'my_orders' }
               ],
               followUps: ['check_order', 'delivery', 'whatsapp']
           },
           {
-              id: 'payment',
-              label: '💳 Payment & Refunds',
-              question: 'What are the Payment & Refund rules?',
-              answer: "• Gallery orders are verified by Raja after UPI payment confirmation, and your order confirmation is sent on WhatsApp.\n• Because original artworks and custom commissions are handmade, cancellations and refunds follow our Refund Policy (available in the Menu footer).\n• If any parcel ever arrives damaged, message us on WhatsApp within 48 hours with an unboxing video for immediate help.",
+              id: 'artist_info',
+              label: '👤 About the Artist',
+              question: 'Tell me about the artist, Raja Gupta.',
+              answer: "Raja Gupta is a colour pencil portrait artist based in Deoghar, Jharkhand, India, creating 100% handcrafted realistic and devotional artworks on A4 paper under Raja Gupta Act.",
               actions: [
-                  { label: 'View Refund Policy', view: 'refund' }
+                  { label: 'About the Artist', view: 'about' }
               ],
-              followUps: ['buy', 'delivery', 'whatsapp']
+              followUps: ['originals_vs_prints', 'commission', 'whatsapp']
           },
           {
               id: 'whatsapp',
               label: '💬 Talk to Artist',
               question: 'I want to talk to the artist directly.',
-              answer: "Need help with a specific artwork, custom size, gift order, or an existing Order ID? Tap the button below to chat directly with Raja on WhatsApp.",
+              answer: "Need personal help with an artwork, custom portrait, or order? Tap below to message Raja directly on WhatsApp.",
               showWhatsApp: true,
               followUps: ['buy', 'commission', 'check_order']
           }
@@ -2555,16 +2577,16 @@
               if (found) {
                   const dispId = found.orderId || cleanId;
                   return {
-                      text: `Here are the details for your order ${dispId}:\n• Type: ${found.type || 'Studio Order'}\n• Date: ${found.date || 'N/A'}${found.time ? ` • ${found.time}` : ''}\n• Items: ${formatChatOrderItems(found)}\n• Total: ${found.displayAmount || 'N/A'}\n\nFor live shipping or tracking updates, open Order History or message Raja directly on WhatsApp.`,
-                      actions: [{ label: 'Open Order History', view: 'my_orders' }],
+                      text: `Here are the details for your order ${dispId}:\n• Type: ${found.type || 'Studio Order'}\n• Date: ${found.date || 'N/A'}${found.time ? ` • ${found.time}` : ''}\n• Items: ${formatChatOrderItems(found)}\n• Total: ${found.displayAmount || 'N/A'}\n\nFor live shipping or tracking updates, open My Orders or message Raja directly on WhatsApp.`,
+                      actions: [{ label: 'Open My Orders', view: 'my_orders' }],
                       showWhatsApp: true,
                       waText: `Hi Raja! I need an update regarding my order ${dispId}.`,
                       followUps: ['delivery', 'packaging']
                   };
               }
               return {
-                  text: `I couldn't find ${cleanId} in this device's saved Order History.\n\nIf you placed this order on another phone or cleared browser data, open Order History and sign in with Continue with Google (using the same Gmail used at checkout) to recover it — or message Raja directly on WhatsApp below.`,
-                  actions: [{ label: 'Open Order History', view: 'my_orders' }],
+                  text: `I couldn't find ${cleanId} in this device's saved Order History.\n\nIf you placed this order on another phone or cleared browser data, open My Orders and sign in with Continue with Google (using your checkout Gmail) to recover it — or message Raja directly on WhatsApp below.`,
+                  actions: [{ label: 'Open My Orders', view: 'my_orders' }],
                   showWhatsApp: true,
                   waText: `Hi Raja! I am checking on my order ${cleanId}.`,
                   followUps: ['history', 'delivery']
@@ -2578,20 +2600,21 @@
                   : '';
               return {
                   text: `Here is your most recent order saved on this device:\n• Order: ${latest.orderId || latest.type || 'Commission Request'}\n• Date: ${latest.date || 'N/A'}${latest.time ? ` • ${latest.time}` : ''}\n• Items: ${formatChatOrderItems(latest)}\n• Total: ${latest.displayAmount || 'N/A'}${extraLine}`,
-                  actions: [{ label: 'Open Order History', view: 'my_orders' }],
+                  actions: [{ label: 'Open My Orders', view: 'my_orders' }],
                   followUps: ['delivery', 'history', 'whatsapp']
               };
           }
 
           return {
-              text: "There are no orders saved on this device yet.\n\nIf you already placed an order earlier, open Order History and sign in with Continue with Google (using your checkout Gmail) to recover past orders — or browse the Gallery to place a new one!",
+              text: "There are no orders saved on this device yet.\n\nIf you already placed an order earlier, open My Orders and sign in with Continue with Google (using your checkout Gmail) to recover past orders — or go to Home to explore Originals and Prints!",
               actions: [
-                  { label: 'Open Order History', view: 'my_orders' },
-                  { label: 'Browse Gallery', view: 'gallery' }
+                  { label: 'Open My Orders', view: 'my_orders' },
+                  { label: 'Go to Home', view: 'gallery' }
               ],
               followUps: ['buy', 'commission', 'history']
           };
       };
+
 
       // Typo-tolerant distance helper (supports spelling mistakes & Hinglish input silently)
       const calcWordDist = (a, b) => {
