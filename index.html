@@ -5577,7 +5577,7 @@
 
               setLastOrderId(generatedId);
 
-              if (finalPayload.type === 'Gallery Purchase' && cleanItems.length > 0) {
+              if ((finalPayload.type === 'Studio Order' || finalPayload.type === 'Gallery Purchase') && cleanItems.length > 0) {
                  cleanItems.forEach(item => {
                     if (item.selectedSize && item.selectedSize.includes('Original') && item.id) {
                        db.collection('RajaStudio').doc(item.id).update({ isSold: true }).catch(e => console.log(e));
