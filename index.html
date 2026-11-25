@@ -8866,8 +8866,27 @@
                               +
                           </button>
                       </div>
+                      {zoomImgList.length > 1 ? (
+                        <div className="flex items-center gap-2 overflow-x-auto max-w-full py-1 hide-scrollbar">
+                          {zoomImgList.map((srcItem, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => switchZoomAngle(idx)}
+                              className={`flex-none w-11 h-14 rounded-md overflow-hidden border-2 transition cursor-pointer ${
+                                zoomImgIdx === idx ? 'border-pink-400 scale-105' : 'border-white/25 opacity-65 hover:opacity-100'
+                              }`}
+                            >
+                              <img src={srcItem} alt={`Angle ${idx + 1}`} className="w-full h-full object-cover" />
+                            </button>
+                          ))}
+                          <span className="text-[11px] font-bold text-white/80 px-1.5 whitespace-nowrap">
+                            {zoomImgIdx + 1} / {zoomImgList.length}
+                          </span>
+                        </div>
+                      ) : null}
                       <p className="text-[10px] md:text-xs font-bold text-gray-400">
-                          Pinch or double-tap to inspect pencil details
+                          Swipe left/right for angles • Pinch or double-tap to zoom
                       </p>
                   </div>
               </div>
