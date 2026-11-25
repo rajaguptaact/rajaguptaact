@@ -469,32 +469,45 @@
                     Full view
                   </button>
                   <span className="font-bold tracking-wider">
-                    {activeImgIdx + 1} / {allImages.length}
+                    {activeImgIdx + 1} / {loadingMockups ? Math.max(4, allImages.length) : allImages.length}
                   </span>
                 </div>
 
-                {/* Small Angle Thumbnails Row */}
+                {/* 4-Box Progressive Reveal Thumbnails Row (No Spinner) */}
                 <div className="flex items-center gap-2.5 overflow-x-auto pb-1 hide-scrollbar">
-                  {allImages.map((imgSrc, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => goToAngle(idx, idx >= activeImgIdx ? 'right' : 'left')}
-                      className={`flex-none w-16 h-20 md:w-20 md:h-24 bg-white p-1 border-2 transition-all cursor-pointer relative shadow-xs ${
-                        activeImgIdx === idx
-                          ? 'border-purple-600 ring-2 ring-purple-200 scale-[1.02]'
-                          : 'border-white opacity-75 hover:opacity-100'
-                      }`}
-                    >
-                      <img src={imgSrc} alt={`Angle ${idx + 1}`} className="w-full h-full object-cover" />
-                      <div className="img-protect-overlay"></div>
-                    </button>
-                  ))}
-                  {loadingMockups && allImages.length === 1 ? (
-                    <div className="flex-none w-16 h-20 md:w-20 md:h-24 border border-dashed border-purple-200 bg-white/70 flex items-center justify-center">
-                      <svg className="animate-spin h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    </div>
-                  ) : null}
+                  {Array.from({ length: loadingMockups ? Math.max(4, allImages.length) : allImages.length }).map((_, idx) => {
+                    const imgSrc = allImages[idx];
+                    if (!imgSrc) {
+                      return (
+                        <div
+                          key={`ph-${idx}`}
+                          className="flex-none w-16 h-20 md:w-20 md:h-24 bg-[#efeaf6] border border-purple-100/80 p-1 relative overflow-hidden"
+                        >
+                          <div className="w-full h-full bg-gradient-to-b from-purple-200/40 via-[#f4eef8] to-purple-100/40 animate-pulse"></div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => goToAngle(idx, idx >= activeImgIdx ? 'right' : 'left')}
+                        className={`flex-none w-16 h-20 md:w-20 md:h-24 bg-white p-1 border-2 transition-all cursor-pointer relative shadow-xs overflow-hidden ${
+                          activeImgIdx === idx
+                            ? 'border-purple-600 ring-2 ring-purple-200 scale-[1.02]'
+                            : 'border-white opacity-80 hover:opacity-100'
+                        }`}
+                      >
+                        <img
+                          src={imgSrc}
+                          alt={`Angle ${idx + 1}`}
+                          style={{ animationDelay: `${idx * 90}ms` }}
+                          className="w-full h-full object-cover hd-art-crisp animate-reveal-down"
+                        />
+                        <div className="img-protect-overlay"></div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
