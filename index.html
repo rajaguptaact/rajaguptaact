@@ -853,151 +853,337 @@
     };
 
     const TermsView = ({ nav }) => (
-      <div className="p-4 md:p-10 max-w-4xl mx-auto min-h-screen">
-        <button onClick={() => nav('gallery')} className="mb-6 text-purple-600 font-bold flex items-center gap-2 hover:text-purple-800 transition">
+      <div className="px-5 py-6 md:px-10 md:py-12 max-w-3xl mx-auto min-h-screen text-left">
+        <button onClick={() => nav('gallery')} className="mb-8 md:mb-10 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
            &larr; Back to Home
         </button>
-        <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-gray-100 text-left">
-           <h1 className="text-2xl md:text-5xl font-black text-gray-900 mb-8 pb-4 border-b border-gray-200">Terms of Service</h1>
-           <div className="space-y-6 text-gray-700 text-sm md:text-base font-medium leading-relaxed">
-              <p>Welcome to Raja Gupta Act. By using this website and commissioning my artwork, you agree to the following terms and conditions.</p>
-              <h3 className="text-lg md:text-xl font-black text-gray-900 mt-4">1. Artwork Authenticity</h3>
-              <p>All artworks are 100% handcrafted using high-quality colour pencils. No digital filters or AI generation is used in the creation of the original pieces.</p>
-              <h3 className="text-lg md:text-xl font-black text-gray-900 mt-4">2. Order Process & Delivery</h3>
-              <p>Once an order is placed, a confirmation will be sent via WhatsApp. Delivery timelines depend on the client's location and courier services.</p>
-              <h3 className="text-lg md:text-xl font-black text-gray-900 mt-4">3. Copyright & Usage</h3>
-              <p>Raja Gupta retains the copyright to all created artworks. Clients may not mass-produce, sell, or use the commissioned artwork for commercial purposes without written consent.</p>
-           </div>
+
+        <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.26em] text-purple-600 mb-3">Studio Policy</p>
+        <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+          Terms of Service
+        </h1>
+        <p className="text-sm md:text-base text-gray-600 leading-relaxed pb-8 border-b border-purple-200/70">
+          Welcome to <strong>Raja Gupta Act</strong>. By browsing this website, placing a Studio Order, or booking a custom commission, you agree to the terms written below. These terms are designed to keep every order transparent, fair, and clear for both the collector and the artist.
+        </p>
+
+        <div className="space-y-9 md:space-y-11 mt-9 text-gray-700 text-sm md:text-base leading-relaxed">
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">1. Artwork Authenticity</h2>
+            <p>Every Original Artwork listed on Raja Gupta Act is 100% handcrafted on premium A4 paper using artist-grade colour pencils. No digital filters, traced prints, or AI-generated imagery are used in the creation of original pieces. Fine Art Prints (A3, A4, and A5) are high-resolution studio reproductions of Raja Gupta's original handmade drawings.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">2. Valid Orders &amp; Payment Verification</h2>
+            <p>A Studio Order is considered confirmed only after payment is actually received and verified by the studio. Submitting an order or tapping <strong>"I Have Successfully Paid"</strong> without completing the payment will result in the order being automatically marked as <strong>Invalid / Cancelled</strong>.</p>
+            <p>Payments are accepted via <strong>UPI (PhonePe, Google Pay, Paytm)</strong>, <strong>Bank Transfer</strong>, and <strong>Razorpay</strong> (for Indian and International payments). Order confirmation and tracking details are shared via WhatsApp or Email.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">3. Custom Commissions &amp; Revisions</h2>
+            <p>Custom commissions are created strictly in <strong>colour pencil</strong>. Raja Gupta Act reserves the right to politely decline any request that is offensive, illegal, inappropriate, or uses a reference photo that is too blurry to draw accurately.</p>
+            <p>Minor adjustments may be requested while the drawing is in progress. Once you review and approve the final completed artwork before dispatch, major changes or a complete redraw cannot be requested.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">4. Shipping &amp; Delivery</h2>
+            <p>Studio Orders are typically dispatched within <strong>2–4 working days</strong> after payment verification. Custom commissions are dispatched after final artwork approval and balance settlement. Delivery times depend on destination and courier partners (usually 5–8 working days across India and 12–21 working days for International orders).</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">5. Copyright &amp; Usage Rights</h2>
+            <p>Raja Gupta retains full copyright and intellectual property rights over all original artworks, prints, photographs, and website content. Purchasing an original piece or art print gives you ownership of the physical artwork for personal display only. You may not copy, scan, resell, mass-produce, or use any artwork for commercial purposes without written permission.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">6. Governing Law &amp; Jurisdiction</h2>
+            <p>These terms are governed by the laws of India. Any dispute arising out of the use of this website or any order placed with Raja Gupta Act shall be subject to the exclusive jurisdiction of the courts in <strong>Deoghar, Jharkhand, India</strong>.</p>
+          </section>
         </div>
       </div>
     );
 
     const PrivacyView = ({ nav }) => (
-      <div className="p-4 md:p-10 max-w-4xl mx-auto min-h-screen">
-        <button onClick={() => nav('gallery')} className="mb-6 text-purple-600 font-bold flex items-center gap-2 hover:text-purple-800 transition">
+      <div className="px-5 py-6 md:px-10 md:py-12 max-w-3xl mx-auto min-h-screen text-left">
+        <button onClick={() => nav('gallery')} className="mb-8 md:mb-10 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
            &larr; Back to Home
         </button>
-        <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-gray-100 text-left">
-           <h1 className="text-2xl md:text-5xl font-black text-gray-900 mb-8 pb-4 border-b border-gray-200">Privacy Policy</h1>
-           <div className="space-y-6 text-gray-700 text-sm md:text-base font-medium leading-relaxed">
-              <p>Your privacy is strictly protected at Raja Gupta Act.</p>
-              <h3 className="text-lg md:text-xl font-black text-gray-900 mt-4">1. Data Collection</h3>
-              <p>We only collect the necessary information (Name, Email, WhatsApp Number, and Delivery Address) required to process, confirm, and ship your order securely.</p>
-              <h3 className="text-lg md:text-xl font-black text-gray-900 mt-4">2. Data Security</h3>
-              <p>Your personal data is never sold, rented, or shared with any third-party marketing companies. It is stored securely for logistics purposes only.</p>
-              <h3 className="text-lg md:text-xl font-black text-gray-900 mt-4">3. Payment Information</h3>
-              <p>We do not store your credit card or bank details. All transactions are processed via secure 100% verified payment gateways (UPI, PayPal, Bank Transfer).</p>
-           </div>
+
+        <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.26em] text-purple-600 mb-3">Your Data &amp; Trust</p>
+        <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+          Privacy Policy
+        </h1>
+        <p className="text-sm md:text-base text-gray-600 leading-relaxed pb-8 border-b border-purple-200/70">
+          Your privacy matters at <strong>Raja Gupta Act</strong>. This policy explains what information we collect when you visit our studio, how it is used, and how we keep it safe.
+        </p>
+
+        <div className="space-y-9 md:space-y-11 mt-9 text-gray-700 text-sm md:text-base leading-relaxed">
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">1. Information We Collect</h2>
+            <p>When you place a Studio Order or submit a Commission request, we only collect the details strictly needed to confirm and deliver your artwork: your <strong>Full Name</strong>, <strong>Email Address</strong>, <strong>WhatsApp / Phone Number</strong>, <strong>Instagram ID</strong> (for commissions), and <strong>Delivery Address &amp; PIN / Postal Code</strong>.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">2. Google Sign-In &amp; Guest Browsing</h2>
+            <p>If you sign in with Google, your Cart, Wishlist, Likes, and Order History are securely synced to your account so you can access or recover them across devices. If you browse as a Guest without signing in, your saved items are stored temporarily and are not permanently linked to a personal profile.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">3. Commission Reference Photos</h2>
+            <p>Reference photos shared for custom portraits are used strictly to create your drawing. We may showcase the finished artwork or work-in-progress clips on our website or social media portfolio. If your portrait is a surprise gift or you prefer it to remain completely private, simply inform us at the time of booking and we will respect your request.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">4. Payment Security</h2>
+            <p>We never ask for or store your UPI PIN, bank password, or debit/credit card numbers on our website. All payments are completed directly through trusted payment channels including <strong>UPI (PhonePe, GPay, Paytm)</strong>, <strong>Bank Transfer</strong>, and <strong>Razorpay</strong>.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">5. Zero Data Selling &amp; Deletion Requests</h2>
+            <p>We never sell, rent, or trade your personal details to third-party advertisers or marketers. Your shipping details are shared only with trusted courier partners to deliver your parcel.</p>
+            <p>If you ever want your saved account or contact data removed, email us anytime at <a href="mailto:rajaguptaact@gmail.com" className="text-purple-700 font-bold underline">rajaguptaact@gmail.com</a> and we will process your request promptly.</p>
+          </section>
         </div>
       </div>
     );
 
     const RefundView = ({ nav }) => (
-      <div className="p-4 md:p-10 max-w-4xl mx-auto min-h-screen">
-        <button onClick={() => nav('gallery')} className="mb-6 text-purple-600 font-bold flex items-center gap-2 hover:text-purple-800 transition">
+      <div className="px-5 py-6 md:px-10 md:py-12 max-w-3xl mx-auto min-h-screen text-left">
+        <button onClick={() => nav('gallery')} className="mb-8 md:mb-10 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
            &larr; Back to Home
         </button>
-        <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-gray-100 text-left">
-           <h1 className="text-2xl md:text-5xl font-black text-gray-900 mb-8 pb-4 border-b border-gray-200">Payment & Refund Policy</h1>
-           <div className="space-y-6 text-gray-700 font-medium leading-relaxed">
-              <ul className="space-y-6 mt-4">
-                  <li className="flex gap-4"><span className="text-pink-500 font-black text-2xl">1.</span> <div><strong className="text-gray-900 text-base md:text-lg">50% Advance Payment:</strong><br/><span className="text-sm md:text-base">Half payment is strictly required to confirm your booking and begin the drawing process.</span></div></li>
-                  <li className="flex gap-4"><span className="text-pink-500 font-black text-2xl">2.</span> <div><strong className="text-gray-900 text-base md:text-lg">50% On Completion:</strong><br/><span className="text-sm md:text-base">The remaining half balance must be cleared once you approve the final completed artwork, right before shipping.</span></div></li>
-                  <li className="flex gap-4"><span className="text-pink-500 font-black text-2xl">3.</span> <div><strong className="text-gray-900 text-base md:text-lg">No Refunds on Custom Art:</strong><br/><span className="text-sm md:text-base">Due to the highly customized nature of these artworks and the massive time invested, advance payments are non-refundable once the drawing begins. Returns are not accepted for custom portraits.</span></div></li>
-              </ul>
-           </div>
+
+        <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.26em] text-purple-600 mb-3">Orders &amp; Protection</p>
+        <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+          Payment, Cancellation &amp; Refund Policy
+        </h1>
+        <p className="text-sm md:text-base text-gray-600 leading-relaxed pb-8 border-b border-purple-200/70">
+          Every artwork at <strong>Raja Gupta Act</strong> is handcrafted or printed specifically for your order. Please read our payment, cancellation, and transit-damage protection rules carefully before ordering.
+        </p>
+
+        <div className="space-y-9 md:space-y-11 mt-9 text-gray-700 text-sm md:text-base leading-relaxed">
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">1. Payment Structure</h2>
+            <p><strong>Studio Orders (Originals &amp; Art Prints):</strong> 100% full payment is required upfront to confirm your order. We accept <strong>UPI (PhonePe, Google Pay, Paytm)</strong>, <strong>Bank Transfer</strong>, and <strong>Razorpay</strong> (for Indian &amp; International payments).</p>
+            <p><strong>Custom Commissions:</strong> A <strong>50% advance payment</strong> is required to confirm your booking slot and begin drawing. The remaining <strong>50% balance</strong> must be paid once you approve the completed artwork, right before shipping.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">2. Order Cancellation (Before Shipment)</h2>
+            <p>You may request cancellation of a Studio Order <strong>only before packing or dispatch has started</strong>. Once your parcel is packed or handed over to the courier, cancellation is no longer possible.</p>
+            <p>To request cancellation before shipment, contact us immediately on WhatsApp or email <a href="mailto:rajaguptaact@gmail.com" className="text-purple-700 font-bold underline">rajaguptaact@gmail.com</a> with your Order ID (e.g. ORD-12345678). If approved before dispatch, your refund will be processed within 5–7 working days.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">3. No Returns or Refunds on Handmade &amp; Custom Art</h2>
+            <p>Because original artworks are 1-of-1 handmade pieces, prints are prepared to order, and custom commissions involve many hours of personal handwork, <strong>returns, exchanges, or change-of-mind refunds are not accepted</strong>. For custom commissions, the 50% advance is non-refundable once the drawing process has started.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">4. Damaged Parcel Rule (48-Hour Unboxing Video)</h2>
+            <p>We pack every artwork in a protective sleeve with rigid cardboard backing or a hard art tube for safe transit. In the rare case that your parcel arrives physically damaged during shipping, we are here to help — provided you follow this mandatory rule:</p>
+            <p><strong>You must record a continuous, unedited unboxing video</strong> starting from the sealed shipping label before opening the package, clearly showing the damage, and send it to us on WhatsApp or Email within <strong>48 hours of delivery</strong>. Without a continuous unboxing video sent within 48 hours, damage claims cannot be verified or approved.</p>
+          </section>
         </div>
       </div>
     );
 
-    const FAQFullView = ({ nav }) => (
-      <div className="p-4 md:p-10 max-w-4xl mx-auto min-h-screen">
-        <button onClick={() => nav('gallery')} className="mb-6 text-purple-600 font-bold flex items-center gap-2 hover:text-purple-800 transition">
+    const DisclaimerView = ({ nav }) => (
+      <div className="px-5 py-6 md:px-10 md:py-12 max-w-3xl mx-auto min-h-screen text-left">
+        <button onClick={() => nav('gallery')} className="mb-8 md:mb-10 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
            &larr; Back to Home
         </button>
-        <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-gray-100 text-left">
-           <h1 className="text-2xl md:text-5xl font-black text-gray-900 mb-8 pb-4 border-b border-gray-200">Frequently Asked Questions</h1>
-           <div className="space-y-2 mt-4">
-              <FAQItem question="Q. How long does it take to complete a commissioned artwork?" answer="A. Depending on the level of detail and the size of the portrait, it usually takes about 7 to 15 days to complete." />
-              <FAQItem question="Q. How will the artwork be delivered safely?" answer="A. The artwork is carefully secured in hard, damage-proof packaging and shipped directly to your address via a trusted courier service." />
-              <FAQItem question="Q. Does the artwork come with a frame?" answer="A. To ensure maximum safety during transit, artworks are shipped securely without a frame. You can easily get it framed locally according to your preference." />
-              <FAQItem question="Q. Do you ship outside India (International Orders)?" answer="A. Yes, we ship worldwide! International clients can place an order, and we will securely process the payment via PayPal or Bank Transfer." />
-              <FAQItem question="Q. Have more questions or a different doubt?" answer="A. Feel free to reach out directly! You can drop a message on WhatsApp or DM me on Instagram for any other queries or custom requests." />
-           </div>
+
+        <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.26em] text-purple-600 mb-3">Important Notice</p>
+        <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+          Disclaimer
+        </h1>
+        <p className="text-sm md:text-base text-gray-600 leading-relaxed pb-8 border-b border-purple-200/70">
+          Please review the following clarifications regarding colour display, handmade art characteristics, mockup previews, and delivery responsibilities at <strong>Raja Gupta Act</strong>.
+        </p>
+
+        <div className="space-y-9 md:space-y-11 mt-9 text-gray-700 text-sm md:text-base leading-relaxed">
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">1. Screen vs. Real-Life Colours</h2>
+            <p>We photograph and scan every artwork in clean, balanced lighting so you see true colours. However, because every phone, tablet, and monitor has different brightness and colour settings, a slight variation between the screen preview and the physical artwork or print is completely normal.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">2. Authentic Handmade Character</h2>
+            <p>Every Original Artwork is drawn 100% by hand using layered colour pencils on A4 paper. Subtle pencil grain, paper texture, and organic strokes are natural hallmarks of genuine handmade art and are not considered defects.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">3. Mockup Images &amp; Unframed Shipping</h2>
+            <p>Room, wall, and framed display photos shown on product pages are for visual presentation only to help you imagine how the artwork looks in a living space. All Original Artworks and Art Prints are shipped <strong>unframed</strong> so they reach you safely without glass breakage.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">4. Address Accuracy &amp; Courier Delays</h2>
+            <p>Please double-check your full address, PIN/Postal Code, and active phone number at checkout. If a parcel is returned due to an incorrect address, wrong phone number, or missed delivery attempts, Raja Gupta Act is not responsible and re-shipping charges will be borne by the buyer.</p>
+            <p>While we dispatch orders promptly, delays caused by courier partners, weather conditions, public holidays, or local customs clearance for International orders are outside our control. Any import duties or customs taxes in the destination country are paid by the buyer.</p>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-xl md:text-2xl font-bold text-gray-900">5. Pricing, Availability &amp; Copyright</h2>
+            <p>Raja Gupta Act reserves the right to update artwork prices, discounts, or studio offers at any time without prior notice (already confirmed orders are never affected). All artwork images and studio content belong exclusively to Raja Gupta Act and may not be copied or redistributed without permission.</p>
+          </section>
         </div>
       </div>
     );
+
+    const FAQFullView = ({ nav }) => {
+      const faqs = [
+        {
+          q: "WHAT IS THE DIFFERENCE BETWEEN ORIGINALS AND ART PRINTS?",
+          a: "Every Original Artwork is a 1-of-1 piece, 100% handmade by Raja Gupta on premium A4 paper using artist-grade colour pencils. Art Prints are high-resolution archival reproductions of the original artwork, available in A3, A4, and A5 sizes."
+        },
+        {
+          q: "HOW LONG DOES A CUSTOM COMMISSION TAKE?",
+          a: "Depending on the paper size (A4 or A3) and level of detail, a handmade colour pencil portrait usually takes 7 to 15 days to complete. Progress updates are shared with you before final approval and shipping."
+        },
+        {
+          q: "WHAT PAYMENT METHODS ARE ACCEPTED?",
+          a: "For Indian orders, we accept UPI (PhonePe, Google Pay, Paytm), Bank Transfer, and Razorpay. For International orders, payments are handled securely via Razorpay / verified payment channels — our team guides you step-by-step on WhatsApp after order confirmation."
+        },
+        {
+          q: "HOW DOES PAYMENT WORK FOR CUSTOM COMMISSIONS?",
+          a: "No payment is collected on the website when submitting a commission request. Once Raja reviews your reference photo on WhatsApp or Instagram, a 50% advance confirms your slot, and the remaining 50% is paid after you approve the finished drawing before shipping."
+        },
+        {
+          q: "DOES THE ARTWORK COME WITH A FRAME?",
+          a: "No. To ensure 100% safe transit without glass damage, all Originals and Art Prints are shipped unframed inside a protective sleeve with rigid cardboard backing or a hard art tube. You can easily frame it locally to match your room."
+        },
+        {
+          q: "WHAT ARE THE DELIVERY TIMELINES & TRACKING DETAILS?",
+          a: "Studio Orders are dispatched within 2–4 working days after payment confirmation. Delivery usually takes 5–8 working days across India and 12–21 working days for International destinations. Your courier tracking number is shared on WhatsApp and Email as soon as your parcel ships."
+        },
+        {
+          q: "WHAT IF MY PARCEL ARRIVES DAMAGED?",
+          a: "We pack every order carefully, but if a parcel ever arrives damaged in transit, please send a continuous, unedited unboxing video (starting from the sealed shipping label) within 48 hours of delivery on WhatsApp or Email for immediate assistance."
+        },
+        {
+          q: "HOW CAN I CHECK OR RECOVER MY ORDER HISTORY?",
+          a: "Open Menu → My Orders anytime to view your Studio Orders and Commission requests. If you changed devices or cleared browser data, sign in with the same Gmail account you used at checkout and tap 'Sync & Recover Past Orders'."
+        },
+        {
+          q: "HAVE MORE QUESTIONS OR A SPECIAL REQUEST?",
+          a: "You can message Raja directly on WhatsApp, DM on Instagram (@rajaguptaact), or email rajaguptaact@gmail.com anytime for personal assistance."
+        }
+      ];
+
+      return (
+        <div className="px-5 py-6 md:px-10 md:py-12 max-w-3xl mx-auto min-h-screen text-left">
+          <button onClick={() => nav('gallery')} className="mb-8 md:mb-10 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
+             &larr; Back to Home
+          </button>
+
+          <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.26em] text-purple-600 mb-3">Help &amp; Information</p>
+          <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+            Frequently Asked Questions
+          </h1>
+          <p className="text-sm md:text-base text-gray-600 leading-relaxed pb-8 border-b border-purple-200/70">
+            Clear, straightforward answers about Originals, Fine Art Prints, Custom Commissions, Payments, Packaging, and Worldwide Delivery.
+          </p>
+
+          <div className="divide-y divide-purple-200/60 mt-4">
+            {faqs.map((item, idx) => (
+              <div key={idx} className="py-7 md:py-9 space-y-2.5">
+                <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-base md:text-xl font-bold text-purple-950 tracking-wide leading-snug">
+                  {idx + 1}. {item.q}
+                </h2>
+                <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+                  {item.a}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
 
     const AboutView = ({ nav, artistPhoto }) => (
-      <div className="p-4 md:p-10 max-w-3xl mx-auto min-h-screen">
-        <button onClick={() => nav('gallery')} className="mb-5 md:mb-8 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
+      <div className="px-5 py-6 md:px-10 md:py-12 max-w-3xl mx-auto min-h-screen text-left">
+        <button onClick={() => nav('gallery')} className="mb-8 md:mb-10 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
           &larr; Back to Home
         </button>
 
-        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-xl border border-purple-100/80 overflow-hidden">
-          {/* Artist Portrait Photo with White Gallery Frame */}
-          {artistPhoto ? (
-            <div className="p-5 md:p-8 pb-0 bg-[#f5f1f9]">
-              <div className="w-full max-w-md mx-auto bg-white p-3 md:p-4 shadow-[0_8px_28px_rgba(30,17,54,0.12)] border border-purple-100/70">
-                <div className="w-full aspect-[4/4] overflow-hidden bg-gray-100 relative">
-                  <img src={artistPhoto} alt="Raja Gupta" className="w-full h-full object-cover" />
-                  <div className="img-protect-overlay"></div>
-                </div>
+        {/* Artist Portrait Photo (Clean White Gallery Frame — No Page Box) */}
+        {artistPhoto ? (
+          <div className="mb-10 md:mb-12">
+            <div className="w-full max-w-sm md:max-w-md mx-auto bg-white p-3 md:p-4 shadow-[0_12px_36px_rgba(30,17,54,0.12)] border border-purple-100/80">
+              <div className="w-full aspect-[4/4] overflow-hidden bg-gray-100 relative">
+                <img src={artistPhoto} alt="Raja Gupta" className="w-full h-full object-cover" />
+                <div className="img-protect-overlay"></div>
               </div>
             </div>
-          ) : null}
-
-
-          {/* Artist Intro */}
-          <div className="p-6 md:p-12 text-left space-y-6 md:space-y-8">
-            <div className="space-y-2 border-b border-purple-100 pb-6 md:pb-8">
-              <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] text-purple-600">The Artist</p>
-              <h1 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight leading-tight">
-                Raja Gupta
-              </h1>
-              <p className="text-sm md:text-lg italic text-purple-700 font-medium">
-                Colour Pencil Portrait Artist &bull; Deoghar, Jharkhand, India
-              </p>
-              <p className="text-sm md:text-base text-gray-600 leading-relaxed pt-3">
-                I am a self-taught colour pencil artist based in Deoghar, Jharkhand, India. Every piece in my studio is 100% handcrafted on premium A4 paper, focusing on lifelike portraits and devotional artworks built layer by layer with patience and precision.
-              </p>
-            </div>
-
-            {/* The Story */}
-            <div className="space-y-3 md:space-y-4">
-              <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] text-pink-600">The Story</p>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug">
-                Looking closely, and bringing every detail to life.
-              </h2>
-              <p className="text-sm md:text-base text-gray-600 leading-relaxed">
-                What started as a deep passion for realistic drawing soon grew into <strong>Raja Gupta Act</strong> — a dedicated colour pencil studio. Over time, my artworks have been recognised across national and virtual art competitions, earning honours and awards that inspire me to push every stroke and detail further.
-              </p>
-              <p className="text-sm md:text-base text-gray-600 leading-relaxed">
-                Whether it is a one-of-a-kind original artwork or a custom portrait commission, every piece is created by hand to bring warmth, emotion, and lasting beauty into your space.
-              </p>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="pt-4 border-t border-purple-100 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => nav('gallery')}
-                className="flex-1 min-w-[140px] bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-5 rounded-xl font-bold text-xs md:text-sm shadow-md hover:opacity-95 active:scale-95 transition cursor-pointer"
-              >
-                Explore Artworks
-              </button>
-              <button
-                type="button"
-                onClick={() => nav('commission')}
-                className="flex-1 min-w-[140px] bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 py-3 px-5 rounded-xl font-bold text-xs md:text-sm active:scale-95 transition cursor-pointer"
-              >
-                Book a Commission
-              </button>
-            </div>
           </div>
+        ) : null}
+
+        {/* Section 1: The Artist */}
+        <div className="pb-9 md:pb-12 border-b border-purple-200/70">
+          <p className="text-[11px] md:text-xs font-bold uppercase tracking-[0.28em] text-purple-600 mb-4 md:mb-5">
+            The Artist
+          </p>
+          <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-4xl md:text-6xl font-bold text-gray-900 tracking-tight leading-none mb-4">
+            Raja Gupta
+          </h1>
+          <p className="text-sm md:text-lg italic text-purple-700 font-medium mb-6">
+            Colour Pencil Portrait Artist &bull; Deoghar, Jharkhand, India
+          </p>
+          <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+            I am a self-taught colour pencil artist based in Deoghar, Jharkhand, India. Every piece in my studio is 100% handcrafted on premium A4 paper, focusing on lifelike portraits and devotional artworks built layer by layer with patience, observation, and precision.
+          </p>
+        </div>
+
+        {/* Section 2: The Story */}
+        <div className="py-9 md:py-12 border-b border-purple-200/70 space-y-4 md:space-y-5">
+          <p className="text-[11px] md:text-xs font-bold uppercase tracking-[0.28em] text-pink-600">
+            The Story
+          </p>
+          <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl md:text-4xl font-bold text-gray-900 leading-snug">
+            Looking closely, and bringing every detail to life.
+          </h2>
+          <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+            What began as a quiet passion for realistic sketching gradually grew into <strong>Raja Gupta Act</strong> — a dedicated colour pencil studio. Over time, my drawings have been recognised across national and virtual art competitions, earning honours and awards that inspire me to refine every stroke and layer even further.
+          </p>
+          <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+            Whether it is a one-of-a-kind original artwork, a fine art print, or a custom portrait commission created from a cherished memory, every piece is made by hand to bring warmth, devotion, and lasting beauty into your space.
+          </p>
+        </div>
+
+        {/* Section 3: Studio Craft */}
+        <div className="py-9 md:py-12 border-b border-purple-200/70 space-y-4">
+          <p className="text-[11px] md:text-xs font-bold uppercase tracking-[0.28em] text-purple-600">
+            The Craft
+          </p>
+          <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug">
+            100% Handcrafted. Zero Shortcuts.
+          </h2>
+          <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+            No AI, no digital filters, and no machine tracing — every original artwork is slowly layered by hand using professional-grade colour pencils on acid-free paper, then carefully packed and shipped from Deoghar to collectors across India and worldwide.
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="pt-8 md:pt-10 flex flex-wrap gap-3.5">
+          <button
+            type="button"
+            onClick={() => nav('gallery')}
+            className="flex-1 min-w-[150px] bg-gradient-to-r from-purple-700 to-pink-600 text-white py-3.5 px-6 rounded-xl font-bold text-xs md:text-sm uppercase tracking-wider shadow-md hover:opacity-95 active:scale-95 transition cursor-pointer"
+          >
+            Explore Artworks
+          </button>
+          <button
+            type="button"
+            onClick={() => nav('commission')}
+            className="flex-1 min-w-[150px] bg-white/80 hover:bg-white text-purple-900 border border-purple-300 py-3.5 px-6 rounded-xl font-bold text-xs md:text-sm uppercase tracking-wider active:scale-95 transition cursor-pointer"
+          >
+            Book a Commission
+          </button>
         </div>
       </div>
     );
+
 
     // NEW ORDER BILL COMPONENT (Amazon Style)
     const OrderBill = ({ ord }) => {
