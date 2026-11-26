@@ -300,9 +300,6 @@
         const allImages = [art.image, ...mockups].filter(Boolean);
         const currentMainImg = allImages[activeImgIdx] || art.image;
 
-        const hasOrigDiscount = art.priceOriginalOld && art.priceOriginal && Number(art.priceOriginalOld) > Number(art.priceOriginal);
-        const origDiscountPct = hasOrigDiscount ? Math.round(((Number(art.priceOriginalOld) - Number(art.priceOriginal)) / Number(art.priceOriginalOld)) * 100) : 0;
-
         const allOptions = {
             original: {
                 id: 'original',
@@ -326,8 +323,8 @@
                 pillTitle: 'A3',
                 pillSub: 'HD Print',
                 cartSize: 'Print A3',
-                price: art.priceA3,
-                oldPrice: null,
+                price: art.priceA3 || art.priceA3Old,
+                oldPrice: art.priceA3 ? art.priceA3Old : null,
                 isOriginal: false,
                 isSold: false,
                 specs: {
@@ -343,8 +340,8 @@
                 pillTitle: 'A4',
                 pillSub: 'HD Print',
                 cartSize: 'Print A4',
-                price: art.priceA4,
-                oldPrice: null,
+                price: art.priceA4 || art.priceA4Old,
+                oldPrice: art.priceA4 ? art.priceA4Old : null,
                 isOriginal: false,
                 isSold: false,
                 specs: {
@@ -360,8 +357,8 @@
                 pillTitle: 'A5',
                 pillSub: 'HD Print',
                 cartSize: 'Print A5',
-                price: art.priceA5,
-                oldPrice: null,
+                price: art.priceA5 || art.priceA5Old,
+                oldPrice: art.priceA5 ? art.priceA5Old : null,
                 isOriginal: false,
                 isSold: false,
                 specs: {
@@ -376,6 +373,8 @@
 
         const printSizeList = [allOptions.a3, allOptions.a4, allOptions.a5];
         const activeOpt = isPrintMode ? (allOptions[selectedSizeId] || allOptions.a4) : allOptions.original;
+        const hasActiveDiscount = activeOpt.oldPrice && activeOpt.price && Number(activeOpt.oldPrice) > Number(activeOpt.price);
+        const activeDiscountPct = hasActiveDiscount ? Math.round(((Number(activeOpt.oldPrice) - Number(activeOpt.price)) / Number(activeOpt.oldPrice)) * 100) : 0;
         const activeCartItem = Array.isArray(cart) ? cart.find(c => c.id === art.id && c.selectedSize === activeOpt.cartSize) : null;
         const displayQty = activeCartItem ? (activeCartItem.qty || 1) : (activeOpt.isOriginal ? 1 : localQty);
         const totalDisplayPrice = (Number(activeOpt.price) || 0) * displayQty;
