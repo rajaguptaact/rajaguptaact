@@ -5163,9 +5163,9 @@
                                </span>
                                {hasDiscount ? (
                                    <>
-                                       <span className="line-through text-gray-400 text-[10px] md:text-sm font-bold">{getPrice(currentArt.priceOriginalOld)}</span>
+                                       <span className="line-through text-gray-400 text-[10px] md:text-sm font-bold">{getPrice(displayOldPrice)}</span>
                                        <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-pink-600">
-                                           SAVE {Math.round(((Number(currentArt.priceOriginalOld) - Number(currentArt.priceOriginal)) / Number(currentArt.priceOriginalOld)) * 100)}%
+                                           SAVE {Math.round(((Number(displayOldPrice) - Number(displayPrice)) / Number(displayOldPrice)) * 100)}%
                                        </span>
                                    </>
                                ) : null}
