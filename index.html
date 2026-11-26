@@ -206,7 +206,7 @@
       });
 
 
-     const ArtworkDetailView = ({ art, mode = 'original', initialSize = null, nav, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, openArtZoom, wishlist, userLikes, handleLikeArt, shareArtwork, toggleWishlist, setWishlistPopupArt }) => {
+      const ArtworkDetailView = ({ art, mode = 'original', initialSize = null, artworks = [], openArtworkDetail, nav, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, openArtZoom, wishlist, userLikes, handleLikeArt, shareArtwork, toggleWishlist, setWishlistPopupArt }) => {
         window.rajaMockupCache = window.rajaMockupCache || {};
 
         const isPrintMode = mode === 'print';
@@ -749,9 +749,91 @@
               </div>
 
             </div>
+
+            {/* ✨ DISCOVER — WORKS YOU MAY LIKE (HORIZONTAL SWIPE CAROUSEL) */}
+            {(() => {
+              const relatedArts = (artworks || []).filter(a => a && a.id !== art.id);
+              if (relatedArts.length === 0) return null;
+
+              return (
+                <div className="mt-12 md:mt-16 pt-8 md:pt-10 border-t border-purple-200/80 text-left">
+                  <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.26em] text-purple-600 mb-1.5">
+                    Discover
+                  </p>
+                  <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl md:text-4xl font-bold text-gray-900 mb-6 md:mb-8">
+                    Works you may like
+                  </h2>
+
+                  <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 hide-scrollbar snap-x snap-mandatory">
+                    {relatedArts.map((relArt) => {
+                      const relPrice = isPrintMode
+                        ? (relArt.priceA4 || relArt.priceA4Old || relArt.priceA5 || relArt.priceA3)
+                        : (relArt.priceOriginal || relArt.priceOriginalOld);
+                      const relOldPrice = isPrintMode
+                        ? (relArt.priceA4 ? relArt.priceA4Old : null)
+                        : (relArt.priceOriginal ? relArt.priceOriginalOld : null);
+                      const hasRelDiscount = relOldPrice && relPrice && Number(relOldPrice) > Number(relPrice);
+                      const relPct = hasRelDiscount ? Math.round(((Number(relOldPrice) - Number(relPrice)) / Number(relOldPrice)) * 100) : 0;
+
+                      return (
+                        <div
+                          key={relArt.id}
+                          onClick={() => openArtworkDetail && openArtworkDetail(relArt, isPrintMode ? 'print' : 'original')}
+                          className="flex-none w-[74%] sm:w-[46%] md:w-[31%] lg:w-[27%] snap-start cursor-pointer group select-none"
+                        >
+                          {/* Clean White Gallery Frame */}
+                          <div className="bg-white p-2.5 md:p-3 shadow-[0_8px_24px_rgba(30,17,54,0.10)] group-hover:shadow-[0_12px_32px_rgba(88,28,135,0.16)] border border-purple-100/80 transition-all duration-300">
+                            <div className="w-full aspect-[4/5] bg-gray-100 relative overflow-hidden">
+                              <img
+                                src={relArt.image}
+                                alt={relArt.title}
+                                onContextMenu={(e) => e.preventDefault()}
+                                className="w-full h-full object-cover hd-art-crisp transition-transform duration-500 group-hover:scale-[1.04]"
+                              />
+                              <div className="img-protect-overlay"></div>
+                              {!isPrintMode && relArt.isSold ? (
+                                <span className="absolute top-2 left-2 z-30 bg-gray-900/85 text-white text-[9px] md:text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
+                                  Sold
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+
+                          {/* Clean Editorial Title, Size & Price */}
+                          <div className="pt-3 px-0.5 space-y-1">
+                            <h3 style={{ fontFamily: "'Playfair Display', serif" }} className="text-base md:text-lg font-bold text-gray-900 leading-snug line-clamp-1 group-hover:text-purple-700 transition-colors">
+                              {relArt.title}
+                            </h3>
+                            <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.14em] text-gray-400">
+                              {isPrintMode ? 'A3 • A4 • A5 Print' : 'A4 Original • 21 × 29.7 cm'}
+                            </p>
+                            <div className="flex items-baseline flex-wrap gap-2 pt-0.5">
+                              <span className="text-sm md:text-base font-bold text-gray-900">
+                                {getPrice(relPrice)}
+                              </span>
+                              {hasRelDiscount ? (
+                                <>
+                                  <span className="line-through text-gray-400 text-xs font-medium">
+                                    {getPrice(relOldPrice)}
+                                  </span>
+                                  <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-pink-600">
+                                    SAVE {relPct}%
+                                  </span>
+                                </>
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         );
       };
+
 
 
     
