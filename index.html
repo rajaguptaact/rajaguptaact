@@ -4361,14 +4361,14 @@
                   let cLive = item.price;
                   let cOld = item.priceOriginalOld;
                   if (liveArt) {
-                      if (item.selectedSize === 'Print A3' && liveArt.priceA3) cLive = liveArt.priceA3;
-                      else if (item.selectedSize === 'Print A4' && liveArt.priceA4) cLive = liveArt.priceA4;
-                      else if (item.selectedSize === 'Print A5' && liveArt.priceA5) cLive = liveArt.priceA5;
-                      else { cLive = liveArt.priceOriginal || item.price; cOld = liveArt.priceOriginalOld || item.priceOriginalOld; }
+                      if (item.selectedSize === 'Print A3') { cLive = liveArt.priceA3 || item.price; cOld = liveArt.priceA3Old || null; }
+                      else if (item.selectedSize === 'Print A4') { cLive = liveArt.priceA4 || item.price; cOld = liveArt.priceA4Old || null; }
+                      else if (item.selectedSize === 'Print A5') { cLive = liveArt.priceA5 || item.price; cOld = liveArt.priceA5Old || null; }
+                      else { cLive = liveArt.priceOriginal || item.price; cOld = liveArt.priceOriginalOld || null; }
                   }
 
-                  const hasDiscount = cOld && cLive && Number(cOld) > Number(cLive) && typeof item.selectedSize === 'string' && item.selectedSize.indexOf('Original') !== -1;
-
+                  const hasDiscount = cOld && cLive && Number(cOld) > Number(cLive);
+                
                   return (
                     <div key={i} className={`bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border overflow-hidden transition-all ${isDeleted ? 'border-gray-300 bg-gray-50/90' : isItemSoldOut ? 'border-rose-300 bg-rose-50/40' : 'border-purple-100/80 hover:border-purple-200'}`}>
                       
