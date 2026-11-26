@@ -206,7 +206,7 @@
       });
 
 
-      const ArtworkDetailView = ({ art, mode = 'original', nav, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, openArtZoom, wishlist, userLikes, handleLikeArt, shareArtwork, toggleWishlist, setWishlistPopupArt }) => {
+     const ArtworkDetailView = ({ art, mode = 'original', initialSize = null, nav, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, openArtZoom, wishlist, userLikes, handleLikeArt, shareArtwork, toggleWishlist, setWishlistPopupArt }) => {
         window.rajaMockupCache = window.rajaMockupCache || {};
 
         const isPrintMode = mode === 'print';
@@ -223,7 +223,7 @@
         
         const [activeImgIdx, setActiveImgIdx] = useState(0);
         const [slideDir, setSlideDir] = useState('right');
-        const [selectedSizeId, setSelectedSizeId] = useState(isPrintMode ? 'a4' : 'original');
+        const [selectedSizeId, setSelectedSizeId] = useState(isPrintMode ? (initialSize || 'a4') : 'original');
         const [localQty, setLocalQty] = useState(1);
         const swipeRef = useRef({ active: false, startX: 0, startY: 0, moved: false, lastTouchTime: 0 });
 
@@ -238,10 +238,11 @@
         useEffect(() => {
             setActiveImgIdx(0);
             setSlideDir('right');
-            setSelectedSizeId(mode === 'print' ? 'a4' : 'original');
+            setSelectedSizeId(mode === 'print' ? (initialSize || 'a4') : 'original');
             setLocalQty(1);
             window.scrollTo(0, 0);
-        }, [art.id, mode]);
+        }, [art.id, mode, initialSize]);
+
 
         useEffect(() => {
             setLocalQty(1);
