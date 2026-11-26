@@ -1367,11 +1367,13 @@
       const [view, setView] = useState('gallery');
       const [selectedArtId, setSelectedArtId] = useState(null);
       const [selectedArtMode, setSelectedArtMode] = useState('original');
+      const [selectedArtInitialSize, setSelectedArtInitialSize] = useState(null);
       const [menuOpen, setMenuOpen] = useState(false);
-      const openArtworkDetail = (art, mode = 'original') => {
+      const openArtworkDetail = (art, mode = 'original', initialSize = null) => {
           if (!art || !art.id) return;
           setSelectedArtId(art.id);
           setSelectedArtMode(mode === 'print' ? 'print' : 'original');
+          setSelectedArtInitialSize(initialSize);
           nav('artwork_detail');
       };
 
