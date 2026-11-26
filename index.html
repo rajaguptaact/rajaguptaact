@@ -264,6 +264,9 @@
                 return;
             }
 
+            setMockups([]);
+            setLoadingMockups(true);
+
             const fetchMockupsSafe = async (attempt = 1) => {
                 if (!isMounted) return;
                 setLoadingMockups(true);
