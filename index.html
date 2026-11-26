@@ -473,7 +473,7 @@
                   </span>
                 </div>
 
-                {/* 4-Box Progressive Reveal Thumbnails Row (No Spinner) */}
+                {/* 4-Box Progressive Reveal Thumbnails Row (Blank White Boxes + Slow Staggered Reveal) */}
                 <div className="flex items-center gap-2.5 overflow-x-auto pb-1 hide-scrollbar">
                   {Array.from({ length: loadingMockups ? Math.max(4, allImages.length) : allImages.length }).map((_, idx) => {
                     const imgSrc = allImages[idx];
@@ -481,9 +481,9 @@
                       return (
                         <div
                           key={`ph-${idx}`}
-                          className="flex-none w-16 h-20 md:w-20 md:h-24 bg-[#efeaf6] border border-purple-100/80 p-1 relative overflow-hidden"
+                          className="flex-none w-16 h-20 md:w-20 md:h-24 bg-white border border-purple-200/90 p-1 relative overflow-hidden shadow-xs"
                         >
-                          <div className="w-full h-full bg-gradient-to-b from-purple-200/40 via-[#f4eef8] to-purple-100/40 animate-pulse"></div>
+                          <div className="w-full h-full bg-white"></div>
                         </div>
                       );
                     }
@@ -501,7 +501,7 @@
                         <img
                           src={imgSrc}
                           alt={`Angle ${idx + 1}`}
-                          style={{ animationDelay: `${idx * 90}ms` }}
+                          style={{ animationDelay: `${idx * 240}ms` }}
                           className="w-full h-full object-cover hd-art-crisp animate-reveal-down"
                         />
                         <div className="img-protect-overlay"></div>
@@ -512,8 +512,8 @@
               </div>
 
 
-              {/* RIGHT: TITLE, DESCRIPTION, 5-ROW DYNAMIC TABLE, SINGLE-LINE PRICE & QTY */}
-              <div className="lg:col-span-6 bg-white/90 backdrop-blur-sm rounded-3xl shadow-lg border border-purple-100/80 p-5 md:p-8 flex flex-col justify-between space-y-5 text-left">
+              {/* RIGHT: OPEN EDITORIAL LAYOUT (NO WHITE BOX OR BORDER) */}
+              <div className="lg:col-span-6 pt-1 lg:pt-2 flex flex-col justify-between space-y-5 text-left">
                 <div className="space-y-4">
                   {/* Category Tag + Title */}
                   <div>
