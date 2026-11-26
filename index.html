@@ -7305,8 +7305,8 @@
                     )}
                   </h3>
                   
-                  <form onSubmit={saveArtwork} className="space-y-2.5">
-                      <fieldset disabled={!!artUploadStatus} className={`w-full border-none p-0 m-0 ${!!artUploadStatus ? 'opacity-60 pointer-events-none' : ''}`}>
+                  <form onSubmit={saveArtwork} className="space-y-2.5 min-w-0 max-w-full">
+                      <fieldset disabled={!!artUploadStatus} className={`w-full min-w-0 max-w-full overflow-hidden border-none p-0 m-0 ${!!artUploadStatus ? 'opacity-60 pointer-events-none' : ''}`}>
                     <input required placeholder="Artwork Title" className="w-full border-2 p-2 md:p-2.5 rounded-lg bg-white font-bold text-xs md:text-sm" value={uploadData.title} onChange={e => setUploadData({...uploadData, title: e.target.value})} />
                     
                      <div>
