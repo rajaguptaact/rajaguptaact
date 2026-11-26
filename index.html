@@ -6366,23 +6366,30 @@
         const saveArtwork = async (e) => {
           e.preventDefault();
 
-          let oldPStr = uploadData.priceOriginalOld ? uploadData.priceOriginalOld.toString().replace(/[^\d]/g, '') : '';
-          let curPStr = uploadData.priceOriginal ? uploadData.priceOriginal.toString().replace(/[^\d]/g, '') : '';
-          
-          let oldP = Number(oldPStr) || 0;
-          let curP = Number(curPStr) || 0;
+          const resolvePricePair = (oldVal, curVal, label) => {
+              const oldStr = oldVal ? oldVal.toString().replace(/[^\d]/g, '') : '';
+              const curStr = curVal ? curVal.toString().replace(/[^\d]/g, '') : '';
+              const oldNum = Number(oldStr) || 0;
+              const curNum = Number(curStr) || 0;
+              if (oldNum > 0 && curNum > 0 && curNum >= oldNum) {
+                  showPremiumAlert(`❌ PRICE ERROR (${label}): Discount Price (Current) MUST be strictly less than the Old Price. Please correct your inputs.`);
+                  return null;
+              }
+              if (!curStr) return { cur: oldStr, old: '' };
+              return { cur: curStr, old: oldStr };
+          };
 
-          if (oldP > 0 && curP > 0 && curP >= oldP) {
-              showPremiumAlert("❌ PRICE ERROR: Discount Price (Current) MUST be strictly less than the Old Price. Please correct your inputs.");
-              return;
-          }
+          const origPair = resolvePricePair(uploadData.priceOriginalOld, uploadData.priceOriginal, 'Original');
+          if (!origPair) return;
+          const a3Pair = resolvePricePair(uploadData.priceA3Old, uploadData.priceA3, 'Print A3');
+          if (!a3Pair) return;
+          const a4Pair = resolvePricePair(uploadData.priceA4Old, uploadData.priceA4, 'Print A4');
+          if (!a4Pair) return;
+          const a5Pair = resolvePricePair(uploadData.priceA5Old, uploadData.priceA5, 'Print A5');
+          if (!a5Pair) return;
 
-          let finalPriceOld = oldPStr;
-          let finalPriceCurrent = curPStr;
-          if (!finalPriceCurrent || finalPriceCurrent === "") {
-              finalPriceCurrent = finalPriceOld;
-              finalPriceOld = ""; 
-          }
+          const finalPriceOld = origPair.old;
+          const finalPriceCurrent = origPair.cur;
 
           if (editArtId) {
               const originalArt = artworks.find(a => a.id === editArtId);
@@ -6392,16 +6399,19 @@
                       uploadData.desc !== originalArt.desc || 
                       finalPriceOld !== (originalArt.priceOriginalOld || "") || 
                       finalPriceCurrent !== (originalArt.priceOriginal || "") || 
-                      (uploadData.priceA3 || "") !== (originalArt.priceA3 || "") || 
-                      (uploadData.priceA4 || "") !== (originalArt.priceA4 || "") || 
-                      (uploadData.priceA5 || "") !== (originalArt.priceA5 || "") || 
+                      a3Pair.cur !== (originalArt.priceA3 || "") || 
+                      a3Pair.old !== (originalArt.priceA3Old || "") || 
+                      a4Pair.cur !== (originalArt.priceA4 || "") || 
+                      a4Pair.old !== (originalArt.priceA4Old || "") || 
+                      a5Pair.cur !== (originalArt.priceA5 || "") || 
+                      a5Pair.old !== (originalArt.priceA5Old || "") || 
                       uploadData.isSold !== (originalArt.isSold || false) || 
                       Number(uploadData.fakeLikes || 0) !== Number(originalArt.fakeLikes || 0);
 
                   if (!isTextChanged && !isMediaModified) {
                       showToast("⚠️ No changes detected. Edit mode cancelled.");
                       setEditArtId(null); 
-                      setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
+                      setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA3Old: '', priceA4: '', priceA4Old: '', priceA5: '', priceA5Old: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
                       setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); 
                       setIsMediaModified(false);
                       setArtUploadStatus("");
@@ -6418,7 +6428,9 @@
               const quickData = {
                   title: uploadData.title, desc: uploadData.desc, 
                   priceOriginal: finalPriceCurrent, priceOriginalOld: finalPriceOld, 
-                  priceA3: uploadData.priceA3, priceA4: uploadData.priceA4, priceA5: uploadData.priceA5, 
+                  priceA3: a3Pair.cur, priceA3Old: a3Pair.old,
+                  priceA4: a4Pair.cur, priceA4Old: a4Pair.old,
+                  priceA5: a5Pair.cur, priceA5Old: a5Pair.old,
                   isSold: uploadData.isSold,
                   fakeLikes: Number(uploadData.fakeLikes) || 0
               };
@@ -6433,7 +6445,7 @@
                      showToast("✅ Live Updated on All Devices Instantly!");
                      setTimeout(() => setPendingArtUpdate(null), 1500);
                      setEditArtId(null); 
-                     setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA4: '', priceA5: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
+                     setUploadData({ title: '', desc: '', image: '', priceOriginal: '', priceOriginalOld: '', priceA3: '', priceA3Old: '', priceA4: '', priceA4Old: '', priceA5: '', priceA5Old: '', isSold: false, customMockups: [], savedBgsList: [], savedBgAdjustments: {} }); 
                      setSelectedBgs([]); setBgAdjustments({}); setPreviewMockups([]); 
                      setArtUploadStatus(""); 
                      setIsMediaModified(false);
@@ -6446,6 +6458,7 @@
               
               return;
           }
+
 
           if (selectedBgs.length > 0 && selectedBgs.length !== 3) {
               showPremiumAlert(`⚠️ Action Required: You must select EXACTLY 3 backgrounds before publishing.`);
