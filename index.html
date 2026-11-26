@@ -5111,12 +5111,14 @@
                     else if (showSize === 'A5' || showSize === 'Print A5') cartSizeName = 'Print A5';
 
                     let displayPrice = currentArt.priceOriginal;
-                    if (cartSizeName === 'Print A3' && currentArt.priceA3) displayPrice = currentArt.priceA3;
-                    else if (cartSizeName === 'Print A4' && currentArt.priceA4) displayPrice = currentArt.priceA4;
-                    else if (cartSizeName === 'Print A5' && currentArt.priceA5) displayPrice = currentArt.priceA5;
+                    let displayOldPrice = currentArt.priceOriginalOld || null;
+                    if (cartSizeName === 'Print A3') { displayPrice = currentArt.priceA3; displayOldPrice = currentArt.priceA3Old || null; }
+                    else if (cartSizeName === 'Print A4') { displayPrice = currentArt.priceA4; displayOldPrice = currentArt.priceA4Old || null; }
+                    else if (cartSizeName === 'Print A5') { displayPrice = currentArt.priceA5; displayOldPrice = currentArt.priceA5Old || null; }
 
                     const isItemSoldOut = !isDeleted && currentArt.isSold && cartSizeName.includes('Original');
-                    const hasDiscount = currentArt.priceOriginalOld && currentArt.priceOriginal && Number(currentArt.priceOriginalOld) > Number(currentArt.priceOriginal) && cartSizeName.includes('Original');
+                    const hasDiscount = displayOldPrice && displayPrice && Number(displayOldPrice) > Number(displayPrice);
+
 
                     return (
                     <div key={wItem.id + showSize} className={`bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border overflow-hidden transition-all ${isDeleted ? 'border-gray-300 bg-gray-50/90' : isItemSoldOut ? 'border-rose-300 bg-rose-50/40' : 'border-purple-100/80 hover:border-purple-200'}`}>
