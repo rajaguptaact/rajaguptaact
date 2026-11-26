@@ -6586,17 +6586,28 @@
               showCurrent = ''; 
           }
 
+          const a3Old = art.priceA3Old || art.priceA3 || '';
+          const a3Cur = art.priceA3Old ? (art.priceA3 || '') : '';
+          const a4Old = art.priceA4Old || art.priceA4 || '';
+          const a4Cur = art.priceA4Old ? (art.priceA4 || '') : '';
+          const a5Old = art.priceA5Old || art.priceA5 || '';
+          const a5Cur = art.priceA5Old ? (art.priceA5 || '') : '';
+
           setUploadData({ 
               title: art.title, desc: art.desc, image: art.image, 
               priceOriginal: showCurrent, 
               priceOriginalOld: showOld, 
-              priceA3: art.priceA3, priceA4: art.priceA4, priceA5: art.priceA5, isSold: art.isSold || false,
+              priceA3: a3Cur, priceA3Old: a3Old,
+              priceA4: a4Cur, priceA4Old: a4Old,
+              priceA5: a5Cur, priceA5Old: a5Old,
+              isSold: art.isSold || false,
               fakeLikes: art.fakeLikes || '',
               realLikes: art.realLikes || 0,
               customMockups: art.customMockups || [],
               savedBgsList: art.savedBgsList || [],
               savedBgAdjustments: art.savedBgAdjustments || {}
           });
+
 
           setSelectedBgs(art.savedBgsList || []); 
           setBgAdjustments(art.savedBgAdjustments || {});
