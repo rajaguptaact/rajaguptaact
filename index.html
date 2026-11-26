@@ -5186,7 +5186,7 @@
                                  if (alreadyInCart) {
                                      showToast("⚠️ This item is already in your Cart.");
                                  } else {
-                                     const isAdded = addToCart(currentArt, cartSizeName, displayPrice, cartSizeName.includes('Original') ? currentArt.priceOriginalOld : null);
+                                     const isAdded = addToCart(currentArt, cartSizeName, displayPrice, displayOldPrice);
                                      if (isAdded !== false) {
                                          const targetSize = wItem.savedSize || 'Original A4 Colour Pencil';
                                          setWishlist(prev => prev.filter(item => !(item.id === currentArt.id && (item.savedSize || 'Original A4 Colour Pencil') === targetSize)));
