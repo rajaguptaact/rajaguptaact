@@ -646,13 +646,13 @@
                         <span className="text-2xl md:text-3xl font-bold text-gray-900 leading-none">
                           {getPrice(activeOpt.price)}
                         </span>
-                        {activeOpt.isOriginal && hasOrigDiscount ? (
+                        {hasActiveDiscount ? (
                           <>
                             <span className="line-through text-gray-400 text-sm md:text-base font-medium">
-                              {getPrice(art.priceOriginalOld)}
+                              {getPrice(activeOpt.oldPrice)}
                             </span>
                             <span className="text-xs font-bold uppercase tracking-wider text-pink-600">
-                              SAVE {origDiscountPct}%
+                              SAVE {activeDiscountPct}%
                             </span>
                           </>
                         ) : null}
