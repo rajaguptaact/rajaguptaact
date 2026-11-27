@@ -1423,22 +1423,7 @@
             if(String(ord.displayAmount).includes('$')) return '$' + Math.ceil(Number(amt) / 83.5).toLocaleString('en-US');
             return '₹' + Number(amt).toLocaleString('en-IN');
         };
-        const shippingAmt = (ord.country === 'International' || String(ord.displayAmount).includes('$')) ? 700 : 100;
-        
-        // Base budget calculation for Commission (Total minus Shipping)
-        let baseBudgetFormatted = '';
-        if (isCommission) {
-             if (ord.amount) {
-                 baseBudgetFormatted = formatMoney(ord.amount - shippingAmt);
-             } else {
-                 const totalVal = Number(String(ord.displayAmount).replace(/[^\d]/g, ''));
-                 if (String(ord.displayAmount).includes('$')) {
-                      baseBudgetFormatted = '$' + (totalVal - Math.ceil(700 / 83.5)).toLocaleString('en-US');
-                 } else {
-                      baseBudgetFormatted = '₹' + (totalVal - 100).toLocaleString('en-IN');
-                 }
-             }
-        }
+        const baseBudgetFormatted = isCommission ? (ord.displayAmount || formatMoney(ord.amount || 0)) : '';
         
         return (
             <div className="w-full mt-1 md:mt-2">
@@ -1451,7 +1436,7 @@
                         
                         {isCommission ? (
                             <div className="flex justify-between text-gray-600 font-bold mb-1.5 border-b border-gray-50 pb-1.5">
-                                <span>Commission Base Budget</span>
+                                <span>Estimated Budget (Not Final)</span>
                                 <span>{baseBudgetFormatted}</span>
                             </div>
                         ) : (
@@ -1469,11 +1454,12 @@
                             </>
                         )}
                         
-                        {/* Shipping Charge ab donon (Gallery & Commission) mein dikhega */}
+                        {/* Free Shipping across India & Worldwide Originals */}
                         <div className="flex justify-between text-gray-600 font-bold mb-1 pt-1">
                             <span>Shipping Charge</span>
-                            <span className="text-pink-600">+{formatMoney(shippingAmt)}</span>
+                            <span className="text-emerald-600">FREE</span>
                         </div>
+                 
                         
                         <div className="flex justify-between text-gray-900 font-black mt-2 pt-2 border-t border-gray-200 text-xs md:text-sm">
                             <span>Total</span>
