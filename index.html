@@ -4565,10 +4565,18 @@
            return !isLoadingGallery && !liveArt;
         });
 
-        const hasSoldOutItems = cart.some(item => {
+         const hasSoldOutItems = cart.some(item => {
            const liveArt = artworks.find(a => a.id === item.id);
            return liveArt && item.selectedSize && item.selectedSize.includes('Original') && liveArt.isSold;
         });
+
+        const hasIntlPrintsInCart = currency === 'USD' && cart.some(item => item.selectedSize && !item.selectedSize.includes('Original'));
+        const intlCartPrintsWaUrl = `https://wa.me/917281074416?text=${encodeURIComponent(
+            `Hello Raja Gupta! I am an international buyer interested in ordering these Fine Art Print(s):\n\n` +
+            cart.filter(item => item.selectedSize && !item.selectedSize.includes('Original'))
+                .map(item => `• ${item.title} (${item.selectedSize}) - Qty: ${item.qty || 1}`).join('\n') +
+            `\n\nPlease share the final price including international shipping.`
+        )}`;
 
         return (
           <div className="p-3.5 md:p-6 max-w-3xl mx-auto min-h-screen">
