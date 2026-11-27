@@ -2051,26 +2051,69 @@
       const [logoutDoubleStep, setLogoutDoubleStep] = useState(false);
       const [isAuthorizedAdminEmail, setIsAuthorizedAdminEmail] = useState(false);
 
-      // 🔐 PRIVATE SERVER-SIDE ADMIN EMAIL CHECK (index.html mein koi Gmail nahi)
+      // 🔐 PRIVATE SERVER-SIDE ADMIN EMAIL CHECK (Slow/Offline Network Auto-Retry)
       useEffect(() => {
           let isMounted = true;
+          let retryTimer = null;
+
           if (!currentUser || !currentUser.email) {
               setIsAuthorizedAdminEmail(false);
               return;
           }
-          fetch(GAS_WEB_APP_URL, {
-              method: 'POST',
-              body: JSON.stringify({ action: 'check_admin_email', email: currentUser.email })
-          })
-          .then(res => res.json())
-          .then(data => {
-              if (isMounted) setIsAuthorizedAdminEmail(Boolean(data && data.isAdminEmail === true));
-          })
-          .catch(() => {
-              if (isMounted) setIsAuthorizedAdminEmail(false);
-          });
-          return () => { isMounted = false; };
-      }, [currentUser]);
+
+          const verifyAdminEmail = (attempt = 1) => {
+              if (!isMounted || !navigator.onLine) return;
+              fetch(GAS_WEB_APP_URL, {
+                  method: 'POST',
+                  body: JSON.stringify({ action: 'check_admin_email', email: currentUser.email })
+              })
+              .then(res => res.json())
+              .then(data => {
+                  if (isMounted) setIsAuthorizedAdminEmail(Boolean(data && data.isAdminEmail === true));
+              })
+              .catch(() => {
+                  if (!isMounted) return;
+                  if (attempt < 5) {
+                      retryTimer = setTimeout(() => verifyAdminEmail(attempt + 1), attempt * 2500);
+                  }
+              });
+          };
+
+          verifyAdminEmail(1);
+
+          const handleOnlineRetry = () => verifyAdminEmail(1);
+          window.addEventListener('online', handleOnlineRetry);
+
+          return () => {
+              isMounted = false;
+              if (retryTimer) clearTimeout(retryTimer);
+              window.removeEventListener('online', handleOnlineRetry);
+          };
+      }, [currentUser, profileMenuOpen]);
+
+      // 👆 PROFILE & CURRENCY DROPDOWN: BAHAR TAP YA SCROLL KARNE PAR AUTO-CLOSE
+      useEffect(() => {
+          if (!profileMenuOpen && !currencyMenuOpen) return;
+
+          const closeDropdowns = () => {
+              setProfileMenuOpen(false);
+              setCurrencyMenuOpen(false);
+          };
+
+          const handleOutsideTap = (e) => {
+              if (e.target && e.target.closest && e.target.closest('[data-header-dropdown="true"]')) return;
+              closeDropdowns();
+          };
+
+          document.addEventListener('pointerdown', handleOutsideTap, true);
+          window.addEventListener('scroll', closeDropdowns, { passive: true });
+
+          return () => {
+              document.removeEventListener('pointerdown', handleOutsideTap, true);
+              window.removeEventListener('scroll', closeDropdowns);
+          };
+      }, [profileMenuOpen, currencyMenuOpen]);
+
 
       // 🛡️ PREMIUM CUSTOM CONFIRMATION MODAL (POORI WEBSITE KE LIYE)
       const [confirmDialog, setConfirmDialog] = useState(null);
