@@ -4767,6 +4767,30 @@
                   </div>
                 )}
 
+                {hasIntlPrintsInCart && (
+                  <div className="bg-white rounded-2xl border border-purple-200 border-l-4 border-l-purple-600 p-3.5 md:p-4 shadow-sm space-y-2.5 mt-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 text-sm md:text-base">
+                        🌍
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs md:text-sm font-black text-gray-900 leading-tight">International Prints: Price on Request</p>
+                        <p className="text-[11px] md:text-xs font-bold text-gray-600 mt-1 leading-relaxed">
+                          International Art Prints are quoted directly on WhatsApp based on courier rates. Tap below to get your instant quote, or switch currency to <span className="text-purple-700 font-black">₹ INR</span> if ordering within India.
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href={intlCartPrintsWaUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full text-center py-2.5 rounded-xl bg-[#25D366] hover:bg-emerald-600 text-white font-black text-xs md:text-sm shadow-sm active:scale-95 transition"
+                    >
+                      Inquire on WhatsApp for Prints
+                    </a>
+                  </div>
+                )}
+
                 <div className="pb-10"></div>
               </div>
             )}
@@ -4784,13 +4808,19 @@
                     <div className="max-w-3xl mx-auto flex items-center justify-between gap-3 md:gap-6">
                         <div className="flex flex-col">
                             <span className="text-[9px] md:text-xs font-black text-gray-400 uppercase tracking-widest">Total Payable</span>
-                            <span className="text-xl md:text-2xl font-black text-pink-600 leading-none mt-0.5">{getPrice(total)}</span>
+                            <span className="text-xl md:text-2xl font-black text-pink-600 leading-none mt-0.5">{hasIntlPrintsInCart ? 'Quote Required' : getPrice(total)}</span>
                         </div>
 
                         <button 
-                            onClick={() => startCheckout(cart, 'Studio Order', {})} 
+                            onClick={() => {
+                                if (hasIntlPrintsInCart) {
+                                    showPremiumAlert("🌍 INTERNATIONAL PRINTS:\n\nInternational Art Prints are quoted directly on WhatsApp based on destination courier rates. Please tap 'Inquire on WhatsApp for Prints' above, or remove the print(s) to checkout Original Artworks directly.");
+                                    return;
+                                }
+                                startCheckout(cart, 'Studio Order', {});
+                            }} 
                             className={`w-auto px-5 md:px-10 py-2.5 md:py-3.5 rounded-xl font-black text-xs md:text-base shadow-md transition-all active:scale-95 flex justify-center items-center gap-2 ${
-                                (validItems.length === 0 || hasDeletedItems || hasSoldOutItems) 
+                                (validItems.length === 0 || hasDeletedItems || hasSoldOutItems || hasIntlPrintsInCart) 
                                 ? 'bg-gray-200 text-gray-500 cursor-pointer border border-gray-300' 
                                 : 'bg-gradient-to-r from-purple-700 to-pink-600 text-white cursor-pointer hover:shadow-lg'
                             }`}
@@ -4800,7 +4830,7 @@
                     </div>
                 </div>
                 </>
-            )}
+            )}          
           </div>
         );
       };
