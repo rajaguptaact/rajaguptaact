@@ -6233,7 +6233,7 @@
            const isIntl = checkoutData.country === 'International' || currency === 'USD';
            
            const successWaTextIndia = encodeURIComponent(`Hello Raja Gupta!\nI have placed an order.\n\n*Order ID:* ${lastOrderId}\n*Name:* ${checkoutData.name}\n*Amount:* ${getPrice(finalAmountBase)}\n\nI am attaching my payment screenshot below.`);
-           const successWaTextIntl = encodeURIComponent(`Hello Raja Gupta!\nI am an international client.\nI have placed an order.\n\n*Order ID:* ${lastOrderId}\n*Name:* ${checkoutData.name}\n*Amount:* ${getPrice(finalAmountBase)}\n\nPlease guide me on how to pay via Wise, Remitly, or PayPal.`);
+           const successWaTextIntl = encodeURIComponent(`Hello Raja Gupta!\nI am an international client.\nI have placed an order.\n\n*Order ID:* ${lastOrderId}\n*Name:* ${checkoutData.name}\n*Amount:* ${getPrice(finalAmountBase)}\n\nPlease guide me on how to complete my payment via Razorpay or Bank Transfer.`);
            const successWaText = isIntl ? successWaTextIntl : successWaTextIndia;
            
            return (
