@@ -206,7 +206,7 @@
       });
 
 
-      const ArtworkDetailView = ({ art, mode = 'original', initialSize = null, artworks = [], openArtworkDetail, nav, getPrice, cart, addToCart, updateGalleryCartQty, openSizeGuide, openArtZoom, wishlist, userLikes, handleLikeArt, shareArtwork, toggleWishlist, setWishlistPopupArt }) => {
+      const ArtworkDetailView = ({ art, mode = 'original', initialSize = null, artworks = [], openArtworkDetail, nav, getPrice, currency = 'INR', cart, addToCart, updateGalleryCartQty, openSizeGuide, openArtZoom, wishlist, userLikes, handleLikeArt, shareArtwork, toggleWishlist, setWishlistPopupArt }) => {
         window.rajaMockupCache = window.rajaMockupCache || {};
 
         const isPrintMode = mode === 'print';
