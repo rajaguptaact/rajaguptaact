@@ -6086,22 +6086,42 @@
                   )}
               </div>
 
-              <div className="bg-purple-50 p-3 md:p-5 rounded-lg md:rounded-xl border border-purple-100 shadow-inner">
-                 <div className="flex justify-between text-[11px] md:text-sm font-bold text-gray-600 mb-1">
-                   <span>Artwork Total:</span>
-                   <span>{getPrice(checkoutData.amount)}</span>
-                 </div>
-                 <div className="flex justify-between text-[11px] md:text-sm font-bold text-gray-600 mb-1.5 md:mb-3 border-b border-purple-200 pb-1.5 md:pb-3">
-                   <span>Shipping Charge:</span>
-                   <span className={checkoutData.country === 'India' ? "text-green-600" : "text-rose-600"}>
-                     {checkoutData.country === 'India' ? "+"+getPrice(shippingFeeBase) : "+"+getPrice(shippingFeeBase)}
-                   </span>
-                 </div>
-                 <div className="flex justify-between text-sm md:text-lg font-black text-purple-900 mt-1 md:mt-0">
-                   <span>Final Payable:</span>
-                   <span>{getPrice(finalAmountBase)}</span>
-                 </div>
-              </div>
+              {hasIntlPrintOrder ? (
+                <div className="bg-purple-50 p-3.5 md:p-5 rounded-xl border-2 border-purple-300 space-y-2.5 text-left">
+                  <p className="text-xs md:text-sm font-black text-purple-900">🌍 International Art Print — Price on Request</p>
+                  <p className="text-[11px] md:text-xs font-bold text-gray-600 leading-relaxed">
+                    International print orders are priced directly on WhatsApp based on your country &amp; courier cost. Tap below to get an instant quote from Raja.
+                  </p>
+                  <a
+                    href={`https://wa.me/917281074416?text=${encodeURIComponent(
+                      `Hello Raja Gupta! I am an international buyer interested in ordering these Fine Art Print(s):\n\n` +
+                      (checkoutData.itemDetails || []).filter(it => it.selectedSize && !it.selectedSize.includes('Original'))
+                        .map(it => `• ${it.title} (${it.selectedSize}) - Qty: ${it.qty || 1}`).join('\n') +
+                      `\n\nPlease share the final price including international shipping.`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center py-2.5 rounded-xl bg-[#25D366] hover:bg-emerald-600 text-white font-black text-xs md:text-sm shadow-sm transition active:scale-95"
+                  >
+                    Inquire on WhatsApp for International Prints
+                  </a>
+                </div>
+              ) : (
+                <div className="bg-purple-50 p-3 md:p-5 rounded-lg md:rounded-xl border border-purple-100 shadow-inner">
+                   <div className="flex justify-between text-[11px] md:text-sm font-bold text-gray-600 mb-1">
+                     <span>{checkoutData.type === 'Commission' ? 'Estimated Budget (Not Final):' : 'Artwork Total:'}</span>
+                     <span>{getPrice(checkoutData.amount)}</span>
+                   </div>
+                   <div className="flex justify-between text-[11px] md:text-sm font-bold text-gray-600 mb-1.5 md:mb-3 border-b border-purple-200 pb-1.5 md:pb-3">
+                     <span>Shipping Charge:</span>
+                     <span className="text-emerald-600 font-black">FREE</span>
+                   </div>
+                   <div className="flex justify-between text-sm md:text-lg font-black text-purple-900 mt-1 md:mt-0">
+                     <span>{checkoutData.type === 'Commission' ? 'Estimated Total:' : 'Final Payable:'}</span>
+                     <span>{getPrice(finalAmountBase)}</span>
+                   </div>
+                </div>
+              )}
 
               <button type="submit" className={`w-full text-white py-2.5 md:py-4 rounded-lg md:rounded-xl font-black text-sm md:text-lg shadow-md transition-transform transform active:scale-95 ${!canSubmit ? 'bg-gray-400 opacity-70 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 cursor-pointer hover:shadow-xl'}`}>
                 {checkoutData.type === 'Commission' ? "Submit Commission Request" : "Proceed to Payment"}
@@ -6112,8 +6132,8 @@
       };
 
       const PaymentView = () => {
-        const shippingFeeBase = checkoutData.country === 'International' ? 700 : 100;
-        const finalAmountBase = checkoutData.amount + shippingFeeBase;
+        const shippingFeeBase = 0;
+        const finalAmountBase = checkoutData.amount;
 
         const finalizeOrder = async () => {
           if (isValidating) return;
