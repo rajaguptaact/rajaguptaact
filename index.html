@@ -660,122 +660,149 @@
 
 
                   {/* CLEAN BOUTIQUE PRICE + QUANTITY + FULL-WIDTH ADD TO CART */}
-                  <div className="pt-1 space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <p className={`text-xs md:text-sm font-bold ${activeOpt.isSold ? 'text-rose-600' : 'text-emerald-700'}`}>
-                          {activeOpt.isSold ? 'Sold Out' : 'Available'}
-                        </p>
-                        {!isPrintMode ? (
-                          <button type="button" onClick={() => openSizeGuide('original')} className="text-xs font-bold text-pink-600 hover:text-purple-700 cursor-pointer">
-                            Size Guide &rsaquo;
-                          </button>
-                        ) : null}
-                      </div>
+                  {(() => {
+                    const isIntlPrint = isPrintMode && currency === 'USD';
+                    const intlPrintWaUrl = `https://wa.me/917281074416?text=${encodeURIComponent(
+                      `Hello Raja Gupta! I am an international buyer interested in ordering a Fine Art Print.\n\n*Artwork:* ${art.title}\n*Selected Size:* ${activeOpt.cartSize} (${activeOpt.specs.dimensions})\n\nPlease share the final price including international shipping to my country.`
+                    )}`;
+                    return (
+                      <div className="pt-1 space-y-4">
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <p className={`text-xs md:text-sm font-bold ${activeOpt.isSold ? 'text-rose-600' : 'text-emerald-700'}`}>
+                              {activeOpt.isSold ? 'Sold Out' : (isIntlPrint ? 'Available (International Inquiry)' : 'Available')}
+                            </p>
+                            {!isPrintMode ? (
+                              <button type="button" onClick={() => openSizeGuide('original')} className="text-xs font-bold text-pink-600 hover:text-purple-700 cursor-pointer">
+                                Size Guide &rsaquo;
+                              </button>
+                            ) : null}
+                          </div>
 
-                      {/* Single-Line Price + Struck Old Price + Save % */}
-                      <div className="flex items-baseline flex-wrap gap-2.5 mt-1.5">
-                        <span className="text-2xl md:text-3xl font-bold text-gray-900 leading-none">
-                          {getPrice(activeOpt.price)}
-                        </span>
-                        {hasActiveDiscount ? (
-                          <>
-                            <span className="line-through text-gray-400 text-sm md:text-base font-medium">
-                              {getPrice(activeOpt.oldPrice)}
-                            </span>
-                            <span className="text-xs font-bold uppercase tracking-wider text-pink-600">
-                              SAVE {activeDiscountPct}%
-                            </span>
-                          </>
-                        ) : null}
-                      </div>
-                    </div>
-
-                    {/* Quantity Stepper (- 1 +) */}
-                    {!activeOpt.isSold ? (
-                      <div className="flex items-center gap-3">
-                        <div className="inline-flex items-center border border-gray-300 bg-white rounded-lg overflow-hidden">
-                          <button
-                            type="button"
-                            disabled={activeOpt.isOriginal || (!activeCartItem && localQty <= 1)}
-                            onClick={() => {
-                              if (activeCartItem) {
-                                updateGalleryCartQty(art.id, activeOpt.cartSize, -1);
-                              } else {
-                                setLocalQty(q => Math.max(1, q - 1));
-                              }
-                            }}
-                            className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-purple-50 font-bold text-lg transition cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
-                            aria-label="Decrease quantity"
-                          >
-                            &minus;
-                          </button>
-                          <span className="w-10 text-center font-bold text-sm text-gray-900 select-none">
-                            {displayQty}
-                          </span>
-                          <button
-                            type="button"
-                            disabled={activeOpt.isOriginal || displayQty >= 3}
-                            onClick={() => {
-                              if (activeCartItem) {
-                                updateGalleryCartQty(art.id, activeOpt.cartSize, 1);
-                              } else {
-                                setLocalQty(q => Math.min(3, q + 1));
-                              }
-                            }}
-                            className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-purple-50 font-bold text-lg transition cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
-                            aria-label="Increase quantity"
-                          >
-                            +
-                          </button>
+                          {isIntlPrint ? (
+                            <div className="mt-2 space-y-1">
+                              <p className="text-xl md:text-2xl font-bold text-purple-800 leading-tight">
+                                Price on Request
+                              </p>
+                              <p className="text-[11px] md:text-xs text-gray-500 font-medium leading-relaxed">
+                                International print pricing depends on your destination &amp; courier rates. Tap below to message Raja on WhatsApp for an instant final quote.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="flex items-baseline flex-wrap gap-2.5 mt-1.5">
+                              <span className="text-2xl md:text-3xl font-bold text-gray-900 leading-none">
+                                {getPrice(activeOpt.price)}
+                              </span>
+                              {hasActiveDiscount ? (
+                                <>
+                                  <span className="line-through text-gray-400 text-sm md:text-base font-medium">
+                                    {getPrice(activeOpt.oldPrice)}
+                                  </span>
+                                  <span className="text-xs font-bold uppercase tracking-wider text-pink-600">
+                                    SAVE {activeDiscountPct}%
+                                  </span>
+                                </>
+                              ) : null}
+                            </div>
+                          )}
                         </div>
-                        {activeOpt.isOriginal ? (
-                          <span className="text-[11px] text-gray-400 font-medium italic">1 of 1 Original Piece</span>
+
+                        {/* Quantity Stepper (- 1 +) */}
+                        {!isIntlPrint && !activeOpt.isSold ? (
+                          <div className="flex items-center gap-3">
+                            <div className="inline-flex items-center border border-gray-300 bg-white rounded-lg overflow-hidden">
+                              <button
+                                type="button"
+                                disabled={activeOpt.isOriginal || (!activeCartItem && localQty <= 1)}
+                                onClick={() => {
+                                  if (activeCartItem) {
+                                    updateGalleryCartQty(art.id, activeOpt.cartSize, -1);
+                                  } else {
+                                    setLocalQty(q => Math.max(1, q - 1));
+                                  }
+                                }}
+                                className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-purple-50 font-bold text-lg transition cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                                aria-label="Decrease quantity"
+                              >
+                                &minus;
+                              </button>
+                              <span className="w-10 text-center font-bold text-sm text-gray-900 select-none">
+                                {displayQty}
+                              </span>
+                              <button
+                                type="button"
+                                disabled={activeOpt.isOriginal || displayQty >= 3}
+                                onClick={() => {
+                                  if (activeCartItem) {
+                                    updateGalleryCartQty(art.id, activeOpt.cartSize, 1);
+                                  } else {
+                                    setLocalQty(q => Math.min(3, q + 1));
+                                  }
+                                }}
+                                className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-purple-50 font-bold text-lg transition cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                                aria-label="Increase quantity"
+                              >
+                                +
+                              </button>
+                            </div>
+                            {activeOpt.isOriginal ? (
+                              <span className="text-[11px] text-gray-400 font-medium italic">1 of 1 Original Piece</span>
+                            ) : (
+                              <span className="text-[11px] text-gray-400 font-medium">Max 3 per print</span>
+                            )}
+                          </div>
+                        ) : null}
+
+                        {/* Full-Width Boutique Action Button */}
+                        {isIntlPrint ? (
+                          <a
+                            href={intlPrintWaUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full py-3.5 rounded-xl bg-[#25D366] hover:bg-emerald-600 text-white font-bold text-xs md:text-sm uppercase tracking-[0.14em] shadow-md active:scale-[0.99] transition cursor-pointer flex items-center justify-center gap-2"
+                          >
+                            <span>Inquire on WhatsApp &bull; {activeOpt.pillTitle} Print</span>
+                          </a>
+                        ) : activeOpt.isSold ? (
+                          <button type="button" disabled className="w-full py-3.5 rounded-xl bg-gray-300 text-gray-600 font-bold text-xs md:text-sm uppercase tracking-[0.18em] cursor-not-allowed">
+                            Sold Out
+                          </button>
+                        ) : activeCartItem ? (
+                          <div className="flex gap-2.5">
+                            <button
+                              type="button"
+                              onClick={() => nav('cart')}
+                              className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-purple-700 to-pink-600 text-white font-bold text-xs md:text-sm uppercase tracking-[0.14em] shadow-md hover:opacity-95 active:scale-[0.99] transition cursor-pointer"
+                            >
+                              View in Cart &bull; {getPrice(totalDisplayPrice)}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, -(activeCartItem.qty || 1))}
+                              className="px-4 py-3.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold text-xs uppercase tracking-wider active:scale-95 transition cursor-pointer"
+                            >
+                              Remove
+                            </button>
+                          </div>
                         ) : (
-                          <span className="text-[11px] text-gray-400 font-medium">Max 3 per print</span>
+                          <button
+                            type="button"
+                            onClick={() => addToCart(art, activeOpt.cartSize, activeOpt.price, activeOpt.oldPrice, activeOpt.isOriginal ? 1 : localQty)}
+                            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-700 to-pink-600 text-white font-bold text-xs md:text-sm uppercase tracking-[0.16em] shadow-md hover:opacity-95 active:scale-[0.99] transition cursor-pointer"
+                          >
+                            Add to Cart &bull; {getPrice(totalDisplayPrice)}
+                          </button>
                         )}
-                      </div>
-                    ) : null}
 
-                    {/* Full-Width Boutique Action Button */}
-                    {activeOpt.isSold ? (
-                      <button type="button" disabled className="w-full py-3.5 rounded-xl bg-gray-300 text-gray-600 font-bold text-xs md:text-sm uppercase tracking-[0.18em] cursor-not-allowed">
-                        Sold Out
-                      </button>
-                    ) : activeCartItem ? (
-                      <div className="flex gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => nav('cart')}
-                          className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-purple-700 to-pink-600 text-white font-bold text-xs md:text-sm uppercase tracking-[0.14em] shadow-md hover:opacity-95 active:scale-[0.99] transition cursor-pointer"
-                        >
-                          View in Cart &bull; {getPrice(totalDisplayPrice)}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateGalleryCartQty(art.id, activeOpt.cartSize, -(activeCartItem.qty || 1))}
-                          className="px-4 py-3.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold text-xs uppercase tracking-wider active:scale-95 transition cursor-pointer"
-                        >
-                          Remove
-                        </button>
+                        {/* Packaging & Shipping Note */}
+                        <div className="pt-2 space-y-1.5 text-[11px] md:text-xs text-gray-500 leading-relaxed">
+                          <p>Packed inside a protective sleeve with sturdy cardboard backing / hard art tube.</p>
+                          <p>Ships within 2&ndash;4 working days. Tracking is shared on WhatsApp &amp; Email.</p>
+                          <p>{isPrintMode ? 'Free delivery across India. International prints available via WhatsApp inquiry.' : 'Free delivery across India & worldwide. Strictly no returns or refunds on handmade originals.'}</p>
+                        </div>
                       </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => addToCart(art, activeOpt.cartSize, activeOpt.price, activeOpt.oldPrice, activeOpt.isOriginal ? 1 : localQty)}
-                        className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-700 to-pink-600 text-white font-bold text-xs md:text-sm uppercase tracking-[0.16em] shadow-md hover:opacity-95 active:scale-[0.99] transition cursor-pointer"
-                      >
-                        Add to Cart &bull; {getPrice(totalDisplayPrice)}
-                      </button>
-                    )}
-
-                    {/* Packaging & Shipping Note */}
-                    <div className="pt-2 space-y-1.5 text-[11px] md:text-xs text-gray-500 leading-relaxed">
-                      <p>Packed inside a protective sleeve with sturdy cardboard backing / hard art tube.</p>
-                      <p>Ships within 2&ndash;4 working days. Tracking is shared on WhatsApp &amp; Email.</p>
-                      <p>Worldwide shipping available. No returns or exchanges on handmade art.</p>
-                    </div>
-                  </div>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -838,21 +865,27 @@
                             <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.14em] text-gray-400">
                               {isPrintMode ? 'A3 • A4 • A5 Print' : 'A4 Original • 21 × 29.7 cm'}
                             </p>
-                            <div className="flex items-baseline flex-wrap gap-2 pt-0.5">
-                              <span className="text-sm md:text-base font-bold text-gray-900">
-                                {getPrice(relPrice)}
-                              </span>
-                              {hasRelDiscount ? (
-                                <>
-                                  <span className="line-through text-gray-400 text-xs font-medium">
-                                    {getPrice(relOldPrice)}
-                                  </span>
-                                  <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-pink-600">
-                                    SAVE {relPct}%
-                                  </span>
-                                </>
-                              ) : null}
-                            </div>
+                            {isPrintMode && currency === 'USD' ? (
+                              <p className="text-xs md:text-sm font-bold text-purple-700 pt-0.5">
+                                Price on Request
+                              </p>
+                            ) : (
+                              <div className="flex items-baseline flex-wrap gap-2 pt-0.5">
+                                <span className="text-sm md:text-base font-bold text-gray-900">
+                                  {getPrice(relPrice)}
+                                </span>
+                                {hasRelDiscount ? (
+                                  <>
+                                    <span className="line-through text-gray-400 text-xs font-medium">
+                                      {getPrice(relOldPrice)}
+                                    </span>
+                                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-pink-600">
+                                      SAVE {relPct}%
+                                    </span>
+                                  </>
+                                ) : null}
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
