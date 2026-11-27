@@ -6718,6 +6718,11 @@
           const a5Pair = resolvePricePair(uploadData.priceA5Old, uploadData.priceA5, 'Print A5');
           if (!a5Pair) return;
 
+          if ((Number(a3Pair.cur) || 0) < 800 || (Number(a4Pair.cur) || 0) < 800 || (Number(a5Pair.cur) || 0) < 800) {
+              showPremiumAlert("❌ MINIMUM PRICE LOCK (₹800): All Art Print prices (A3, A4, A5) must be ₹800 or higher so Free India Delivery stays profitable.");
+              return;
+          }
+
           const finalPriceOld = origPair.old;
           const finalPriceCurrent = origPair.cur;
 
