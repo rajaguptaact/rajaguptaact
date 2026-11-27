@@ -8602,6 +8602,14 @@
             </div>
           </header>
 
+          {(profileMenuOpen || currencyMenuOpen) ? (
+            <div
+              onClick={() => { setProfileMenuOpen(false); setCurrencyMenuOpen(false); }}
+              onTouchStart={() => { setProfileMenuOpen(false); setCurrencyMenuOpen(false); }}
+              className="fixed inset-0 z-30 bg-transparent"
+            ></div>
+          ) : null}
+
 
           {menuOpen ? (
             <div className="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-sm transition-all flex justify-start" onClick={() => setMenuOpen(false)}>
