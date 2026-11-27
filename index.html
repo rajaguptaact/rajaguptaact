@@ -607,7 +607,7 @@
                     </div>
                   ) : null}
 
-                  {/* 5-ROW DYNAMIC DETAILS TABLE (Updates for Original / A3 / A4 / A5) */}
+                  {/* 8-ROW DYNAMIC DETAILS TABLE (Updates for Original / A3 / A4 / A5) */}
                   <div className="border-t border-b border-gray-200/80 divide-y divide-gray-100 text-xs md:text-sm">
                     <div className="py-2.5 grid grid-cols-12 gap-2">
                       <span className="col-span-5 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">Artwork Type</span>
@@ -625,11 +625,39 @@
                       <span className="col-span-5 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">Frame</span>
                       <span className="col-span-7 font-semibold text-gray-800">{activeOpt.specs.frame}</span>
                     </div>
+                    {isPrintMode ? (
+                      <>
+                        <div className="py-2.5 grid grid-cols-12 gap-2">
+                          <span className="col-span-5 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">Print Quality</span>
+                          <span className="col-span-7 font-semibold text-gray-800">High-Resolution Scan of the Original Handmade Artwork</span>
+                        </div>
+                        <div className="py-2.5 grid grid-cols-12 gap-2">
+                          <span className="col-span-5 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">Colours</span>
+                          <span className="col-span-7 font-semibold text-gray-800">True-to-Original Colour Reproduction</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="py-2.5 grid grid-cols-12 gap-2">
+                          <span className="col-span-5 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">Protection</span>
+                          <span className="col-span-7 font-semibold text-gray-800">Sealed in Transparent Waterproof &amp; Dust-Free Sheet</span>
+                        </div>
+                        <div className="py-2.5 grid grid-cols-12 gap-2">
+                          <span className="col-span-5 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">Signature</span>
+                          <span className="col-span-7 font-semibold text-gray-800">Hand-Signed by Raja Gupta</span>
+                        </div>
+                      </>
+                    )}
+                    <div className="py-2.5 grid grid-cols-12 gap-2">
+                      <span className="col-span-5 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">Ideal For</span>
+                      <span className="col-span-7 font-semibold text-gray-800">Home D&eacute;cor, Prayer Spaces &amp; Gifting</span>
+                    </div>
                     <div className="py-2.5 grid grid-cols-12 gap-2">
                       <span className="col-span-5 text-[10px] md:text-xs font-bold uppercase tracking-widest text-gray-400">Uniqueness</span>
                       <span className="col-span-7 font-semibold text-gray-800">{activeOpt.specs.uniqueness}</span>
                     </div>
                   </div>
+
 
                   {/* CLEAN BOUTIQUE PRICE + QUANTITY + FULL-WIDTH ADD TO CART */}
                   <div className="pt-1 space-y-4">
