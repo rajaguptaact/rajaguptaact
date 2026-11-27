@@ -5761,12 +5761,17 @@
           // International ke liye API check hata diya gaya hai taaki customer fase nahi
         };
 
-        const shippingFeeBase = checkoutData.country === 'International' ? 700 : 100;
-        const finalAmountBase = checkoutData.amount + shippingFeeBase;
+        const shippingFeeBase = 0;
+        const finalAmountBase = checkoutData.amount;
 
         const handleShippingSubmit = async (e) => {
           e.preventDefault();
           if (isValidating) return;
+
+          if (hasIntlPrintOrder) {
+             showPremiumAlert("🌍 INTERNATIONAL PRINTS:\n\nInternational Art Prints are quoted individually on WhatsApp based on courier rates. Please tap 'Inquire on WhatsApp' below.");
+             return;
+          }
 
           if (checkoutData.country === 'India' && !isLocationMatched) {
              showPremiumAlert(`❌ LOCATION MISMATCH ERROR\n\nThe PIN Code you entered (${checkoutData.pin}) belongs to:\n📍 City: ${checkoutData.pinCity}\n📍 State: ${checkoutData.pinState}\n\nBut you have manually selected:\n📍 City: ${checkoutData.city}\n📍 State: ${checkoutData.state}\n\nPlease make sure both match exactly to proceed.`);
