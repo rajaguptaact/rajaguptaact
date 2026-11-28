@@ -9274,8 +9274,8 @@
             </div>
           ) : null}
 
-          {/* pt-16 md:pt-24 added here to give space below the fixed header */}
-          <main className="flex-grow z-10 relative pt-16 md:pt-24 pb-12 md:pb-16">
+          {/* Dynamic top padding below fixed header (+ ticker height on Home & Detail Page) */}
+          <main className={`flex-grow z-10 relative pb-12 md:pb-16 ${(view === 'gallery' || view === 'artwork_detail') && !isLoadingGallery && isDataLoaded ? 'pt-[92px] md:pt-[128px]' : 'pt-16 md:pt-24'}`}>
             <div className={view === 'gallery' ? 'block' : 'hidden'}>
               {GalleryView()}
             </div>
