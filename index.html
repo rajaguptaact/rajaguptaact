@@ -4775,30 +4775,6 @@
                   </div>
                 )}
 
-                {hasIntlPrintsInCart && (
-                  <div className="bg-white rounded-2xl border border-purple-200 border-l-4 border-l-purple-600 p-3.5 md:p-4 shadow-sm space-y-2.5 mt-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 text-sm md:text-base">
-                        🌍
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs md:text-sm font-black text-gray-900 leading-tight">International Prints: Price on Request</p>
-                        <p className="text-[11px] md:text-xs font-bold text-gray-600 mt-1 leading-relaxed">
-                          International Art Prints are quoted directly on WhatsApp based on courier rates. Tap below to get your instant quote, or switch currency to <span className="text-purple-700 font-black">₹ INR</span> if ordering within India.
-                        </p>
-                      </div>
-                    </div>
-                    <a
-                      href={intlCartPrintsWaUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full text-center py-2.5 rounded-xl bg-[#25D366] hover:bg-emerald-600 text-white font-black text-xs md:text-sm shadow-sm active:scale-95 transition"
-                    >
-                      Inquire on WhatsApp for Prints
-                    </a>
-                  </div>
-                )}
-
                 <div className="pb-10"></div>
               </div>
             )}
@@ -4816,13 +4792,17 @@
                     <div className="max-w-3xl mx-auto flex items-center justify-between gap-3 md:gap-6">
                         <div className="flex flex-col">
                             <span className="text-[9px] md:text-xs font-black text-gray-400 uppercase tracking-widest">Total Payable</span>
-                            <span className="text-xl md:text-2xl font-black text-pink-600 leading-none mt-0.5">{hasIntlPrintsInCart ? 'Quote Required' : getPrice(total)}</span>
+                            <span className="text-xl md:text-2xl font-black text-pink-600 leading-none mt-0.5">{hasIntlPrintsInCart ? 'Price on Request' : getPrice(total)}</span>
                         </div>
 
                         <button 
                             onClick={() => {
-                                if (hasIntlPrintsInCart) {
-                                    showPremiumAlert("🌍 INTERNATIONAL PRINTS:\n\nInternational Art Prints are quoted directly on WhatsApp based on destination courier rates. Please tap 'Inquire on WhatsApp for Prints' above, or remove the print(s) to checkout Original Artworks directly.");
+                                if (!hasDeletedItems && !hasSoldOutItems && hasIntlPrintsInCart) {
+                                    if (hasOriginalsInCart) {
+                                        showPremiumAlert("🌍 INTERNATIONAL ORDER NOTICE:\n\n• Art Prints cannot be checked out directly for International delivery — please tap the green 'Inquire on WhatsApp' button on your Print item(s) for a quote.\n\n• You CAN purchase your Original Artwork(s) right here with Free Worldwide Shipping! Simply tap 'Remove' on the Print item(s) and continue to checkout.");
+                                    } else {
+                                        showPremiumAlert("🌍 INTERNATIONAL PRINTS — PRICE ON REQUEST:\n\nInternational Art Prints cannot be ordered directly on the website because shipping depends on your country & courier rates.\n\nPlease tap the green 'Inquire on WhatsApp' button on your Print item(s) to get an instant final quote from Raja.");
+                                    }
                                     return;
                                 }
                                 startCheckout(cart, 'Studio Order', {});
@@ -4838,7 +4818,7 @@
                     </div>
                 </div>
                 </>
-            )}          
+            )}
           </div>
         );
       };
