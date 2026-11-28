@@ -6077,9 +6077,13 @@
 
               {hasIntlPrintOrder ? (
                 <div className="bg-purple-50 p-3.5 md:p-5 rounded-xl border-2 border-purple-300 space-y-2.5 text-left">
-                  <p className="text-xs md:text-sm font-black text-purple-900">🌍 International Art Print — Price on Request</p>
+                  <p className="text-xs md:text-sm font-black text-purple-900">
+                    {hasOriginalInCheckout ? '🌍 Original Ready to Buy • Print on Request' : '🌍 International Art Print — Price on Request'}
+                  </p>
                   <p className="text-[11px] md:text-xs font-bold text-gray-600 leading-relaxed">
-                    International print orders are priced directly on WhatsApp based on your country &amp; courier cost. Tap below to get an instant quote from Raja.
+                    {hasOriginalInCheckout
+                      ? 'You can purchase your Original Artwork(s) directly with Free Worldwide Shipping, while International Art Prints are quoted on WhatsApp. Remove the Print(s) from your Cart to buy your Original, or inquire on WhatsApp for the Print(s).'
+                      : 'International print orders are priced directly on WhatsApp based on your country & courier cost. No need to fill this form — tap below to get an instant quote from Raja.'}
                   </p>
                   <a
                     href={`https://wa.me/917281074416?text=${encodeURIComponent(
@@ -6092,8 +6096,17 @@
                     rel="noopener noreferrer"
                     className="block w-full text-center py-2.5 rounded-xl bg-[#25D366] hover:bg-emerald-600 text-white font-black text-xs md:text-sm shadow-sm transition active:scale-95"
                   >
-                    Inquire on WhatsApp for International Prints
+                    {hasOriginalInCheckout ? 'Inquire on WhatsApp for Print(s)' : 'Inquire on WhatsApp for International Prints'}
                   </a>
+                  {hasOriginalInCheckout ? (
+                    <button
+                      type="button"
+                      onClick={() => nav('cart')}
+                      className="block w-full text-center py-2.5 rounded-xl bg-white hover:bg-purple-100 text-purple-700 border border-purple-300 font-black text-xs md:text-sm transition active:scale-95 cursor-pointer"
+                    >
+                      Go to Cart to Remove Print(s)
+                    </button>
+                  ) : null}
                 </div>
               ) : (
                 <div className="bg-purple-50 p-3 md:p-5 rounded-lg md:rounded-xl border border-purple-100 shadow-inner">
@@ -6112,7 +6125,18 @@
                 </div>
               )}
 
-              <button type="submit" className={`w-full text-white py-2.5 md:py-4 rounded-lg md:rounded-xl font-black text-sm md:text-lg shadow-md transition-transform transform active:scale-95 ${!canSubmit ? 'bg-gray-400 opacity-70 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 cursor-pointer hover:shadow-xl'}`}>
+              <button
+                type={hasIntlPrintOrder ? "button" : "submit"}
+                onClick={() => {
+                  if (!hasIntlPrintOrder) return;
+                  if (hasOriginalInCheckout) {
+                    showPremiumAlert("🌍 INTERNATIONAL ORDER NOTICE:\n\n• Art Prints cannot be checked out directly for International delivery — tap 'Inquire on WhatsApp for Print(s)' above for a quote.\n\n• You CAN buy your Original Artwork(s) right here with Free Worldwide Shipping! Tap 'Go to Cart to Remove Print(s)' above, remove the Print(s), and continue checkout.");
+                  } else {
+                    showPremiumAlert("🌍 INTERNATIONAL PRINTS — PRICE ON REQUEST:\n\nInternational Art Prints cannot be ordered directly on the website because shipping depends on your country & courier rates.\n\nNo need to fill out this form — simply tap the green 'Inquire on WhatsApp' button above to get an instant final quote from Raja.");
+                  }
+                }}
+                className={`w-full text-white py-2.5 md:py-4 rounded-lg md:rounded-xl font-black text-sm md:text-lg shadow-md transition-transform transform active:scale-95 ${!canSubmit ? 'bg-gray-400 opacity-70 cursor-pointer' : 'bg-purple-600 hover:bg-purple-700 cursor-pointer hover:shadow-xl'}`}
+              >
                 {checkoutData.type === 'Commission' ? "Submit Commission Request" : "Proceed to Payment"}
               </button>
             </form>    
