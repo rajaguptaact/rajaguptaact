@@ -4846,34 +4846,35 @@
 
 
 
+        
         return (
-          <div className="px-5 py-6 md:px-10 md:py-12 max-w-3xl mx-auto min-h-screen text-left">
-            <button type="button" onClick={handleCommissionBack} className="mb-8 md:mb-10 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
+          <div className="px-4 py-3 md:px-10 md:py-10 max-w-3xl mx-auto min-h-screen text-left">
+            <button type="button" onClick={handleCommissionBack} className="mb-3 md:mb-8 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
               &larr; Back to Home
             </button>
 
-            {/* Editorial Page Header */}
-            <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.26em] text-purple-600 mb-3">
+            {/* Editorial Page Header (Compact on Phone, Spacious on Desktop) */}
+            <p className="text-[9px] md:text-xs font-bold uppercase tracking-[0.24em] text-purple-600 mb-1 md:mb-2.5">
               Custom Portraits
             </p>
-            <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+            <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl md:text-5xl font-bold text-gray-900 leading-tight mb-1.5 md:mb-3">
               Commission an Artwork
             </h1>
-            <p className="text-sm md:text-base text-gray-600 leading-relaxed pb-7 border-b border-purple-200/70">
+            <p className="text-xs md:text-base text-gray-600 leading-snug md:leading-relaxed pb-3.5 md:pb-6 border-b border-purple-200/70">
               Turn a cherished photograph into a 100% handcrafted, lifelike colour pencil portrait on premium acid-free paper.
             </p>
 
-            {/* Clean Editorial Studio Note (No Box) */}
-            <div className="my-7 md:my-9 border-l-2 border-purple-500 pl-4 md:pl-5 py-0.5 space-y-1">
-              <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-purple-700">
+            {/* Clean Editorial Studio Note (Compact on Phone) */}
+            <div className="my-3.5 md:my-7 border-l-2 border-purple-500 pl-3 md:pl-5 py-0.5 space-y-0.5 md:space-y-1">
+              <p className="text-[9px] md:text-xs font-bold uppercase tracking-[0.18em] text-purple-700">
                 Important Studio Note &bull; Colour Pencil Only
               </p>
-              <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
+              <p className="text-[11px] md:text-sm text-gray-600 leading-snug md:leading-relaxed">
                 I do not accept orders for watercolor, oil, or digital mediums. All commissioned requests are strictly handcrafted layer by layer with artist-grade colour pencils.
               </p>
             </div>
 
-            {/* Open Luxury Editorial Form (No White Glass Card) */}
+            {/* Open Luxury Editorial Form (Compact on Phone, Spacious on Desktop) */}
             <form
               onInvalid={(e) => {
                   e.preventDefault();
@@ -4910,10 +4911,10 @@
                 const basePriceINR = currency === 'USD' ? rawBudget * 83.5 : rawBudget;
                 startCheckout([{ title: 'Commission: ' + commissionInput.subject, selectedSize: commissionInput.size, price: basePriceINR }], 'Commission', { instagram: commissionInput.instagram }); 
               }}
-              className="space-y-5 md:space-y-6"
+              className="space-y-3 md:space-y-5"
             >
               <div>
-                <label className="block text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
+                <label className="block text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-1 md:mb-2">
                   Artwork Subject Details
                 </label>
                 <input
@@ -4922,12 +4923,12 @@
                   value={commissionInput.subject}
                   onChange={e => setCommissionInput({...commissionInput, subject: e.target.value})}
                   placeholder="E.g. Portrait of two people..."
-                  className="w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3.5 py-3 md:px-4 md:py-3.5 rounded-xl outline-none transition text-sm md:text-base text-gray-900 placeholder:text-gray-400 shadow-[0_2px_10px_rgba(30,17,54,0.03)]"
+                  className="w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3 py-2 md:px-4 md:py-3.5 rounded-lg md:rounded-xl outline-none transition text-xs md:text-base text-gray-900 placeholder:text-gray-400 shadow-[0_2px_8px_rgba(30,17,54,0.03)]"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
+                <label className="block text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-1 md:mb-2">
                   Instagram ID (Required)
                 </label>
                 <input
@@ -4936,25 +4937,25 @@
                   value={commissionInput.instagram}
                   onChange={e => setCommissionInput({...commissionInput, instagram: e.target.value})}
                   placeholder="E.g. @your_username"
-                  className="w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3.5 py-3 md:px-4 md:py-3.5 rounded-xl outline-none transition text-sm md:text-base text-gray-900 placeholder:text-gray-400 shadow-[0_2px_10px_rgba(30,17,54,0.03)]"
+                  className="w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3 py-2 md:px-4 md:py-3.5 rounded-lg md:rounded-xl outline-none transition text-xs md:text-base text-gray-900 placeholder:text-gray-400 shadow-[0_2px_8px_rgba(30,17,54,0.03)]"
                 />
-                <p className="text-[11px] md:text-xs text-gray-500 italic mt-1.5">
+                <p className="text-[10px] md:text-xs text-gray-500 italic mt-1 leading-snug">
                   Strictly required for progress updates and reference photos (min 5 characters).
                 </p>
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                <div className="flex items-center justify-between mb-1 md:mb-2">
+                  <label className="text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500">
                     Select Paper Size
                   </label>
                   <button
                     type="button"
                     onClick={() => openSizeGuide(commissionInput.size.includes('A3') ? 'a3' : 'a4')}
-                    className="text-xs font-bold text-pink-600 hover:text-purple-700 flex items-center gap-0.5 cursor-pointer active:scale-95 transition"
+                    className="text-[11px] md:text-xs font-bold text-pink-600 hover:text-purple-700 flex items-center gap-0.5 cursor-pointer active:scale-95 transition"
                   >
                     <span>Size Guide</span>
-                    <span className="text-base leading-none">&rsaquo;</span>
+                    <span className="text-sm md:text-base leading-none">&rsaquo;</span>
                   </button>
                 </div>
                 <select
@@ -4962,7 +4963,7 @@
                   name="Paper Size"
                   value={commissionInput.size}
                   onChange={e => setCommissionInput({...commissionInput, size: e.target.value})}
-                  className="w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3.5 py-3 md:px-4 md:py-3.5 rounded-xl outline-none transition text-sm md:text-base text-gray-900 shadow-[0_2px_10px_rgba(30,17,54,0.03)]"
+                  className="w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3 py-2 md:px-4 md:py-3.5 rounded-lg md:rounded-xl outline-none transition text-xs md:text-base text-gray-900 shadow-[0_2px_8px_rgba(30,17,54,0.03)]"
                 >
                   <option value="" disabled>Select Paper Size...</option>
                   <option value="A4 Colour Pencil">A4 Size (Medium)</option>
@@ -4976,7 +4977,7 @@
                   const minBudgetVal = currency === 'USD' ? (isA3Size ? 78 : 60) : (isA3Size ? 2500 : 1500);
                   return (
                     <>
-                      <label className="block text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
+                      <label className="block text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-1 md:mb-2">
                         Estimated Budget ({currency === 'USD' ? '$ USD' : '₹ INR'})
                       </label>
                       <input
@@ -4986,9 +4987,9 @@
                         type="number"
                         min={minBudgetVal}
                         placeholder={currency === 'USD' ? `Starting at $${minBudgetVal}...` : `Starting at ₹${minBudgetVal.toLocaleString('en-IN')}...`}
-                        className="w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3.5 py-3 md:px-4 md:py-3.5 rounded-xl outline-none transition text-sm md:text-base text-gray-900 placeholder:text-gray-400 shadow-[0_2px_10px_rgba(30,17,54,0.03)]"
+                        className="w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3 py-2 md:px-4 md:py-3.5 rounded-lg md:rounded-xl outline-none transition text-xs md:text-base text-gray-900 placeholder:text-gray-400 shadow-[0_2px_8px_rgba(30,17,54,0.03)]"
                       />
-                      <p className="text-[11px] md:text-xs text-purple-800/90 font-medium mt-2 leading-relaxed">
+                      <p className="text-[10px] md:text-xs text-purple-800/90 font-medium mt-1 md:mt-2 leading-snug md:leading-relaxed">
                         Note: This is only your estimated budget request &mdash; not a final confirmed price. Final price depends on photo details, faces &amp; size (A4/A3) and will be confirmed by Raja on WhatsApp / Instagram.
                       </p>
                     </>
@@ -4998,29 +4999,29 @@
 
               <button
                 type="submit"
-                className="w-full py-3.5 md:py-4 rounded-xl bg-gradient-to-r from-purple-700 to-pink-600 text-white font-bold text-xs md:text-sm uppercase tracking-[0.16em] shadow-md hover:opacity-95 active:scale-[0.99] transition cursor-pointer mt-2"
+                className="w-full py-2.5 md:py-4 rounded-xl bg-gradient-to-r from-purple-700 to-pink-600 text-white font-bold text-xs md:text-sm uppercase tracking-[0.16em] shadow-md hover:opacity-95 active:scale-[0.99] transition cursor-pointer mt-1 md:mt-2"
               >
                 Proceed to Details
               </button>
             </form>
 
             {/* Clean Editorial Links */}
-            <div className="mt-10 md:mt-12 divide-y divide-purple-200/70 border-y border-purple-200/70">
+            <div className="mt-5 md:mt-10 divide-y divide-purple-200/70 border-y border-purple-200/70">
               <button
                 type="button"
                 onClick={() => nav('refund')}
-                className="w-full py-4 flex items-center justify-between text-left text-xs md:text-sm font-bold text-purple-900 hover:text-pink-600 transition cursor-pointer group"
+                className="w-full py-2.5 md:py-4 flex items-center justify-between text-left text-xs md:text-sm font-bold text-purple-900 hover:text-pink-600 transition cursor-pointer group"
               >
                 <span>Read Payment &amp; Refund Policy</span>
-                <span className="text-base md:text-lg group-hover:translate-x-1 transition-transform">&rarr;</span>
+                <span className="text-sm md:text-lg group-hover:translate-x-1 transition-transform">&rarr;</span>
               </button>
               <button
                 type="button"
                 onClick={() => nav('faq')}
-                className="w-full py-4 flex items-center justify-between text-left text-xs md:text-sm font-bold text-purple-900 hover:text-pink-600 transition cursor-pointer group"
+                className="w-full py-2.5 md:py-4 flex items-center justify-between text-left text-xs md:text-sm font-bold text-purple-900 hover:text-pink-600 transition cursor-pointer group"
               >
                 <span>Have questions? View Frequently Asked Questions</span>
-                <span className="text-base md:text-lg group-hover:translate-x-1 transition-transform">&rarr;</span>
+                <span className="text-sm md:text-lg group-hover:translate-x-1 transition-transform">&rarr;</span>
               </button>
             </div>
           </div>
