@@ -385,19 +385,27 @@
 
         return (
            <div style={{ WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }} className="px-5 py-4 sm:px-6 md:px-10 md:py-8 max-w-5xl mx-auto min-h-screen select-none">
-            {/* Top Back Breadcrumb */}
-            <div className="mb-4 md:mb-6 flex items-center justify-between gap-2">
-              <button
-                type="button"
-                onClick={() => nav(isPrintMode ? 'prints' : 'originals')}
-                className="text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer"
-              >
-                &larr; Back to {isPrintMode ? 'Prints' : 'Originals'}
-              </button>
-              <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-gray-400">
-                Studio &mdash; {isPrintMode ? 'Prints' : 'Originals'}
-              </span>
-            </div>
+            {/* Top Smart Back Breadcrumb */}
+            {(() => {
+              const backTarget = returnView || (isPrintMode ? 'prints' : 'originals');
+              const backLabelMap = { gallery: 'Home', originals: 'Originals', prints: 'Prints', wishlist: 'Wishlist' };
+              const backLabel = backLabelMap[backTarget] || (isPrintMode ? 'Prints' : 'Originals');
+              return (
+                <div className="mb-4 md:mb-6 flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => nav(backTarget)}
+                    className="text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer"
+                  >
+                    &larr; Back to {backLabel}
+                  </button>
+                  <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-gray-400">
+                    Studio &mdash; {isPrintMode ? 'Prints' : 'Originals'}
+                  </span>
+                </div>
+              );
+            })()}
+
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 md:gap-10">
 
