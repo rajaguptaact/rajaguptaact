@@ -4231,7 +4231,12 @@
         } catch(e) { console.log(e); }
       }, [view, menuOpen, currency]);
 
-      const nav = (v) => { 
+      const nav = (v, returnTo = null) => { 
+          if (v === 'refund' || v === 'faq') {
+              setPolicyReturnView(returnTo === 'commission' ? 'commission' : 'gallery');
+          } else {
+              setPolicyReturnView('gallery');
+          }
           setView(v); 
           setMenuOpen(false); 
           window.scrollTo(0,0); 
@@ -4240,6 +4245,7 @@
           setRecoveredOrders([]);
           setIsRecoverOpen(false);
       };
+
 
       const [lastAddedTime, setLastAddedTime] = useState(0);
 
