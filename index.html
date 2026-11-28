@@ -1513,9 +1513,17 @@
       const [selectedArtId, setSelectedArtId] = useState(null);
       const [selectedArtMode, setSelectedArtMode] = useState('original');
       const [selectedArtInitialSize, setSelectedArtInitialSize] = useState(null);
+      const [artReturnView, setArtReturnView] = useState(null);
+      const [policyReturnView, setPolicyReturnView] = useState('gallery');
       const [menuOpen, setMenuOpen] = useState(false);
       const openArtworkDetail = (art, mode = 'original', initialSize = null) => {
           if (!art || !art.id) return;
+          if (view !== 'artwork_detail') {
+              const validOrigin = ['gallery', 'originals', 'prints', 'wishlist'].includes(view)
+                  ? view
+                  : (mode === 'print' ? 'prints' : 'originals');
+              setArtReturnView(validOrigin);
+          }
           setSelectedArtId(art.id);
           setSelectedArtMode(mode === 'print' ? 'print' : 'original');
           setSelectedArtInitialSize(initialSize);
