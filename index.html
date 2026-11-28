@@ -97,6 +97,21 @@
             font-size: clamp(17px, 1.85vw, 19.5px);
         }
     }
+
+    /* ✨ SMOOTH LUXURY ANNOUNCEMENT TICKER (SLOW & SEAMLESS) */
+    @keyframes luxuryTickerScroll {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-50%, 0, 0); }
+    }
+    .luxury-ticker-track {
+      display: flex;
+      width: max-content;
+      animation: luxuryTickerScroll 38s linear infinite;
+      will-change: transform;
+    }
+    .luxury-ticker-track:hover {
+      animation-play-state: paused;
+    }
   </style>
 </head>
 <body style="font-family: 'Lora', serif;" class="bg-gradient-to-br from-[#efeaf6] via-[#f4eef8] to-[#f7edf5] text-gray-900 antialiased selection:bg-purple-300">
