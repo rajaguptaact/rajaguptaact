@@ -9257,10 +9257,10 @@
             
             {view === 'terms' ? TermsView({nav}) : null}
             {view === 'privacy' ? PrivacyView({nav}) : null}
-            {view === 'refund' ? RefundView({nav}) : null}
+            {view === 'refund' ? RefundView({nav, returnView: policyReturnView}) : null}
             {view === 'disclaimer' ? DisclaimerView({nav}) : null}
             {view === 'care' ? CareView({nav}) : null}
-            {view === 'faq' ? FAQFullView({nav}) : null}
+            {view === 'faq' ? FAQFullView({nav, returnView: policyReturnView}) : null}
             {view === 'about' ? AboutView({nav, artistPhoto}) : null}
             {(view === 'originals' || view === 'prints') ? (
               <div className="p-3.5 md:p-8 max-w-7xl mx-auto min-h-screen space-y-5 md:space-y-8">
