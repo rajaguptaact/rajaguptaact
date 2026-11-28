@@ -1303,9 +1303,10 @@
 
       return (
         <div className="px-5 py-6 md:px-10 md:py-12 max-w-3xl mx-auto min-h-screen text-left">
-          <button onClick={() => nav('gallery')} className="mb-8 md:mb-10 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
-             &larr; Back to Home
+          <button type="button" onClick={() => nav(returnView === 'commission' ? 'commission' : 'gallery')} className="mb-8 md:mb-10 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
+             &larr; Back to {returnView === 'commission' ? 'Commission' : 'Home'}
           </button>
+
 
           <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.26em] text-purple-600 mb-3">Help &amp; Information</p>
           <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
