@@ -4847,136 +4847,181 @@
 
 
         return (
-          <div className="p-4 md:p-8 max-w-6xl mx-auto min-h-screen space-y-5 md:space-y-8">
-            <button onClick={handleCommissionBack} className="mb-1 md:mb-2 text-purple-600 font-bold flex items-center gap-2 hover:text-purple-800 transition text-sm md:text-base">
-                &larr; Back to Home
+          <div className="px-5 py-6 md:px-10 md:py-12 max-w-3xl mx-auto min-h-screen text-left">
+            <button type="button" onClick={handleCommissionBack} className="mb-8 md:mb-10 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
+              &larr; Back to Home
             </button>
-            <div className="text-center mb-4 md:mb-10">
-               <h2 className="text-2xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 mb-1.5 md:mb-2">Commission an Artwork</h2>
-               <p className="text-gray-600 font-bold text-xs md:text-lg">Professional Colour Pencil Portraits</p>
+
+            {/* Editorial Page Header */}
+            <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.26em] text-purple-600 mb-3">
+              Custom Portraits
+            </p>
+            <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+              Commission an Artwork
+            </h1>
+            <p className="text-sm md:text-base text-gray-600 leading-relaxed pb-7 border-b border-purple-200/70">
+              Turn a cherished photograph into a 100% handcrafted, lifelike colour pencil portrait on premium acid-free paper.
+            </p>
+
+            {/* Clean Editorial Studio Note (No Box) */}
+            <div className="my-7 md:my-9 border-l-2 border-purple-500 pl-4 md:pl-5 py-0.5 space-y-1">
+              <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-purple-700">
+                Important Studio Note &bull; Colour Pencil Only
+              </p>
+              <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
+                I do not accept orders for watercolor, oil, or digital mediums. All commissioned requests are strictly handcrafted layer by layer with artist-grade colour pencils.
+              </p>
             </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-10">
-              <div className="space-y-3 md:space-y-6">
-                
-                <div className="bg-indigo-50 border border-indigo-100 px-3 py-2 md:p-6 rounded-xl md:rounded-2xl shadow-sm relative overflow-hidden">
-                   <div className="absolute top-0 left-0 w-1 md:w-2 h-full bg-indigo-500"></div>
-                   <p className="font-black text-indigo-900 flex items-center gap-1.5 md:gap-2 text-xs md:text-lg">
-                       <svg className="w-3.5 h-3.5 md:w-6 md:h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      Important Studio Note
-                   </p>
-                   <p className="text-[9px] md:text-sm text-gray-700 mt-1 md:mt-2 font-medium leading-relaxed">
-                     <span className="font-bold text-indigo-800">Strictly Colour Pencil Only:</span> I do not accept orders for watercolor, oil, or digital mediums. All commissioned requests are strictly handcrafted with highly detailed colour pencils.
-                   </p>
-                </div>
 
-                <div className="glass-panel p-3 md:p-8 rounded-xl md:rounded-3xl shadow-xl">
-                  <form 
-                    onInvalid={(e) => {
-                        e.preventDefault();
-                        const form = e.currentTarget;
-                        const firstInvalid = form.querySelector(':invalid');
-                        
-                        if (firstInvalid && firstInvalid === e.target) {
-                            // Purane laal boxes ko normal karein
-                            form.querySelectorAll('.error-glow').forEach(el => el.classList.remove('error-glow'));
-                            
-                            // Sirf current error wale box ko laal karein
-                            firstInvalid.classList.add('error-glow');
-                            
-                            // Type karte hi laal rang hata dein
-                            firstInvalid.addEventListener('input', () => firstInvalid.classList.remove('error-glow'), { once: true });
+            {/* Open Luxury Editorial Form (No White Glass Card) */}
+            <form
+              onInvalid={(e) => {
+                  e.preventDefault();
+                  const form = e.currentTarget;
+                  const firstInvalid = form.querySelector(':invalid');
+                  
+                  if (firstInvalid && firstInvalid === e.target) {
+                      form.querySelectorAll('.error-glow').forEach(el => el.classList.remove('error-glow'));
+                      firstInvalid.classList.add('error-glow');
+                      firstInvalid.addEventListener('input', () => firstInvalid.classList.remove('error-glow'), { once: true });
 
-                            const fieldName = e.target.placeholder || e.target.name || "Required Field";
-                            showToast(`⚠️ [${fieldName}] : ${e.target.validationMessage}`);
-                            document.activeElement.blur(); // 🚨 Keyboard ko band karega
-                        }
-                    }}
-                    onSubmit={(e) => { 
-                      e.preventDefault(); 
-                      if (commissionInput.subject.trim().length < 5) {
-                          showToast("❌ Please provide a detailed subject description (minimum 5 characters).");
-                          return;
-                      }
-                      if (commissionInput.instagram.trim().length < 5) {
-                          showToast("❌ Please enter a valid Instagram ID (minimum 5 characters).");
-                          return;
-                      }
-                      const isA3Size = commissionInput.size && commissionInput.size.includes('A3');
-                      const minBudgetAllowed = currency === 'USD' ? (isA3Size ? 78 : 60) : (isA3Size ? 2500 : 1500);
-                      const rawBudget = Number(commissionInput.budget);
-                      if (!rawBudget || rawBudget < minBudgetAllowed) {
-                          showToast(`❌ Minimum estimated budget for ${isA3Size ? 'A3' : 'A4'} is ${currency === 'USD' ? '$' + minBudgetAllowed : '₹' + minBudgetAllowed.toLocaleString('en-IN')}.`);
-                          return;
-                      }
-                      const basePriceINR = currency === 'USD' ? rawBudget * 83.5 : rawBudget;
-                      startCheckout([{ title: 'Commission: ' + commissionInput.subject, selectedSize: commissionInput.size, price: basePriceINR }], 'Commission', { instagram: commissionInput.instagram }); 
-                    }} className="space-y-2.5 md:space-y-6">
-                    <div>
-                      <label className="font-black text-[9px] md:text-sm text-gray-800 uppercase tracking-wide">Artwork Subject Details</label>
-                      <input required minLength="5" value={commissionInput.subject} onChange={e => setCommissionInput({...commissionInput, subject: e.target.value})} placeholder="E.g. Portrait of two people..." className="w-full border-2 border-gray-200 px-2 py-1.5 md:p-4 rounded-md md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-0.5 md:mt-2 text-[11px] md:text-base" />
-                    </div>
-                    
-                    <div>
-                      <label className="font-black text-[9px] md:text-sm text-gray-800 uppercase tracking-wide">Instagram ID (Required)</label>
-                      <input required minLength="5" value={commissionInput.instagram} onChange={e => setCommissionInput({...commissionInput, instagram: e.target.value})} placeholder="E.g. @your_username" className="w-full border-2 border-gray-200 px-2 py-1.5 md:p-4 rounded-md md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-0.5 md:mt-2 text-[11px] md:text-base" />
-                      <p className="text-[8px] md:text-xs text-gray-500 font-bold mt-0.5 md:mt-1 italic">This ID is strictly required for order updates and reference purposes. (Min 5 characters)</p>
-                    </div>
-
-                    <div>
-                      
-                      <div className="flex items-center justify-between">
-                        <label className="font-black text-[9px] md:text-sm text-gray-800 uppercase tracking-wide">Select Paper Size</label>
-                        <button type="button" onClick={() => openSizeGuide(commissionInput.size.includes('A3') ? 'a3' : 'a4')} className="text-[10px] md:text-xs font-black text-pink-600 hover:text-purple-700 flex items-center gap-0.5 cursor-pointer active:scale-95 transition">
-                          <span>Size Guide</span>
-                          <span className="text-sm leading-none">›</span>
-                        </button>
-                      </div>
-                      
-                      <select required name="Paper Size" value={commissionInput.size} onChange={e => setCommissionInput({...commissionInput, size: e.target.value})} className="w-full border-2 border-gray-200 px-2 py-1.5 md:p-4 rounded-md md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-0.5 md:mt-2 text-[11px] md:text-base">
-                        <option value="" disabled>Select Paper Size...</option>
-                        <option value="A4 Colour Pencil">A4 Size (Medium)</option>
-                        <option value="A3 Colour Pencil">A3 Size (Large)</option>
-                      </select>
-                    </div>
-                    <div>
-                      {(() => {
-                        const isA3Size = commissionInput.size && commissionInput.size.includes('A3');
-                        const minBudgetVal = currency === 'USD' ? (isA3Size ? 78 : 60) : (isA3Size ? 2500 : 1500);
-                        return (
-                          <>
-                            <label className="font-black text-[9px] md:text-sm text-gray-800 uppercase tracking-wide">Estimated Budget ({currency === 'USD' ? '$ USD' : '₹ INR'})</label>
-                            <input required value={commissionInput.budget} onChange={e => setCommissionInput({...commissionInput, budget: e.target.value})} type="number" min={minBudgetVal} placeholder={currency === 'USD' ? `Starting at $${minBudgetVal}...` : `Starting at ₹${minBudgetVal.toLocaleString('en-IN')}...`} className="w-full border-2 border-gray-200 px-2 py-1.5 md:p-4 rounded-md md:rounded-xl bg-white focus:border-purple-500 outline-none transition font-medium mt-0.5 md:mt-2 text-[11px] md:text-base" />
-                            <p className="text-[8px] md:text-xs text-purple-700 font-bold mt-1 leading-snug">
-                              Note: This is only your estimated budget request &mdash; not a final confirmed price. Final price depends on photo details, faces &amp; size (A4/A3) and will be confirmed by Raja on WhatsApp / Instagram.
-                            </p>
-                          </>
-                        );
-                      })()}
-                    </div>
-                    <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 md:py-4 rounded-md md:rounded-xl font-black text-xs md:text-lg shadow-md hover:shadow-xl transition-transform transform active:scale-95 mt-2 md:mt-4 cursor-pointer">Proceed to Details</button>
-                  </form>
-                </div>
+                      const fieldName = e.target.placeholder || e.target.name || "Required Field";
+                      showToast(`⚠️ [${fieldName}] : ${e.target.validationMessage}`);
+                      document.activeElement.blur();
+                  }
+              }}
+              onSubmit={(e) => { 
+                e.preventDefault(); 
+                if (commissionInput.subject.trim().length < 5) {
+                    showToast("❌ Please provide a detailed subject description (minimum 5 characters).");
+                    return;
+                }
+                if (commissionInput.instagram.trim().length < 5) {
+                    showToast("❌ Please enter a valid Instagram ID (minimum 5 characters).");
+                    return;
+                }
+                const isA3Size = commissionInput.size && commissionInput.size.includes('A3');
+                const minBudgetAllowed = currency === 'USD' ? (isA3Size ? 78 : 60) : (isA3Size ? 2500 : 1500);
+                const rawBudget = Number(commissionInput.budget);
+                if (!rawBudget || rawBudget < minBudgetAllowed) {
+                    showToast(`❌ Minimum estimated budget for ${isA3Size ? 'A3' : 'A4'} is ${currency === 'USD' ? '$' + minBudgetAllowed : '₹' + minBudgetAllowed.toLocaleString('en-IN')}.`);
+                    return;
+                }
+                const basePriceINR = currency === 'USD' ? rawBudget * 83.5 : rawBudget;
+                startCheckout([{ title: 'Commission: ' + commissionInput.subject, selectedSize: commissionInput.size, price: basePriceINR }], 'Commission', { instagram: commissionInput.instagram }); 
+              }}
+              className="space-y-5 md:space-y-6"
+            >
+              <div>
+                <label className="block text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
+                  Artwork Subject Details
+                </label>
+                <input
+                  required
+                  minLength="5"
+                  value={commissionInput.subject}
+                  onChange={e => setCommissionInput({...commissionInput, subject: e.target.value})}
+                  placeholder="E.g. Portrait of two people..."
+                  className="w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3.5 py-3 md:px-4 md:py-3.5 rounded-xl outline-none transition text-sm md:text-base text-gray-900 placeholder:text-gray-400 shadow-[0_2px_10px_rgba(30,17,54,0.03)]"
+                />
               </div>
 
-              <div className="space-y-3 md:space-y-4">
-                <button
-                  type="button"
-                  onClick={() => nav('refund')}
-                  className="w-full py-3.5 px-4 border-y border-purple-200/80 flex items-center justify-between text-left text-xs md:text-base font-bold text-purple-800 hover:text-pink-600 transition cursor-pointer group"
-                >
-                  <span>Read Payment &amp; Refund Policy</span>
-                  <span className="text-base md:text-lg group-hover:translate-x-1 transition-transform">&rarr;</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => nav('faq')}
-                  className="w-full py-3.5 px-4 border-y border-purple-200/80 flex items-center justify-between text-left text-xs md:text-base font-bold text-purple-800 hover:text-pink-600 transition cursor-pointer group"
-                >
-                  <span>Have questions? View Frequently Asked Questions</span>
-                  <span className="text-base md:text-lg group-hover:translate-x-1 transition-transform">&rarr;</span>
-                </button>
+              <div>
+                <label className="block text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
+                  Instagram ID (Required)
+                </label>
+                <input
+                  required
+                  minLength="5"
+                  value={commissionInput.instagram}
+                  onChange={e => setCommissionInput({...commissionInput, instagram: e.target.value})}
+                  placeholder="E.g. @your_username"
+                  className="w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3.5 py-3 md:px-4 md:py-3.5 rounded-xl outline-none transition text-sm md:text-base text-gray-900 placeholder:text-gray-400 shadow-[0_2px_10px_rgba(30,17,54,0.03)]"
+                />
+                <p className="text-[11px] md:text-xs text-gray-500 italic mt-1.5">
+                  Strictly required for progress updates and reference photos (min 5 characters).
+                </p>
               </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
+                    Select Paper Size
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => openSizeGuide(commissionInput.size.includes('A3') ? 'a3' : 'a4')}
+                    className="text-xs font-bold text-pink-600 hover:text-purple-700 flex items-center gap-0.5 cursor-pointer active:scale-95 transition"
+                  >
+                    <span>Size Guide</span>
+                    <span className="text-base leading-none">&rsaquo;</span>
+                  </button>
+                </div>
+                <select
+                  required
+                  name="Paper Size"
+                  value={commissionInput.size}
+                  onChange={e => setCommissionInput({...commissionInput, size: e.target.value})}
+                  className="w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3.5 py-3 md:px-4 md:py-3.5 rounded-xl outline-none transition text-sm md:text-base text-gray-900 shadow-[0_2px_10px_rgba(30,17,54,0.03)]"
+                >
+                  <option value="" disabled>Select Paper Size...</option>
+                  <option value="A4 Colour Pencil">A4 Size (Medium)</option>
+                  <option value="A3 Colour Pencil">A3 Size (Large)</option>
+                </select>
+              </div>
+
+              <div>
+                {(() => {
+                  const isA3Size = commissionInput.size && commissionInput.size.includes('A3');
+                  const minBudgetVal = currency === 'USD' ? (isA3Size ? 78 : 60) : (isA3Size ? 2500 : 1500);
+                  return (
+                    <>
+                      <label className="block text-[10px] md:text-xs font-bold uppercase tracking-[0.18em] text-gray-500 mb-2">
+                        Estimated Budget ({currency === 'USD' ? '$ USD' : '₹ INR'})
+                      </label>
+                      <input
+                        required
+                        value={commissionInput.budget}
+                        onChange={e => setCommissionInput({...commissionInput, budget: e.target.value})}
+                        type="number"
+                        min={minBudgetVal}
+                        placeholder={currency === 'USD' ? `Starting at $${minBudgetVal}...` : `Starting at ₹${minBudgetVal.toLocaleString('en-IN')}...`}
+                        className="w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3.5 py-3 md:px-4 md:py-3.5 rounded-xl outline-none transition text-sm md:text-base text-gray-900 placeholder:text-gray-400 shadow-[0_2px_10px_rgba(30,17,54,0.03)]"
+                      />
+                      <p className="text-[11px] md:text-xs text-purple-800/90 font-medium mt-2 leading-relaxed">
+                        Note: This is only your estimated budget request &mdash; not a final confirmed price. Final price depends on photo details, faces &amp; size (A4/A3) and will be confirmed by Raja on WhatsApp / Instagram.
+                      </p>
+                    </>
+                  );
+                })()}
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 md:py-4 rounded-xl bg-gradient-to-r from-purple-700 to-pink-600 text-white font-bold text-xs md:text-sm uppercase tracking-[0.16em] shadow-md hover:opacity-95 active:scale-[0.99] transition cursor-pointer mt-2"
+              >
+                Proceed to Details
+              </button>
+            </form>
+
+            {/* Clean Editorial Links */}
+            <div className="mt-10 md:mt-12 divide-y divide-purple-200/70 border-y border-purple-200/70">
+              <button
+                type="button"
+                onClick={() => nav('refund')}
+                className="w-full py-4 flex items-center justify-between text-left text-xs md:text-sm font-bold text-purple-900 hover:text-pink-600 transition cursor-pointer group"
+              >
+                <span>Read Payment &amp; Refund Policy</span>
+                <span className="text-base md:text-lg group-hover:translate-x-1 transition-transform">&rarr;</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => nav('faq')}
+                className="w-full py-4 flex items-center justify-between text-left text-xs md:text-sm font-bold text-purple-900 hover:text-pink-600 transition cursor-pointer group"
+              >
+                <span>Have questions? View Frequently Asked Questions</span>
+                <span className="text-base md:text-lg group-hover:translate-x-1 transition-transform">&rarr;</span>
+              </button>
             </div>
           </div>
         );
