@@ -5606,8 +5606,41 @@
       };
 
       
-        const CheckoutForm = () => {
-        
+      const CheckoutForm = () => {
+        const INTL_DIAL_CODES = [
+            { country: "Australia", code: "+61", short: "Australia" },
+            { country: "Austria", code: "+43", short: "Austria" },
+            { country: "Bahrain", code: "+973", short: "Bahrain" },
+            { country: "Canada", code: "+1", short: "Canada" },
+            { country: "France", code: "+33", short: "France" },
+            { country: "Germany", code: "+49", short: "Germany" },
+            { country: "Ireland", code: "+353", short: "Ireland" },
+            { country: "Italy", code: "+39", short: "Italy" },
+            { country: "Japan", code: "+81", short: "Japan" },
+            { country: "Kuwait", code: "+965", short: "Kuwait" },
+            { country: "Malaysia", code: "+60", short: "Malaysia" },
+            { country: "Mauritius", code: "+230", short: "Mauritius" },
+            { country: "Nepal", code: "+977", short: "Nepal" },
+            { country: "Netherlands", code: "+31", short: "Netherlands" },
+            { country: "New Zealand", code: "+64", short: "New Zealand" },
+            { country: "Oman", code: "+968", short: "Oman" },
+            { country: "Philippines", code: "+63", short: "Philippines" },
+            { country: "Qatar", code: "+974", short: "Qatar" },
+            { country: "Saudi Arabia", code: "+966", short: "Saudi Arabia" },
+            { country: "Singapore", code: "+65", short: "Singapore" },
+            { country: "South Africa", code: "+27", short: "South Africa" },
+            { country: "South Korea", code: "+82", short: "South Korea" },
+            { country: "Spain", code: "+34", short: "Spain" },
+            { country: "Sri Lanka", code: "+94", short: "Sri Lanka" },
+            { country: "Sweden", code: "+46", short: "Sweden" },
+            { country: "Switzerland", code: "+41", short: "Switzerland" },
+            { country: "Thailand", code: "+66", short: "Thailand" },
+            { country: "United Arab Emirates", code: "+971", short: "UAE" },
+            { country: "United Kingdom", code: "+44", short: "UK" },
+            { country: "United States", code: "+1", short: "USA" },
+            { country: "Vietnam", code: "+84", short: "Vietnam" }
+        ];
+
         // 🚨 SMART STRICT EMAIL VALIDATION (Sab genuine domains allowed, fake format & typos blocked)
         const emailVal = (checkoutData.email || '').trim();
         const emailTypoDomains = new Set([
@@ -5634,17 +5667,18 @@
                     ? "❌ Please enter a valid email address (e.g. name@example.com)"
                     : "";
 
+        // 🚨 COUNTRY CODE + LOCAL WHATSAPP NUMBER LOGIC
+        const activePhoneCodeRaw = checkoutData.country === 'India' ? 'India|+91' : (checkoutData.phoneCode || '');
+        const activeDialCode = activePhoneCodeRaw ? activePhoneCodeRaw.split('|')[1] : '';
+        const activeLocalPhone = checkoutData.phoneNumber || '';
+
         let isPhoneValidNow = false;
         let currentPhoneError = '';
-        const cleanedPhone = checkoutData.phone.replace(/[\s-]/g, '');
 
         const isFakePhonePattern = (digits) => {
             if (!digits) return true;
-            // All digits same (e.g. 9999999999) or 6+ zeros or 7+ identical digits in a row
             if (/^(\d)\1+$/.test(digits) || /0{6,}|(\d)\1{6,}/.test(digits)) return true;
-            // Repeating dummy blocks (e.g. 9898989898 or 9876598765)
             if (/^(\d{2})\1{3,}$/.test(digits) || /^(\d{5})\1$/.test(digits)) return true;
-            // 6+ sequential ascending or descending digits (e.g. 9876543210, 6789012345, 9123456789)
             const asc = '01234567890123456789';
             const desc = '98765432109876543210';
             for (let i = 0; i <= digits.length - 6; i++) {
@@ -5654,63 +5688,48 @@
             return false;
         };
 
-        if (cleanedPhone) {
-            if (checkoutData.country === 'India') {
-                if (!cleanedPhone.startsWith('+91')) {
-                    currentPhoneError = "❌ Indian number must start with +91";
-                } else if (!/^\+91\d+$/.test(cleanedPhone)) {
-                    currentPhoneError = "❌ Only numbers allowed after +91";
-                } else if (cleanedPhone.length !== 13) {
-                    currentPhoneError = "❌ Must be exactly 10 digits after +91";
+        if (checkoutData.country === 'India') {
+            if (activeLocalPhone.length > 0) {
+                if (activeLocalPhone.length !== 10) {
+                    currentPhoneError = "❌ Must be exactly 10 digits";
+                } else if (!/^[6-9]\d{9}$/.test(activeLocalPhone)) {
+                    currentPhoneError = "❌ Indian mobile numbers must start with 6, 7, 8, or 9";
+                } else if (isFakePhonePattern(activeLocalPhone)) {
+                    currentPhoneError = "❌ Please enter a real WhatsApp number (invalid pattern)";
                 } else {
-                    const localDigits = cleanedPhone.slice(3);
-                    if (!/^[6-9]\d{9}$/.test(localDigits)) {
-                        currentPhoneError = "❌ Indian mobile numbers must start with 6, 7, 8, or 9";
-                    } else if (isFakePhonePattern(localDigits)) {
-                        currentPhoneError = "❌ Please enter a real WhatsApp number (invalid pattern)";
-                    } else {
-                        isPhoneValidNow = true;
-                    }
+                    isPhoneValidNow = true;
                 }
-            } else {
-                if (!cleanedPhone.startsWith('+')) {
-                    currentPhoneError = "❌ International format requires '+' and country code";
-                } else if (!/^\+[1-9]\d+$/.test(cleanedPhone)) {
-                    currentPhoneError = "❌ Enter valid country code (cannot start with +0)";
-                } else if (cleanedPhone.length < 8 || cleanedPhone.length > 16) {
-                    currentPhoneError = "❌ Invalid international number configuration length";
+            }
+        } else {
+            if (!activeDialCode && activeLocalPhone.length > 0) {
+                currentPhoneError = "❌ Please select your Country Code first";
+            } else if (activeLocalPhone.length > 0) {
+                const totalDigits = activeDialCode.replace('+', '') + activeLocalPhone;
+                if (activeLocalPhone.length < 6 || totalDigits.length < 7 || totalDigits.length > 15) {
+                    currentPhoneError = "❌ Enter a valid WhatsApp number (6–15 digits)";
+                } else if (isFakePhonePattern(activeLocalPhone)) {
+                    currentPhoneError = "❌ Please enter a real WhatsApp number (invalid pattern)";
                 } else {
-                    const intlDigits = cleanedPhone.slice(1);
-                    if (isFakePhonePattern(intlDigits)) {
-                        currentPhoneError = "❌ Please enter a real WhatsApp number (invalid pattern)";
-                    } else {
-                        isPhoneValidNow = true;
-                    }
+                    isPhoneValidNow = true;
                 }
             }
         }
-
 
         let isPinValidNow = false;
         let isLocationMatched = true;
 
         if (checkoutData.country === 'India') {
-            // India ke liye API verify hona zaroori hai
             isPinValidNow = checkoutData.pin.length === 6 && checkoutData.pinCity && checkoutData.pinCity !== '';
-            
-            // STRICT MATCH: Agar user manually state/city badalta hai toh match hona chahiye
             if (isPinValidNow && checkoutData.state && checkoutData.city) {
                 if (checkoutData.state !== checkoutData.pinState || checkoutData.city !== checkoutData.pinCity) {
                     isLocationMatched = false;
                 }
             }
         } else {
-            // International ke liye koi api error nahi, bas 3 digit ka hona chahiye
             isPinValidNow = checkoutData.pin.trim().length >= 3;
             isLocationMatched = true;
         }
 
-        // 🚨 NAYA: Minimum 15 letters aur kam se kam 2 spaces (3 words) hone chahiye
         const spaceCount = (checkoutData.address.match(/ /g) || []).length;
         const isAddressValidNow = checkoutData.address.trim().length >= 15 && spaceCount >= 2;
         const isNameValidNow = checkoutData.name.trim().length >= 4;
@@ -5724,22 +5743,29 @@
           setCheckoutData(prev => ({...prev, email: val}));
         };
 
-        const handlePhoneChange = (e) => {
-          let val = e.target.value;
-          if (val.length === 1 && /[1-9]/.test(val)) val = '+' + val;
-          val = val.replace(/[^\d+\s-]/g, '');
-          if (val.lastIndexOf('+') > 0) {
-             val = val.substring(0, val.lastIndexOf('+')) + val.substring(val.lastIndexOf('+')).replace(/\+/g, '');
-          }
-          setCheckoutData(prev => ({...prev, phone: val}));
+        const handleCountryCodeChange = (e) => {
+          const val = e.target.value;
+          const dial = val ? val.split('|')[1] : '';
+          setCheckoutData(prev => {
+              const num = prev.phoneNumber || '';
+              return { ...prev, phoneCode: val, phone: (dial && num) ? `${dial} ${num}` : '' };
+          });
+        };
+
+        const handleLocalPhoneChange = (e) => {
+          const maxLen = checkoutData.country === 'India' ? 10 : 15;
+          const digits = e.target.value.replace(/\D/g, '').slice(0, maxLen);
+          setCheckoutData(prev => {
+              const dial = prev.country === 'India' ? '+91' : (prev.phoneCode ? prev.phoneCode.split('|')[1] : '');
+              return { ...prev, phoneNumber: digits, phone: (dial && digits) ? `${dial} ${digits}` : '' };
+          });
         };
 
         const handlePinChange = async (e) => {
           const val = e.target.value.replace(/[^0-9A-Za-z\s-]/g, '');
           setCheckoutData(prev => ({...prev, pin: val, pinCity: '', pinState: ''})); 
-          setLocalAreas([]); // NAYA: Naya PIN type karte hi purani list hata dega
+          setLocalAreas([]);
           
-          // --- INDIA API LOGIC (WITH ULTIMATE SMART MATCH) ---
           if (checkoutData.country === 'India' && val.length === 6 && /^\d+$/.test(val)) {
               setIsValidating(true);
               try {
@@ -5753,7 +5779,6 @@
                   
                   const clean = s => s.toLowerCase().replace(/[^a-z]/g, '');
 
-                  // 1. SMART MATCHING FOR STATE
                   let allStates = Object.keys(staticLocationData["India"]);
                   let smartState = fetchedState;
                   let targetState = clean(fetchedState);
@@ -5774,7 +5799,6 @@
                       fetchedState = smartState;
                   }
 
-                  // 2. SMART MATCHING FOR CITY/DISTRICT
                   let cityList = [...(staticLocationData["India"][fetchedState] || [])]; 
                   let smartCity = fetchedCity;
 
@@ -5814,13 +5838,11 @@
                   }));
                   
                   setStaticCities(cityList);
-                  setLocalAreas(postOffices.map(po => po.Name)); // Mohallo ki list save kar li
+                  setLocalAreas(postOffices.map(po => po.Name));
                 }
               } catch (err) { console.log(err); }
               setIsValidating(false);
           }
-          // --- INTERNATIONAL LOGIC ---
-          // International ke liye API check hata diya gaya hai taaki customer fase nahi
         };
 
         const shippingFeeBase = 0;
@@ -5844,6 +5866,8 @@
              showPremiumAlert("❌ Details verification failed. Please check all the red error messages and fix them.");
              return;
           }
+
+          const finalPhoneStr = (checkoutData.phone || (activeDialCode && activeLocalPhone ? `${activeDialCode} ${activeLocalPhone}` : '')).trim();
 
           if (checkoutData.type === 'Commission') {
              if (!navigator.onLine) {
@@ -5869,7 +5893,7 @@
                  userId: firebase.auth().currentUser ? firebase.auth().currentUser.uid : null,
                  name: String(checkoutData.name || '').trim(),
                  email: String(checkoutData.email || '').toLowerCase().trim(),
-                 phone: String(checkoutData.phone || '').trim(),
+                 phone: finalPhoneStr,
                  address: String(checkoutData.address || '').trim(),
                  pin: String(checkoutData.pin || '').trim(),
                  city: String(checkoutData.city || ''),
@@ -5902,7 +5926,7 @@
                  setTimeout(() => {
                      setOrderModal(null);
                      setCommissionInput({ subject: '', size: '', budget: '', instagram: '' });
-                     setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
+                     setCheckoutData({ name: '', email: '', phone: '', phoneCode: '', phoneNumber: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
                      showPremiumAlert("✅ Commission Request Sent Successfully!\n📋 You can track this request in your 'Order History'.\n💬 I will contact you soon via WhatsApp / Instagram.");
                      nav('my_orders');
                  }, 700);
@@ -5924,11 +5948,10 @@
           }
         };
 
-
         const handleBack = () => {
           const autoEmail = (currentUser && currentUser.email) ? currentUser.email.toLowerCase().trim() : '';
           const hasEmailChanged = checkoutData.email.trim() !== '' && checkoutData.email.trim() !== autoEmail;
-          const hasData = checkoutData.name.trim() !== '' || hasEmailChanged || checkoutData.phone.trim() !== '' || checkoutData.address.trim() !== '' || checkoutData.pin.trim() !== '';
+          const hasData = checkoutData.name.trim() !== '' || hasEmailChanged || checkoutData.phone.trim() !== '' || (checkoutData.phoneNumber || '').trim() !== '' || checkoutData.address.trim() !== '' || checkoutData.pin.trim() !== '';
           if (hasData) {
             openConfirm({
                 icon: '⚠️',
@@ -5938,7 +5961,7 @@
                 cancelText: 'Stay Here',
                 confirmText: 'Yes, Go Back',
                 onConfirm: () => {
-                    setCheckoutData({ name: '', email: '', phone: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
+                    setCheckoutData({ name: '', email: '', phone: '', phoneCode: '', phoneNumber: '', address: '', pin: '', city: '', state: '', country: 'India', type: '', itemDetails: null, amount: 0, instagram: '' });
                     nav(checkoutData.type === 'Commission' ? 'commission' : 'cart');
                 }
             });
@@ -5947,117 +5970,251 @@
           }
         };
 
+        const baseInputClass = "w-full bg-white/95 border border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 px-3 py-2 md:px-4 md:py-3.5 rounded-lg md:rounded-xl outline-none transition text-xs md:text-base text-gray-900 placeholder:text-gray-400 shadow-[0_2px_8px_rgba(30,17,54,0.03)]";
 
         return (
-          <div className="p-4 md:p-8 max-w-xl md:max-w-3xl lg:max-w-4xl mx-auto min-h-screen">
-            <button type="button" onClick={handleBack} className="mb-4 md:mb-6 text-purple-600 font-bold flex items-center gap-2 hover:text-purple-800 transition cursor-pointer text-sm md:text-base">
+          <div className="px-4 py-3 md:px-10 md:py-10 max-w-3xl mx-auto min-h-screen text-left">
+            <button type="button" onClick={handleBack} className="mb-3 md:mb-8 text-purple-700 font-bold text-xs md:text-sm flex items-center gap-1.5 hover:text-purple-900 transition cursor-pointer">
                &larr; Back
             </button>
-            <h2 className="text-2xl md:text-3xl font-black mb-4 md:mb-6 text-purple-800 text-center">Shipping & Contact Details</h2>
-            <form 
+
+            {/* Editorial Page Header (Compact on Phone, Spacious on Desktop) */}
+            <p className="text-[9px] md:text-xs font-bold uppercase tracking-[0.24em] text-purple-600 mb-1 md:mb-2.5">
+              {checkoutData.type === 'Commission' ? 'Commission Details' : 'Studio Checkout'}
+            </p>
+            <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl md:text-5xl font-bold text-gray-900 leading-tight mb-1.5 md:mb-3">
+              Shipping &amp; Contact Details
+            </h1>
+            <p className="text-xs md:text-base text-gray-600 leading-snug md:leading-relaxed pb-3.5 md:pb-6 border-b border-purple-200/70">
+              Enter your delivery address and active WhatsApp number for order updates and courier tracking.
+            </p>
+
+            {/* Open Luxury Editorial Form (No Heavy Glass Box) */}
+            <form
               onInvalid={(e) => {
                   e.preventDefault();
                   const form = e.currentTarget;
                   const firstInvalid = form.querySelector(':invalid');
                   
                   if (firstInvalid && firstInvalid === e.target) {
-                      // Purane laal boxes ko normal karein
                       form.querySelectorAll('.error-glow').forEach(el => el.classList.remove('error-glow'));
-                      
-                      // Sirf current error wale box ko laal karein
                       firstInvalid.classList.add('error-glow');
-                      
-                      // Type karte hi laal rang hata dein
-                      firstInvalid.addEventListener('input', () => firstInvalid.classList.remove('error-glow'), { once: true });
+                      const clearGlow = () => firstInvalid.classList.remove('error-glow');
+                      firstInvalid.addEventListener('input', clearGlow, { once: true });
+                      firstInvalid.addEventListener('change', clearGlow, { once: true });
 
-                      const fieldName = e.target.placeholder || e.target.name || "Required Field";
+                      const fieldName = e.target.name || e.target.placeholder || "Required Field";
                       showToast(`⚠️ [${fieldName}] : ${e.target.validationMessage}`);
-                      document.activeElement.blur(); // 🚨 Keyboard ko band karega
+                      document.activeElement.blur();
                   }
               }}
-              className="glass-panel p-4 md:p-8 rounded-xl md:rounded-3xl shadow-xl space-y-3 md:space-y-5" 
+              className="mt-4 md:mt-7 space-y-3 md:space-y-5"
               onSubmit={handleShippingSubmit}
             >
-              
-              {/* 🚨 NAYA: COUNTRY RADIO BUTTONS (TOP SHIFTED) 🚨 */}
-              <div className="flex gap-3 md:gap-4 mb-1 md:mb-2">
-                 <div 
-                    onClick={() => { 
-                       setCheckoutData({...checkoutData, country: 'India', exactCountry: '', city: '', state: '', pin: '', phone: '', address: ''}); 
+              {/* Country Region Selector (India / International) */}
+              <div className="grid grid-cols-2 gap-2.5 md:gap-4">
+                 <div
+                    onClick={() => {
+                       setCheckoutData({...checkoutData, country: 'India', exactCountry: '', city: '', state: '', pin: '', phone: '', phoneCode: 'India|+91', phoneNumber: '', address: ''});
                        setCurrency('INR');
                        setStaticStates([]);
                        setStaticCities([]);
                        setLocalAreas([]);
-                    }} 
-                    className={`flex-1 flex items-center justify-center gap-2 p-3 md:p-4 rounded-xl border-2 cursor-pointer transition-all ${checkoutData.country === 'India' ? 'border-purple-500 bg-purple-50 shadow-sm' : 'border-gray-200 bg-gray-50/50 opacity-60 hover:opacity-100'}`}
+                    }}
+                    className={`flex items-center justify-center gap-2 py-2.5 px-3 md:py-3.5 md:px-4 rounded-xl border cursor-pointer transition-all ${
+                        checkoutData.country === 'India'
+                            ? 'border-purple-600 bg-white shadow-sm ring-1 ring-purple-200'
+                            : 'border-purple-200/70 bg-white/60 opacity-75 hover:opacity-100'
+                    }`}
                  >
-                    <div className={`w-4 h-4 md:w-5 md:h-5 rounded-full border-2 flex items-center justify-center ${checkoutData.country === 'India' ? 'border-purple-600' : 'border-gray-400'}`}>
-                       {checkoutData.country === 'India' && <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-purple-600 rounded-full"></div>}
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${checkoutData.country === 'India' ? 'border-purple-600' : 'border-gray-400'}`}>
+                       {checkoutData.country === 'India' && <div className="w-2 h-2 bg-purple-600 rounded-full"></div>}
                     </div>
-                    <span className={`font-black text-sm md:text-base tracking-wide ${checkoutData.country === 'India' ? 'text-purple-800' : 'text-gray-500'}`}>🇮🇳 India</span>
+                    <span className={`font-bold text-xs md:text-sm tracking-wide ${checkoutData.country === 'India' ? 'text-purple-900' : 'text-gray-600'}`}>🇮🇳 India</span>
                  </div>
 
-                 <div 
-                    onClick={() => { 
-                       setCheckoutData({...checkoutData, country: 'International', exactCountry: '', city: '', state: '', pin: '', phone: '', address: ''}); 
+                 <div
+                    onClick={() => {
+                       setCheckoutData({...checkoutData, country: 'International', exactCountry: '', city: '', state: '', pin: '', phone: '', phoneCode: '', phoneNumber: '', address: ''});
                        setCurrency('USD');
                        setStaticStates([]);
                        setStaticCities([]);
                        setLocalAreas([]);
-                    }} 
-                    className={`flex-1 flex items-center justify-center gap-2 p-3 md:p-4 rounded-xl border-2 cursor-pointer transition-all ${checkoutData.country === 'International' ? 'border-purple-500 bg-purple-50 shadow-sm' : 'border-gray-200 bg-gray-50/50 opacity-60 hover:opacity-100'}`}
+                    }}
+                    className={`flex items-center justify-center gap-2 py-2.5 px-3 md:py-3.5 md:px-4 rounded-xl border cursor-pointer transition-all ${
+                        checkoutData.country === 'International'
+                            ? 'border-purple-600 bg-white shadow-sm ring-1 ring-purple-200'
+                            : 'border-purple-200/70 bg-white/60 opacity-75 hover:opacity-100'
+                    }`}
                  >
-                    <div className={`w-4 h-4 md:w-5 md:h-5 rounded-full border-2 flex items-center justify-center ${checkoutData.country === 'International' ? 'border-purple-600' : 'border-gray-400'}`}>
-                       {checkoutData.country === 'International' && <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-purple-600 rounded-full"></div>}
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${checkoutData.country === 'International' ? 'border-purple-600' : 'border-gray-400'}`}>
+                       {checkoutData.country === 'International' && <div className="w-2 h-2 bg-purple-600 rounded-full"></div>}
                     </div>
-                    <span className={`font-black text-sm md:text-base tracking-wide ${checkoutData.country === 'International' ? 'text-purple-800' : 'text-gray-500'}`}>🌍 International</span>
+                    <span className={`font-bold text-xs md:text-sm tracking-wide ${checkoutData.country === 'International' ? 'text-purple-900' : 'text-gray-600'}`}>🌍 International</span>
                  </div>
               </div>
 
-              <input required minLength="4" value={checkoutData.name} placeholder="Full Name (Min 4 letters)" className="w-full border-2 border-gray-200 px-3 py-2 md:p-4 rounded-lg md:rounded-xl font-medium focus:border-purple-500 outline-none text-xs md:text-base" onChange={e => { const val = e.target.value; setCheckoutData(prev => ({...prev, name: val})); }} />
-              
+              {/* Full Name */}
               <div>
-               <input required type="email" pattern="^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,15}$" title="Please enter a valid email address (e.g. yourname@gmail.com)" value={checkoutData.email} placeholder="Email Address" className={`w-full border-2 px-3 py-2 md:p-4 rounded-lg md:rounded-xl font-medium outline-none text-xs md:text-base ${currentEmailError ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-gray-200 focus:border-purple-500 bg-white'}`} onChange={handleEmailChange} />
-                {currentEmailError && <p className="text-[9px] md:text-xs text-red-500 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">{currentEmailError}</p>}
+                <label className="block text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-1 md:mb-1.5">
+                  Full Name
+                </label>
+                <input
+                  required
+                  minLength="4"
+                  name="Full Name"
+                  value={checkoutData.name}
+                  placeholder="Full Name (Min 4 letters)"
+                  className={baseInputClass}
+                  onChange={e => { const val = e.target.value; setCheckoutData(prev => ({...prev, name: val})); }}
+                />
               </div>
 
+              {/* Email Address */}
               <div>
-                <input required value={checkoutData.phone} type="tel" placeholder={checkoutData.country === "India" ? "WhatsApp (+91...)" : "WhatsApp (Start with Country Code)"} className={`w-full border-2 px-3 py-2 md:p-4 rounded-lg md:rounded-xl font-medium outline-none text-xs md:text-base ${currentPhoneError ? 'border-red-400 focus:border-red-500 bg-red-50' : (isPhoneValidNow ? 'border-green-400 focus:border-green-500 bg-green-50' : 'border-gray-200 focus:border-purple-500 bg-white')}`} onChange={handlePhoneChange} />
-                {currentPhoneError && <p className="text-[9px] md:text-xs text-red-500 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">{currentPhoneError}</p>}
-                {isPhoneValidNow && !currentPhoneError && <p className="text-[9px] md:text-xs text-green-600 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">✅ Valid {checkoutData.country === 'India' ? 'Indian' : 'International'} number format.</p>}
+                <label className="block text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-1 md:mb-1.5">
+                  Email Address
+                </label>
+                <input
+                  required
+                  type="email"
+                  name="Email Address"
+                  pattern="^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,15}$"
+                  title="Please enter a valid email address (e.g. yourname@gmail.com)"
+                  value={checkoutData.email}
+                  placeholder="Email Address"
+                  className={`w-full border px-3 py-2 md:px-4 md:py-3.5 rounded-lg md:rounded-xl outline-none transition text-xs md:text-base shadow-[0_2px_8px_rgba(30,17,54,0.03)] ${
+                      currentEmailError
+                          ? 'border-red-400 focus:border-red-500 bg-red-50 text-gray-900'
+                          : 'border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 bg-white/95 text-gray-900'
+                  }`}
+                  onChange={handleEmailChange}
+                />
+                {currentEmailError && <p className="text-[10px] md:text-xs text-red-600 font-semibold mt-1 ml-1">{currentEmailError}</p>}
               </div>
 
-               
-              {/* 🚨 PIN CODE BOX SHIFTED UP HERE 🚨 */}
-               <div>
-                 <input required value={checkoutData.pin} placeholder={checkoutData.country === "India" ? "6-Digit Indian PIN Code" : "Zip Code / Postal Code"} className={`w-full border-2 px-3 py-2 md:p-4 rounded-lg md:rounded-xl font-medium outline-none text-xs md:text-base ${(!isPinValidNow && checkoutData.pin.length > 0 && !isValidating) ? 'border-red-400 focus:border-red-500 bg-red-50' : (isPinValidNow ? 'border-green-400 focus:border-green-500 bg-green-50' : 'border-gray-200 focus:border-purple-500 bg-white')}`} onChange={handlePinChange} />
-                 
-                 {isValidating && <p className="text-[9px] md:text-xs text-blue-500 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">⏳ Verifying PIN...</p>}
-                 
-                 {checkoutData.country === 'India' && checkoutData.pin.length > 0 && !isPinValidNow && !isValidating && <p className="text-[9px] md:text-xs text-red-500 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">❌ Invalid 6-Digit Indian PIN.</p>}
+              {/* WhatsApp Number with Side-by-Side Country Code */}
+              <div>
+                <label className="block text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-1 md:mb-1.5">
+                  WhatsApp Number
+                </label>
+                <div className="flex items-stretch gap-2">
+                  {checkoutData.country === 'India' ? (
+                    <div className="px-2.5 md:px-3.5 bg-purple-50/90 border border-purple-200/90 rounded-lg md:rounded-xl flex items-center justify-center gap-1 text-xs md:text-base font-bold text-purple-900 select-none flex-shrink-0 shadow-[0_2px_8px_rgba(30,17,54,0.03)]">
+                      <span>🇮🇳</span>
+                      <span>+91</span>
+                    </div>
+                  ) : (
+                    <select
+                      required
+                      name="Country Code"
+                      value={checkoutData.phoneCode || ''}
+                      onChange={handleCountryCodeChange}
+                      className={`w-[116px] sm:w-[138px] md:w-[165px] flex-shrink-0 border px-2 py-2 md:px-3 md:py-3.5 rounded-lg md:rounded-xl outline-none transition text-xs md:text-sm font-bold shadow-[0_2px_8px_rgba(30,17,54,0.03)] ${
+                          (!activeDialCode && activeLocalPhone.length > 0)
+                              ? 'border-red-400 focus:border-red-500 bg-red-50 text-gray-900'
+                              : 'border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 bg-white/95 text-gray-900'
+                      }`}
+                    >
+                      <option value="" disabled>Code...</option>
+                      {INTL_DIAL_CODES.map(item => (
+                        <option key={item.country} value={`${item.country}|${item.code}`}>
+                          {item.code} {item.short}
+                        </option>
+                      ))}
+                    </select>
+                  )}
 
-                 {isPinValidNow && !isValidating && (
-                     <p className="text-[9px] md:text-xs text-green-600 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">
-                         ✅ Valid {checkoutData.country === 'India' ? 'Indian PIN' : 'Postal Code'} 
-                         {checkoutData.pinCity ? ` (${checkoutData.pinCity}, ${checkoutData.pinState})` : ''}
-                     </p>
-                 )}
-                 {!isLocationMatched && checkoutData.country === 'India' && (
-                     <p className="text-[9px] md:text-xs text-red-500 font-bold mt-1 ml-1.5">❌ PIN Code does not match selected State/City.</p>
-                 )}
+                  <input
+                    required
+                    type="tel"
+                    inputMode="numeric"
+                    name="WhatsApp Number"
+                    value={activeLocalPhone}
+                    placeholder={checkoutData.country === 'India' ? '10-digit WhatsApp number' : 'WhatsApp number (digits only)'}
+                    className={`flex-1 min-w-0 border px-3 py-2 md:px-4 md:py-3.5 rounded-lg md:rounded-xl outline-none transition text-xs md:text-base shadow-[0_2px_8px_rgba(30,17,54,0.03)] ${
+                        currentPhoneError
+                            ? 'border-red-400 focus:border-red-500 bg-red-50 text-gray-900'
+                            : isPhoneValidNow
+                                ? 'border-emerald-400 focus:border-emerald-500 bg-emerald-50/70 text-gray-900'
+                                : 'border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 bg-white/95 text-gray-900'
+                    }`}
+                    onChange={handleLocalPhoneChange}
+                  />
+                </div>
+                {currentPhoneError && <p className="text-[10px] md:text-xs text-red-600 font-semibold mt-1 ml-1">{currentPhoneError}</p>}
+                {isPhoneValidNow && !currentPhoneError && (
+                  <p className="text-[10px] md:text-xs text-emerald-700 font-semibold mt-1 ml-1">
+                    ✅ Valid WhatsApp number ({activeDialCode} {activeLocalPhone})
+                  </p>
+                )}
               </div>
 
-              {/* 🚨 DYNAMIC BOXES FOR INDIA & INTERNATIONAL 🚨 */}
-              
+              {/* PIN / Postal Code */}
+              <div>
+                <label className="block text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-1 md:mb-1.5">
+                  {checkoutData.country === 'India' ? '6-Digit PIN Code' : 'Zip / Postal Code'}
+                </label>
+                <input
+                  required
+                  name={checkoutData.country === 'India' ? 'PIN Code' : 'Postal Code'}
+                  value={checkoutData.pin}
+                  placeholder={checkoutData.country === "India" ? "6-Digit Indian PIN Code" : "Zip Code / Postal Code"}
+                  className={`w-full border px-3 py-2 md:px-4 md:py-3.5 rounded-lg md:rounded-xl outline-none transition text-xs md:text-base shadow-[0_2px_8px_rgba(30,17,54,0.03)] ${
+                      (!isPinValidNow && checkoutData.pin.length > 0 && !isValidating)
+                          ? 'border-red-400 focus:border-red-500 bg-red-50 text-gray-900'
+                          : isPinValidNow
+                              ? 'border-emerald-400 focus:border-emerald-500 bg-emerald-50/70 text-gray-900'
+                              : 'border-purple-200/90 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 bg-white/95 text-gray-900'
+                  }`}
+                  onChange={handlePinChange}
+                />
+                {isValidating && <p className="text-[10px] md:text-xs text-blue-600 font-semibold mt-1 ml-1">⏳ Verifying PIN...</p>}
+                {checkoutData.country === 'India' && checkoutData.pin.length > 0 && !isPinValidNow && !isValidating && (
+                  <p className="text-[10px] md:text-xs text-red-600 font-semibold mt-1 ml-1">❌ Invalid 6-Digit Indian PIN.</p>
+                )}
+                {isPinValidNow && !isValidating && (
+                  <p className="text-[10px] md:text-xs text-emerald-700 font-semibold mt-1 ml-1">
+                    ✅ Valid {checkoutData.country === 'India' ? 'Indian PIN' : 'Postal Code'}
+                    {checkoutData.pinCity ? ` (${checkoutData.pinCity}, ${checkoutData.pinState})` : ''}
+                  </p>
+                )}
+                {!isLocationMatched && checkoutData.country === 'India' && (
+                  <p className="text-[10px] md:text-xs text-red-600 font-semibold mt-1 ml-1">❌ PIN Code does not match selected State/City.</p>
+                )}
+              </div>
+
+              {/* Dynamic Location Dropdowns */}
               {checkoutData.country === 'International' && (
                 <>
-                  {/* INTERNATIONAL: EXACT COUNTRY SELECTION */}
                   <div>
-                    <select required value={checkoutData.exactCountry || ''} onChange={e => {
+                    <label className="block text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-1 md:mb-1.5">
+                      Country
+                    </label>
+                    <select
+                      required
+                      name="Country"
+                      value={checkoutData.exactCountry || ''}
+                      onChange={e => {
                         const selectedC = e.target.value;
-                        setCheckoutData({...checkoutData, exactCountry: selectedC, state: '', city: ''});
+                        const matchDial = INTL_DIAL_CODES.find(d => d.country === selectedC);
+                        setCheckoutData(prev => {
+                            const nextCode = prev.phoneCode || (matchDial ? `${matchDial.country}|${matchDial.code}` : '');
+                            const dial = nextCode ? nextCode.split('|')[1] : '';
+                            const num = prev.phoneNumber || '';
+                            return {
+                                ...prev,
+                                exactCountry: selectedC,
+                                state: '',
+                                city: '',
+                                phoneCode: nextCode,
+                                phone: (dial && num) ? `${dial} ${num}` : prev.phone
+                            };
+                        });
                         setStaticStates(staticLocationData[selectedC] || []);
-                    }} className="w-full border-2 border-gray-200 px-3 py-2 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none font-medium text-xs md:text-base mt-1">
+                      }}
+                      className={baseInputClass}
+                    >
                        <option value="" disabled>Select Country...</option>
                        {staticCountries.filter(c => c !== 'India').map(c => (
                           <option key={c} value={c}>{c}</option>
@@ -6065,10 +6222,18 @@
                     </select>
                   </div>
                   
-                  {/* INTERNATIONAL: STATE SELECTION */}
                   {checkoutData.exactCountry && (
                     <div>
-                      <select required value={checkoutData.state} onChange={e => setCheckoutData({...checkoutData, state: e.target.value})} className="w-full border-2 border-gray-200 px-3 py-2 md:p-4 rounded-lg md:rounded-xl bg-white focus:border-purple-500 outline-none font-medium text-xs md:text-base mt-1">
+                      <label className="block text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-1 md:mb-1.5">
+                        State / Province
+                      </label>
+                      <select
+                        required
+                        name="State / Province"
+                        value={checkoutData.state}
+                        onChange={e => setCheckoutData({...checkoutData, state: e.target.value})}
+                        className={baseInputClass}
+                      >
                          <option value="" disabled>Select State/Province...</option>
                          {staticStates.length > 0 ? staticStates.map(s => (
                             <option key={s} value={s}>{s}</option>
@@ -6079,15 +6244,27 @@
                 </>
               )}
 
-             {checkoutData.country === 'India' && (
-                <>
-                 {/* INDIA: STATE SELECTION */}
+              {checkoutData.country === 'India' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   <div>
-                    <select required value={checkoutData.state} onChange={e => {
+                    <label className="block text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-1 md:mb-1.5">
+                      State
+                    </label>
+                    <select
+                      required
+                      name="State"
+                      value={checkoutData.state}
+                      onChange={e => {
                         const selectedS = e.target.value;
                         setCheckoutData({...checkoutData, state: selectedS, city: ''});
                         setStaticCities(staticLocationData["India"][selectedS] || []);
-                    }} className={`w-full border-2 px-3 py-2 md:p-4 rounded-lg md:rounded-xl outline-none font-medium text-xs md:text-base mt-1 ${!isLocationMatched ? 'border-red-400 bg-red-50 focus:border-red-500' : 'border-gray-200 bg-white focus:border-purple-500'}`}>
+                      }}
+                      className={`w-full border px-3 py-2 md:px-4 md:py-3.5 rounded-lg md:rounded-xl outline-none transition text-xs md:text-base shadow-[0_2px_8px_rgba(30,17,54,0.03)] ${
+                          !isLocationMatched
+                              ? 'border-red-400 bg-red-50 focus:border-red-500 text-gray-900'
+                              : 'border-purple-200/90 bg-white/95 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 text-gray-900'
+                      }`}
+                    >
                        <option value="" disabled>Select State...</option>
                        {Object.keys(staticLocationData["India"]).sort().map(s => (
                           <option key={s} value={s}>{s}</option>
@@ -6095,10 +6272,22 @@
                     </select>
                   </div>
                   
-                  {/* INDIA: CITY / DISTRICT SELECTION */}
                   {checkoutData.state && (
                     <div>
-                      <select required value={checkoutData.city} onChange={e => setCheckoutData({...checkoutData, city: e.target.value})} className={`w-full border-2 px-3 py-2 md:p-4 rounded-lg md:rounded-xl outline-none font-medium text-xs md:text-base mt-1 ${!isLocationMatched ? 'border-red-400 bg-red-50 focus:border-red-500' : 'border-gray-200 bg-white focus:border-purple-500'}`}>
+                      <label className="block text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-1 md:mb-1.5">
+                        City / District
+                      </label>
+                      <select
+                        required
+                        name="City / District"
+                        value={checkoutData.city}
+                        onChange={e => setCheckoutData({...checkoutData, city: e.target.value})}
+                        className={`w-full border px-3 py-2 md:px-4 md:py-3.5 rounded-lg md:rounded-xl outline-none transition text-xs md:text-base shadow-[0_2px_8px_rgba(30,17,54,0.03)] ${
+                            !isLocationMatched
+                                ? 'border-red-400 bg-red-50 focus:border-red-500 text-gray-900'
+                                : 'border-purple-200/90 bg-white/95 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 text-gray-900'
+                        }`}
+                      >
                          <option value="" disabled>Select City / District...</option>
                          {staticCities.length > 0 ? staticCities.map(city => (
                             <option key={city} value={city}>{city}</option>
@@ -6106,26 +6295,25 @@
                       </select>
                     </div>
                   )}
-                </>
+                </div>
               )}
 
-            
-              {/* 🚨 SMART LOCAL AREA DROPDOWN (INDIA ONLY) 🚨 */}
+              {/* Smart Local Area Dropdown (India Only) */}
               {checkoutData.country === 'India' && isPinValidNow && checkoutData.pin.length === 6 && localAreas.length > 0 && (
-                 <div className="bg-emerald-50 p-2 md:p-3 rounded-lg border border-emerald-200 shadow-sm mt-1 mb-2 relative">
-                    <label className="text-[9px] md:text-xs font-black text-emerald-800 uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                       <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                 <div className="bg-emerald-50/80 p-2.5 md:p-3.5 rounded-xl border border-emerald-200/90">
+                    <label className="text-[9px] md:text-xs font-bold text-emerald-800 uppercase tracking-[0.16em] mb-1.5 flex items-center gap-1.5">
+                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                        Select Your Local Area (Optional)
                     </label>
-                    <select 
-                       value="" 
+                    <select
+                       value=""
                        onChange={(e) => {
                           const area = e.target.value;
                           if (area) {
                              setCheckoutData({...checkoutData, address: area + ", "});
                           }
-                       }} 
-                       className="w-full border-2 border-emerald-200 px-2 py-1.5 md:px-3 md:py-2 rounded bg-white focus:border-emerald-500 outline-none font-bold text-[11px] md:text-sm text-gray-800 cursor-pointer shadow-sm"
+                       }}
+                       className="w-full border border-emerald-200 px-2.5 py-2 md:px-3 md:py-2.5 rounded-lg bg-white focus:border-emerald-500 outline-none font-semibold text-xs md:text-sm text-gray-800 cursor-pointer"
                     >
                        <option value="" disabled>-- Click to select your locality --</option>
                        {localAreas.map((area, idx) => (
@@ -6135,25 +6323,38 @@
                  </div>
               )}
 
-              
-
-              {/* 🚨 COMPLETE DELIVERY ADDRESS TEXTAREA 🚨 */}
+              {/* Complete Delivery Address */}
               <div>
-                 <textarea required value={checkoutData.address} placeholder="Complete Delivery Address (House No, Street Area, Landmark)" className={`w-full border-2 px-3 py-2 md:p-4 rounded-lg md:rounded-xl font-medium outline-none text-xs md:text-base ${!isAddressValidNow && checkoutData.address.length > 0 ? 'border-orange-400 bg-orange-50 focus:border-orange-500' : 'border-gray-200 bg-white focus:border-purple-500'}`} rows="3" onChange={e => { const val = e.target.value; setCheckoutData(prev => ({...prev, address: val})); }}></textarea>
-                  
-                  {checkoutData.address.length > 0 && !isAddressValidNow && (
-                      <p className="text-[9px] md:text-xs text-orange-600 font-bold mt-1 md:mt-2 ml-1.5 md:ml-2">
-                          ⚠️ Please add your House No. & Landmark to complete the address.
-                      </p>
-                  )}
+                <label className="block text-[9px] md:text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-1 md:mb-1.5">
+                  Delivery Address
+                </label>
+                <textarea
+                  required
+                  name="Delivery Address"
+                  value={checkoutData.address}
+                  placeholder="House No, Street Area, Landmark"
+                  rows="3"
+                  className={`w-full border px-3 py-2 md:px-4 md:py-3.5 rounded-lg md:rounded-xl outline-none transition text-xs md:text-base shadow-[0_2px_8px_rgba(30,17,54,0.03)] ${
+                      !isAddressValidNow && checkoutData.address.length > 0
+                          ? 'border-orange-400 bg-orange-50 focus:border-orange-500 text-gray-900'
+                          : 'border-purple-200/90 bg-white/95 focus:border-purple-600 focus:ring-2 focus:ring-purple-200/60 text-gray-900'
+                  }`}
+                  onChange={e => { const val = e.target.value; setCheckoutData(prev => ({...prev, address: val})); }}
+                ></textarea>
+                {checkoutData.address.length > 0 && !isAddressValidNow && (
+                  <p className="text-[10px] md:text-xs text-orange-600 font-semibold mt-1 ml-1">
+                    ⚠️ Please add your House No. &amp; Landmark to complete the address.
+                  </p>
+                )}
               </div>
 
+              {/* Order Summary OR Smart 2-Case International Print Notice */}
               {hasIntlPrintOrder ? (
-                <div className="bg-purple-50 p-3.5 md:p-5 rounded-xl border-2 border-purple-300 space-y-2.5 text-left">
-                  <p className="text-xs md:text-sm font-black text-purple-900">
+                <div className="bg-white/95 p-3.5 md:p-5 rounded-xl border border-purple-300 border-l-4 border-l-purple-600 space-y-2.5 text-left shadow-[0_4px_16px_rgba(30,17,54,0.05)]">
+                  <p className="text-xs md:text-sm font-bold text-purple-900">
                     {hasOriginalInCheckout ? '🌍 Original Ready to Buy • Print on Request' : '🌍 International Art Print — Price on Request'}
                   </p>
-                  <p className="text-[11px] md:text-xs font-bold text-gray-600 leading-relaxed">
+                  <p className="text-[11px] md:text-xs text-gray-600 leading-relaxed">
                     {hasOriginalInCheckout
                       ? 'You can purchase your Original Artwork(s) directly with Free Worldwide Shipping, while International Art Prints are quoted on WhatsApp. Remove the Print(s) from your Cart to buy your Original, or inquire on WhatsApp for the Print(s).'
                       : 'International print orders are priced directly on WhatsApp based on your country & courier cost. No need to fill this form — tap below to get an instant quote from Raja.'}
@@ -6167,7 +6368,7 @@
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full text-center py-2.5 rounded-xl bg-[#25D366] hover:bg-emerald-600 text-white font-black text-xs md:text-sm shadow-sm transition active:scale-95"
+                    className="block w-full text-center py-2.5 rounded-xl bg-[#25D366] hover:bg-emerald-600 text-white font-bold text-xs md:text-sm shadow-sm transition active:scale-95"
                   >
                     {hasOriginalInCheckout ? 'Inquire on WhatsApp for Print(s)' : 'Inquire on WhatsApp for International Prints'}
                   </a>
@@ -6175,29 +6376,30 @@
                     <button
                       type="button"
                       onClick={() => nav('cart')}
-                      className="block w-full text-center py-2.5 rounded-xl bg-white hover:bg-purple-100 text-purple-700 border border-purple-300 font-black text-xs md:text-sm transition active:scale-95 cursor-pointer"
+                      className="block w-full text-center py-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 font-bold text-xs md:text-sm transition active:scale-95 cursor-pointer"
                     >
                       Go to Cart to Remove Print(s)
                     </button>
                   ) : null}
                 </div>
               ) : (
-                <div className="bg-purple-50 p-3 md:p-5 rounded-lg md:rounded-xl border border-purple-100 shadow-inner">
-                   <div className="flex justify-between text-[11px] md:text-sm font-bold text-gray-600 mb-1">
-                     <span>{checkoutData.type === 'Commission' ? 'Estimated Budget (Not Final):' : 'Artwork Total:'}</span>
-                     <span>{getPrice(checkoutData.amount)}</span>
+                <div className="bg-white/95 p-3.5 md:p-5 rounded-xl border border-purple-200/80 shadow-[0_4px_16px_rgba(30,17,54,0.04)] space-y-2">
+                   <div className="flex justify-between text-xs md:text-sm font-semibold text-gray-600">
+                     <span>{checkoutData.type === 'Commission' ? 'Estimated Budget (Not Final)' : 'Artwork Total'}</span>
+                     <span className="text-gray-900">{getPrice(checkoutData.amount)}</span>
                    </div>
-                   <div className="flex justify-between text-[11px] md:text-sm font-bold text-gray-600 mb-1.5 md:mb-3 border-b border-purple-200 pb-1.5 md:pb-3">
-                     <span>Shipping Charge:</span>
-                     <span className="text-emerald-600 font-black">FREE</span>
+                   <div className="flex justify-between text-xs md:text-sm font-semibold text-gray-600 pb-2 border-b border-purple-100">
+                     <span>Shipping Charge</span>
+                     <span className="text-emerald-700 font-bold">FREE</span>
                    </div>
-                   <div className="flex justify-between text-sm md:text-lg font-black text-purple-900 mt-1 md:mt-0">
-                     <span>{checkoutData.type === 'Commission' ? 'Estimated Total:' : 'Final Payable:'}</span>
-                     <span>{getPrice(finalAmountBase)}</span>
+                   <div className="flex justify-between items-baseline pt-0.5 text-sm md:text-lg font-bold text-purple-950">
+                     <span>{checkoutData.type === 'Commission' ? 'Estimated Total' : 'Final Payable'}</span>
+                     <span className="text-base md:text-xl text-purple-900">{getPrice(finalAmountBase)}</span>
                    </div>
                 </div>
               )}
 
+              {/* Submit Action Button */}
               <button
                 type={hasIntlPrintOrder ? "button" : "submit"}
                 onClick={() => {
@@ -6208,14 +6410,19 @@
                     showPremiumAlert("🌍 INTERNATIONAL PRINTS — PRICE ON REQUEST:\n\nInternational Art Prints cannot be ordered directly on the website because shipping depends on your country & courier rates.\n\nNo need to fill out this form — simply tap the green 'Inquire on WhatsApp' button above to get an instant final quote from Raja.");
                   }
                 }}
-                className={`w-full text-white py-2.5 md:py-4 rounded-lg md:rounded-xl font-black text-sm md:text-lg shadow-md transition-transform transform active:scale-95 ${!canSubmit ? 'bg-gray-400 opacity-70 cursor-pointer' : 'bg-purple-600 hover:bg-purple-700 cursor-pointer hover:shadow-xl'}`}
+                className={`w-full py-2.5 md:py-4 rounded-xl font-bold text-xs md:text-sm uppercase tracking-[0.16em] shadow-md transition active:scale-[0.99] cursor-pointer ${
+                    !canSubmit
+                        ? 'bg-gray-300 text-gray-600'
+                        : 'bg-gradient-to-r from-purple-700 to-pink-600 text-white hover:opacity-95 hover:shadow-lg'
+                }`}
               >
                 {checkoutData.type === 'Commission' ? "Submit Commission Request" : "Proceed to Payment"}
               </button>
-            </form>    
+            </form>
           </div>
         );
       };
+
 
       const PaymentView = () => {
         const shippingFeeBase = 0;
