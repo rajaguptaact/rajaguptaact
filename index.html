@@ -4610,6 +4610,8 @@
                   }
 
                   const hasDiscount = cOld && cLive && Number(cOld) > Number(cLive);
+                  const isIntlPrintCart = currency === 'USD' && !isDeleted && item.selectedSize && !item.selectedSize.includes('Original');
+                  const cartPrintWaUrl = `https://wa.me/917281074416?text=${encodeURIComponent(`Hello Raja Gupta! I am an international buyer interested in ordering this Fine Art Print:\n\n*Artwork:* ${item.title}\n*Size:* ${item.selectedSize}\n*Quantity:* ${item.qty || 1}\n\nPlease share the final price including international shipping.`)}`;
                 
                   return (
                     <div key={i} className={`bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border overflow-hidden transition-all ${isDeleted ? 'border-gray-300 bg-gray-50/90' : isItemSoldOut ? 'border-rose-300 bg-rose-50/40' : 'border-purple-100/80 hover:border-purple-200'}`}>
@@ -4635,22 +4637,26 @@
                             </div>
                           </div>
 
-                          {/* LIVE PRICE ROW */}
-                          <div className={`flex items-baseline flex-wrap gap-1.5 md:gap-2 mt-2 ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
-                            <span className={`font-black text-base md:text-2xl text-gray-900 leading-none ${isDeleted ? 'line-through' : ''}`}>
-                              {getPrice((cLive || 0) * (item.qty || 1))}
-                            </span>
-                            {hasDiscount ? (
-                              <>
-                                <span className="line-through text-gray-400 text-[10px] md:text-sm font-bold">
-                                  {getPrice((cOld || 0) * (item.qty || 1))}
-                                </span>
-                                <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-pink-600">
-                                  SAVE {Math.round(((Number(cOld) - Number(cLive)) / Number(cOld)) * 100)}%
-                                </span>
-                              </>
-                            ) : null}
-                          </div>
+                          {/* LIVE PRICE ROW (OR PRICE ON REQUEST FOR INTL PRINTS) */}
+                          {isIntlPrintCart ? (
+                            <span className="font-black text-xs md:text-base text-purple-700 mt-2 block">Price on Request</span>
+                          ) : (
+                            <div className={`flex items-baseline flex-wrap gap-1.5 md:gap-2 mt-2 ${isDeleted ? 'grayscale opacity-50 pointer-events-none' : ''}`}>
+                              <span className={`font-black text-base md:text-2xl text-gray-900 leading-none ${isDeleted ? 'line-through' : ''}`}>
+                                {getPrice((cLive || 0) * (item.qty || 1))}
+                              </span>
+                              {hasDiscount ? (
+                                <>
+                                  <span className="line-through text-gray-400 text-[10px] md:text-sm font-bold">
+                                    {getPrice((cOld || 0) * (item.qty || 1))}
+                                  </span>
+                                  <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-pink-600">
+                                    SAVE {Math.round(((Number(cOld) - Number(cLive)) / Number(cOld)) * 100)}%
+                                  </span>
+                                </>
+                              ) : null}
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -4687,40 +4693,46 @@
                           )}
                         </div>
 
-                        {/* MOVE TO WISHLIST + ALWAYS-ACTIVE RED REMOVE */}
+                        {/* INQUIRE ON WHATSAPP (INTL PRINT) / MOVE TO WISHLIST + ALWAYS-ACTIVE RED REMOVE */}
                         <div className="flex items-center gap-2 md:gap-3">
-                          <button disabled={isDeleted} onClick={async () => {
-                              const liveArt = artworks.find(a => a.id === item.id);
-                              if (liveArt) {
-                                  const isWishlisted = wishlist.some(w => w.id === liveArt.id && (w.savedSize || 'Original A4 Colour Pencil') === item.selectedSize);
-                                  if (isWishlisted) {
-                                      showToast("⚠️ This item is already in your Wishlist.");
-                                      return;
-                                  } else {
-                                      const tinyImg = await makeTinyThumb(liveArt.image);
-                                      const slimItem = {
-                                          id: String(liveArt.id),
-                                          title: String(liveArt.title || ''),
-                                          savedSize: String(item.selectedSize),
-                                          image: tinyImg,
-                                          priceOriginal: liveArt.priceOriginal ?? '',
-                                          priceOriginalOld: liveArt.priceOriginalOld ?? '',
-                                          priceA3: liveArt.priceA3 ?? '',
-                                          priceA3Old: liveArt.priceA3Old ?? '',
-                                          priceA4: liveArt.priceA4 ?? '',
-                                          priceA4Old: liveArt.priceA4Old ?? '',
-                                          priceA5: liveArt.priceA5 ?? '',
-                                          priceA5Old: liveArt.priceA5Old ?? '',
-                                          isSold: Boolean(liveArt.isSold)
-                                      };
-                                      setWishlist(prev => sanitizeWishlistList([slimItem, ...prev]));
-                                      showToast(`🔖 Moved ${item.selectedSize} to Wishlist!`);
-                                  }
-                              }
-                              setCart(prev => prev.filter((_, idx) => idx !== i));
-                          }} className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-lg text-[10px] md:text-xs font-black transition ${isDeleted ? 'text-gray-400 bg-gray-100 cursor-not-allowed opacity-60' : 'text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-100 cursor-pointer active:scale-95'}`}>
-                            Move to Wishlist
-                          </button>
+                          {isIntlPrintCart ? (
+                            <a href={cartPrintWaUrl} target="_blank" rel="noopener noreferrer" className="px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-[10px] md:text-xs font-black text-white bg-[#25D366] hover:bg-emerald-600 transition active:scale-95">
+                              Inquire on WhatsApp
+                            </a>
+                          ) : (
+                            <button disabled={isDeleted} onClick={async () => {
+                                const liveArt = artworks.find(a => a.id === item.id);
+                                if (liveArt) {
+                                    const isWishlisted = wishlist.some(w => w.id === liveArt.id && (w.savedSize || 'Original A4 Colour Pencil') === item.selectedSize);
+                                    if (isWishlisted) {
+                                        showToast("⚠️ This item is already in your Wishlist.");
+                                        return;
+                                    } else {
+                                        const tinyImg = await makeTinyThumb(liveArt.image);
+                                        const slimItem = {
+                                            id: String(liveArt.id),
+                                            title: String(liveArt.title || ''),
+                                            savedSize: String(item.selectedSize),
+                                            image: tinyImg,
+                                            priceOriginal: liveArt.priceOriginal ?? '',
+                                            priceOriginalOld: liveArt.priceOriginalOld ?? '',
+                                            priceA3: liveArt.priceA3 ?? '',
+                                            priceA3Old: liveArt.priceA3Old ?? '',
+                                            priceA4: liveArt.priceA4 ?? '',
+                                            priceA4Old: liveArt.priceA4Old ?? '',
+                                            priceA5: liveArt.priceA5 ?? '',
+                                            priceA5Old: liveArt.priceA5Old ?? '',
+                                            isSold: Boolean(liveArt.isSold)
+                                        };
+                                        setWishlist(prev => sanitizeWishlistList([slimItem, ...prev]));
+                                        showToast(`🔖 Moved ${item.selectedSize} to Wishlist!`);
+                                    }
+                                }
+                                setCart(prev => prev.filter((_, idx) => idx !== i));
+                            }} className={`px-2.5 py-1 md:px-3 md:py-1.5 rounded-lg text-[10px] md:text-xs font-black transition ${isDeleted ? 'text-gray-400 bg-gray-100 cursor-not-allowed opacity-60' : 'text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-100 cursor-pointer active:scale-95'}`}>
+                              Move to Wishlist
+                            </button>
+                          )}
 
                           <button onClick={() => {
                               setCart(prev => prev.filter((_, idx) => idx !== i));
@@ -4731,7 +4743,7 @@
                         </div>
                       </div>
                     </div>
-                  );
+                  );                             
                 })}
 
                 {/* 🛡️ PREMIUM INLINE ALERT CARDS (CLEAR & INSTANTLY READABLE) */}
