@@ -8927,9 +8927,28 @@
         <div className="min-h-[100dvh] flex flex-col relative overflow-x-clip">
           
        
-          {/* ✨ PREMIUM LUXURY GALLERY HEADER (Left Menu • Center Extra-Bold Brand • Right Slim Currency & Profile) */}
+          {/* ✨ PREMIUM LUXURY GALLERY HEADER (Dark Royal Ticker on Home & Detail + Navbar) */}
           <header className="bg-white/95 backdrop-blur-md fixed top-0 left-0 right-0 w-full z-40 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border-b border-gray-100">
+            {(view === 'gallery' || view === 'artwork_detail') && !isLoadingGallery && isDataLoaded ? (
+              <div className="w-full h-7 md:h-8 bg-gradient-to-r from-[#1b0f30] via-[#281347] to-[#160b29] text-purple-100/95 border-b border-purple-500/25 overflow-hidden flex items-center select-none">
+                <div className="luxury-ticker-track">
+                  {[0, 1].map((loopIdx) => (
+                    <div key={loopIdx} className="flex items-center shrink-0">
+                      {[0, 1].map((repIdx) => (
+                        <div key={repIdx} className="flex items-center shrink-0 text-[10.5px] md:text-xs italic tracking-wide font-medium">
+                          <span className="px-6 md:px-10 whitespace-nowrap">Free delivery across India on every order</span>
+                          <span className="text-pink-300/90 text-[9px] md:text-[10px] not-italic">&#10022;</span>
+                          <span className="px-6 md:px-10 whitespace-nowrap">Free worldwide shipping on all Original Artworks</span>
+                          <span className="text-pink-300/90 text-[9px] md:text-[10px] not-italic">&#10022;</span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             <div className="max-w-7xl mx-auto px-2.5 md:px-8 h-14 md:h-20 grid grid-cols-[1fr_auto_1fr] items-center gap-1 md:gap-2">
+
               
               {/* LEFT: CLEAN MENU ICON */}
               <div className="flex items-center justify-start">
